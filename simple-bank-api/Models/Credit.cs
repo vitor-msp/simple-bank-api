@@ -26,4 +26,9 @@ public class Credit : Transaction
     {
         return value > 0;
     }
+
+    public CreditDebitDto GetDataWithoutCustomer()
+    {
+        return new CreditDebitDto() { Value = Value, CreatedAt = CreatedAt };
+    }
 }

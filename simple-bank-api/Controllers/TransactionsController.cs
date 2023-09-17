@@ -19,7 +19,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("credit/{customerId}")]
-    public async Task<IActionResult> Credit(int customerId, [FromBody] CreditDto creditDto)
+    public async Task<IActionResult> PostCredit(int customerId, [FromBody] CreditDto creditDto)
     {
         try
         {
@@ -42,7 +42,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("debit/{customerId}")]
-    public async Task<IActionResult> Debit(int customerId, [FromBody] DebitDto debitDto)
+    public async Task<IActionResult> PostDebit(int customerId, [FromBody] DebitDto debitDto)
     {
         try
         {
@@ -66,7 +66,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpGet("balance/{customerId}")]
-    public async Task<IActionResult> Balance(int customerId)
+    public async Task<IActionResult> GetBalance(int customerId)
     {
         try
         {
@@ -78,6 +78,25 @@ public class TransactionsController : ControllerBase
             // sum tranfers
             double balance = creditsSum + debitsSum;
             return Ok(new { balance });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
+        }
+    }
+
+    [HttpGet("{customerId}")]
+    public async Task<IActionResult> GetTransactions(int customerId)
+    {
+        try
+        {
+            Customer? customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Active && c.Id == customerId);
+            if (customer == null) return NotFound();
+            var credits = await GetCreditTransactionsFromCustomer(customer);
+            var debits = await GetDebitTransactionsFromCustomer(customer);
+            var sortedTransactions = SortTransactionsByDateTime(credits, debits);
+            return Ok(new { transactions = sortedTransactions });
         }
         catch (Exception)
         {
@@ -97,5 +116,36 @@ public class TransactionsController : ControllerBase
         var debits = await _context.Debits.AsNoTracking()
             .Where(d => d.Customer.Equals(customer)).ToListAsync();
         return debits;
+    }
+
+    private List<CreditDebitDto> SortTransactionsByDateTime(List<Credit> credits, List<Debit> debits)
+    {
+        var sortedTransactions = new List<CreditDebitDto>();
+        int creditIndex = 0, debitIndex = 0;
+        int max = credits.Count() + debits.Count();
+        List<long> creditTimestamps = credits
+            .Select(c => new DateTimeOffset(c.CreatedAt).ToUnixTimeMilliseconds()).ToList();
+        List<long> debitTimestamps = debits
+            .Select(d => new DateTimeOffset(d.CreatedAt).ToUnixTimeMilliseconds()).ToList();
+        creditTimestamps.Add(long.MaxValue);
+        debitTimestamps.Add(long.MaxValue);
+        for (int index = 0; index < max; index++)
+        {
+            var creditTimestamp = creditTimestamps.ElementAt(creditIndex);
+            var debitTimestamp = debitTimestamps.ElementAt(debitIndex);
+            if (creditTimestamp <= debitTimestamp)
+            {
+                var credit = credits.ElementAt(creditIndex);
+                sortedTransactions.Add(credit.GetDataWithoutCustomer());
+                creditIndex++;
+            }
+            else
+            {
+                var debit = debits.ElementAt(debitIndex);
+                sortedTransactions.Add(debit.GetDataWithoutCustomer());
+                debitIndex++;
+            }
+        }
+        return sortedTransactions;
     }
 }
