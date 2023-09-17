@@ -98,4 +98,21 @@ public class CustomersController : ControllerBase
             return StatusCode(500);
         }
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        try
+        {
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
+            if (customer == null) return BadRequest();
+            customer.Inactivate();
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
+        }
+    }
 }
