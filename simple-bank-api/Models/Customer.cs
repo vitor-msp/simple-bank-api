@@ -1,18 +1,22 @@
+using System.ComponentModel.DataAnnotations;
+using Dto;
+
 namespace Models;
 
 public class Customer
 {
 
-    public int CustomerId { get; set; }
-    public string Name { get; set; }
-    public string Cpf { get; set; }
-    public bool Active { get; set; }
+    [Key]
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    public string Cpf { get; set; } = "";
+    public bool Active { get; set; } = true;
 
-    public Customer()
+    public Customer Hydrate(CustomerDto dto)
     {
-        Name = "";
-        Cpf = "";
-        Active = true;
+        Name = dto.Name;
+        Cpf = dto.Cpf;
+        return this;
     }
 
     public void Inactivate()
