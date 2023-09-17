@@ -31,7 +31,7 @@ public class CustomersController : ControllerBase
         }
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = "GetProduct")]
     public async Task<IActionResult> GetById(int id)
     {
         try
@@ -74,8 +74,7 @@ public class CustomersController : ControllerBase
             var newCustomer = new Customer().Hydrate(newCustomerDto);
             _context.Add(newCustomer);
             await _context.SaveChangesAsync();
-            return Ok();
-            // return new CreatedAtRouteResult("GetProduct", new { id = newCustomer.Id }, newCustomer);
+            return new CreatedAtRouteResult("GetProduct", new { id = newCustomer.Id }, newCustomer);
         }
         catch (Exception)
         {
