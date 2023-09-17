@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Dto;
 
 namespace Models;
@@ -10,6 +11,7 @@ public class Customer
     public int Id { get; set; }
     public string Name { get; set; } = "";
     public string Cpf { get; set; } = "";
+    [JsonIgnore]
     public bool Active { get; set; } = true;
 
     public Customer Hydrate(CustomerCreateDto dto)

@@ -22,7 +22,7 @@ public class CustomersController : ControllerBase
     {
         try
         {
-            var customers = await _context.Customers.AsNoTracking().ToListAsync();
+            var customers = await _context.Customers.AsNoTracking().Where(c => c.Active).ToListAsync();
             return Ok(customers);
         }
         catch (Exception)
@@ -37,8 +37,8 @@ public class CustomersController : ControllerBase
         try
         {
             var customer = await _context.Customers.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Id == id);
-            if (customer == null) return BadRequest();
+                .FirstOrDefaultAsync(c => c.Active && c.Id == id);
+            if (customer == null) return NotFound();
             return Ok(customer);
         }
         catch (Exception)
@@ -53,8 +53,8 @@ public class CustomersController : ControllerBase
         try
         {
             var customer = await _context.Customers.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Cpf.Equals(cpf));
-            if (customer == null) return BadRequest();
+                .FirstOrDefaultAsync(c => c.Active && c.Cpf.Equals(cpf));
+            if (customer == null) return NotFound();
             return Ok(customer);
         }
         catch (Exception)
@@ -87,8 +87,8 @@ public class CustomersController : ControllerBase
     {
         try
         {
-            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
-            if (existingCustomer == null) return BadRequest();
+            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Active && c.Id == id);
+            if (existingCustomer == null) return NotFound();
             existingCustomer.Update(updatedCustomerDto);
             await _context.SaveChangesAsync();
             return NoContent();
@@ -104,8 +104,8 @@ public class CustomersController : ControllerBase
     {
         try
         {
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
-            if (customer == null) return BadRequest();
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Active && c.Id == id);
+            if (customer == null) return NotFound();
             customer.Inactivate();
             await _context.SaveChangesAsync();
             return NoContent();
