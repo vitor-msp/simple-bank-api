@@ -72,7 +72,7 @@ public class CustomersController : ControllerBase
                 .FirstOrDefaultAsync(c => c.Cpf.Equals(newCustomerDto.Cpf));
             if (existingCustomer != null) return BadRequest();
             var newCustomer = new Customer().Hydrate(newCustomerDto);
-            _context.Add(newCustomer);
+            _context.Customers.Add(newCustomer);
             await _context.SaveChangesAsync();
             return new CreatedAtRouteResult("GetProduct", new { id = newCustomer.Id }, null);
         }
