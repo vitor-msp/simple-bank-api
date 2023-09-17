@@ -10,6 +10,8 @@ public class Debit : Transaction
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public Customer Customer { get; set; }
 
+    public Debit() { }
+
     public Debit(double value, Customer customer)
     {
         if (!ValueIsValid(value)) throw new Exception("the value must be greater than zero ");
