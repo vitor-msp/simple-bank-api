@@ -47,6 +47,22 @@ public class CustomersController : ControllerBase
         }
     }
 
+    [HttpGet("bycpf/{cpf}")]
+    public async Task<IActionResult> GetByCpf(string cpf)
+    {
+        try
+        {
+            var customer = await _context.Customers.AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Cpf.Equals(cpf));
+            if (customer == null) return BadRequest();
+            return Ok(customer);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
+        }
+    }
+
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] CustomerDto newCustomerDto)
     {
