@@ -74,7 +74,7 @@ public class CustomersController : ControllerBase
             var newCustomer = new Customer().Hydrate(newCustomerDto);
             _context.Add(newCustomer);
             await _context.SaveChangesAsync();
-            return new CreatedAtRouteResult("GetProduct", new { id = newCustomer.Id }, newCustomer);
+            return new CreatedAtRouteResult("GetProduct", new { id = newCustomer.Id }, null);
         }
         catch (Exception)
         {
@@ -91,7 +91,7 @@ public class CustomersController : ControllerBase
             if (existingCustomer == null) return BadRequest();
             existingCustomer.Update(updatedCustomerDto);
             await _context.SaveChangesAsync();
-            return Ok();
+            return NoContent();
         }
         catch (Exception)
         {
