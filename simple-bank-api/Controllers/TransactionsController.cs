@@ -18,13 +18,13 @@ public class TransactionsController : ControllerBase
         _context = context;
     }
 
-    [HttpPost("credit")]
-    public async Task<IActionResult> Credit([FromBody] CreditDto creditDto)
+    [HttpPost("credit/{customerId}")]
+    public async Task<IActionResult> Credit(int customerId, [FromBody] CreditDto creditDto)
     {
         try
         {
             Customer? customer = await _context.Customers
-                .FirstOrDefaultAsync(c => c.Active && c.Id == creditDto.CustomerId);
+                .FirstOrDefaultAsync(c => c.Active && c.Id == customerId);
             if (customer == null) return NotFound();
             var credit = new Credit(creditDto, customer);
             _context.Credits.Add(credit);
@@ -41,13 +41,13 @@ public class TransactionsController : ControllerBase
         }
     }
 
-    [HttpPost("debit")]
-    public async Task<IActionResult> Debit([FromBody] DebitDto debitDto)
+    [HttpPost("debit/{customerId}")]
+    public async Task<IActionResult> Debit(int customerId, [FromBody] DebitDto debitDto)
     {
         try
         {
             Customer? customer = await _context.Customers
-                .FirstOrDefaultAsync(c => c.Active && c.Id == debitDto.CustomerId);
+                .FirstOrDefaultAsync(c => c.Active && c.Id == customerId);
             if (customer == null) return NotFound();
             // validate balance
             var debit = new Debit(debitDto, customer);
