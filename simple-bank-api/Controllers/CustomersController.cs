@@ -17,6 +17,36 @@ public class CustomersController : ControllerBase
         _context = context;
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        try
+        {
+            var customers = await _context.Customers.AsNoTracking().ToListAsync();
+            return Ok(customers);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
+        }
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        try
+        {
+            var customer = await _context.Customers.AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+            if (customer == null) return BadRequest();
+            return Ok(customer);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
+        }
+    }
+
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] CustomerDto newCustomerDto)
     {
