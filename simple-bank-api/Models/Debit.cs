@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using Exceptions;
+using Dto;
 
 namespace Models;
 
@@ -12,10 +14,11 @@ public class Debit : Transaction
 
     public Debit() { }
 
-    public Debit(double value, Customer customer)
+    public Debit(DebitDto debitDto, Customer customer)
     {
-        if (!ValueIsValid(value)) throw new Exception("the value must be greater than zero ");
-        Value = -1 * value;
+        if (!ValueIsValid(debitDto.Value))
+            throw new TransactionException("the value must be greater than zero");
+        Value = debitDto.Value;
         Customer = customer;
     }
 

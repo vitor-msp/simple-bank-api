@@ -18,8 +18,7 @@ public class TransactionsController : ControllerBase
         _context = context;
     }
 
-
-    [HttpPost]
+    [HttpPost("credit")]
     public async Task<IActionResult> Credit([FromBody] CreditDto creditDto)
     {
         try
@@ -29,6 +28,30 @@ public class TransactionsController : ControllerBase
             if (customer == null) return NotFound();
             var credit = new Credit(creditDto, customer);
             _context.Credits.Add(credit);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+        catch (TransactionException)
+        {
+            return BadRequest();
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
+        }
+    }
+
+    [HttpPost("debit")]
+    public async Task<IActionResult> Debit([FromBody] DebitDto debitDto)
+    {
+        try
+        {
+            Customer? customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Active && c.Id == debitDto.CustomerId);
+            if (customer == null) return NotFound();
+            // validate balance
+            var debit = new Debit(debitDto, customer);
+            _context.Debits.Add(debit);
             await _context.SaveChangesAsync();
             return Ok();
         }
