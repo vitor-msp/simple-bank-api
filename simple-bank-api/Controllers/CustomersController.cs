@@ -64,7 +64,7 @@ public class CustomersController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] CustomerDto newCustomerDto)
+    public async Task<IActionResult> Post([FromBody] CustomerCreateDto newCustomerDto)
     {
         try
         {
@@ -75,6 +75,23 @@ public class CustomersController : ControllerBase
             _context.Add(newCustomer);
             await _context.SaveChangesAsync();
             return new CreatedAtRouteResult("GetProduct", new { id = newCustomer.Id }, newCustomer);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
+        }
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Put(int id, [FromBody] CustomerUpdateDto updatedCustomerDto)
+    {
+        try
+        {
+            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
+            if (existingCustomer == null) return BadRequest();
+            existingCustomer.Update(updatedCustomerDto);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
         catch (Exception)
         {
