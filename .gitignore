@@ -426,3 +426,4 @@ obj/
 appsettings.json
 appsettings.Development.json
 **/Migrations/**
+bank.db
