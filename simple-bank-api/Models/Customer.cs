@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace Models;
 
+[Index(nameof(Cpf), IsUnique = true)]
 public class Customer
 {
 
