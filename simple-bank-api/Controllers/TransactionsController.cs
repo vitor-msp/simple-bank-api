@@ -49,7 +49,8 @@ public class TransactionsController : ControllerBase
             Customer? customer = await _context.Customers
                 .FirstOrDefaultAsync(c => c.Active && c.Id == customerId);
             if (customer == null) return NotFound();
-            // validate balance
+            double balance = await CalculateBalanceFromCustomer(customer);
+            if (balance < debitDto.Value) return BadRequest();
             var debit = new Debit(debitDto, customer);
             _context.Debits.Add(debit);
             await _context.SaveChangesAsync();
