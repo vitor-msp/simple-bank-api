@@ -18,7 +18,7 @@ public class Debit : Transaction
     {
         if (!ValueIsValid(debitDto.Value))
             throw new TransactionException("the value must be greater than zero");
-        Value = debitDto.Value;
+        Value = -1 * debitDto.Value;
         Customer = customer;
     }
 

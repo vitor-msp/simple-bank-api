@@ -134,7 +134,7 @@ public class TransactionsController : ControllerBase
     private async Task<double> CalculateBalanceFromCustomer(Customer customer)
     {
         double creditSum = (await GetCreditsFromCustomer(customer)).Sum(c => c.Value);
-        double debitSum = -1 * (await GetDebitsFromCustomer(customer)).Sum(d => d.Value);
+        double debitSum = (await GetDebitsFromCustomer(customer)).Sum(d => d.Value);
         var transfers = await GetTransfersFromCustomer(customer);
         double transferSum = transfers.Sum(t => t.Sender.Equals(customer) ? (-1 * t.Value) : t.Value);
         double balance = creditSum + debitSum + transferSum;
