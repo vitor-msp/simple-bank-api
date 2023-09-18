@@ -4,7 +4,7 @@ using Exceptions;
 
 namespace Models;
 
-public class Tranfer : Transaction
+public class Transfer : Transaction
 {
     [Key]
     public int Id { get; set; }
@@ -13,9 +13,9 @@ public class Tranfer : Transaction
     public Customer Recipient { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-    public Tranfer() { }
+    public Transfer() { }
 
-    public Tranfer(TransferDto transferDto, Customer sender, Customer recipient)
+    public Transfer(TransferDto transferDto, Customer sender, Customer recipient)
     {
         if (!ValueIsValid(transferDto.Value))
             throw new TransactionException("the value must be greater than zero");
