@@ -80,8 +80,8 @@ public class TransactionsController : ControllerBase
             if (sender.Equals(recipient)) return BadRequest();
             double balance = await CalculateBalanceFromCustomer(sender);
             if (balance < transferDto.Value) return BadRequest();
-            var transfer = new Tranfer(transferDto, sender, recipient);
-            _context.Tranfers.Add(transfer);
+            var transfer = new Transfer(transferDto, sender, recipient);
+            _context.Transfers.Add(transfer);
             await _context.SaveChangesAsync();
             return Ok();
         }
@@ -120,8 +120,8 @@ public class TransactionsController : ControllerBase
             Customer? customer = await _context.Customers
                 .FirstOrDefaultAsync(c => c.Active && c.Id == customerId);
             if (customer == null) return NotFound();
-            var credits = await GetCreditTransactionsFromCustomer(customer);
-            var debits = await GetDebitTransactionsFromCustomer(customer);
+            var credits = await GetCreditsFromCustomer(customer);
+            var debits = await GetDebitsFromCustomer(customer);
             var sortedTransactions = SortTransactionsByDateTime(credits, debits);
             return Ok(new { transactions = sortedTransactions });
         }
@@ -133,25 +133,33 @@ public class TransactionsController : ControllerBase
 
     private async Task<double> CalculateBalanceFromCustomer(Customer customer)
     {
-        double creditsSum = (await GetCreditTransactionsFromCustomer(customer)).Sum(c => c.Value);
-        double debitsSum = -1 * (await GetDebitTransactionsFromCustomer(customer)).Sum(d => d.Value);
-        // sum tranfers
-        double balance = creditsSum + debitsSum;
+        double creditSum = (await GetCreditsFromCustomer(customer)).Sum(c => c.Value);
+        double debitSum = -1 * (await GetDebitsFromCustomer(customer)).Sum(d => d.Value);
+        var transfers = await GetTransfersFromCustomer(customer);
+        double transferSum = transfers.Sum(t => t.Sender.Equals(customer) ? (-1 * t.Value) : t.Value);
+        double balance = creditSum + debitSum + transferSum;
         return balance;
     }
 
-    private async Task<List<Credit>> GetCreditTransactionsFromCustomer(Customer customer)
+    private async Task<List<Credit>> GetCreditsFromCustomer(Customer customer)
     {
         var credits = await _context.Credits.AsNoTracking()
             .Where(c => c.Customer.Equals(customer)).ToListAsync();
         return credits;
     }
 
-    private async Task<List<Debit>> GetDebitTransactionsFromCustomer(Customer customer)
+    private async Task<List<Debit>> GetDebitsFromCustomer(Customer customer)
     {
         var debits = await _context.Debits.AsNoTracking()
             .Where(d => d.Customer.Equals(customer)).ToListAsync();
         return debits;
+    }
+
+    private async Task<List<Transfer>> GetTransfersFromCustomer(Customer customer)
+    {
+        var transfers = await _context.Transfers.AsNoTracking().Include("Sender").Include("Recipient")
+            .Where(t => t.Sender.Equals(customer) || t.Recipient.Equals(customer)).ToListAsync();
+        return transfers;
     }
 
     private List<CreditDebitDto> SortTransactionsByDateTime(List<Credit> credits, List<Debit> debits)
