@@ -423,7 +423,6 @@ obj/
 
 # End of https://www.toptal.com/developers/gitignore/api/dotnetcore,csharp,visualstudiocode
 
-appsettings.json
-appsettings.Development.json
 **/Migrations/**
-bank.db
+!**/Migrations/*FinalMigration*
+!**/Migrations/BankContextModelSnapshot.cs
