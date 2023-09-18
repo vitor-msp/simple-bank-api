@@ -2,6 +2,7 @@ using System.Collections;
 using Context;
 using Dto;
 using Exceptions;
+using Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
@@ -105,7 +106,7 @@ public class TransactionsController : ControllerBase
                 .FirstOrDefaultAsync(c => c.Active && c.Id == customerId);
             if (customer == null) return NotFound();
             double balance = await CalculateBalanceFromCustomer(customer);
-            return Ok(new { balance });
+            return Ok(new { balance = CurrencyHelper.GetBrazilianCurrency(balance) });
         }
         catch (Exception)
         {

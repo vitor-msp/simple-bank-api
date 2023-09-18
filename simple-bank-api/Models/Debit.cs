@@ -29,11 +29,6 @@ public class Debit : Transaction
 
     public TransactionCreditDebitDto GetDataWithoutCustomer()
     {
-        return new TransactionCreditDebitDto()
-        {
-            TransactionType = TransactionType.Debit,
-            Value = Value,
-            CreatedAt = CreatedAt
-        };
+        return new TransactionCreditDebitDto(TransactionType.Debit, Value, CreatedAt);
     }
 }
