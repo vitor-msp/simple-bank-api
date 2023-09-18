@@ -30,4 +30,12 @@ public class Customer
     {
         Active = false;
     }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj == null) return false;
+        if (!obj.GetType().Equals(this.GetType())) return false;
+        Customer customerToCompare = (Customer)obj;
+        return customerToCompare.Id == Id;
+    }
 }
