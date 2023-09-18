@@ -1,3 +1,4 @@
+using System.Collections;
 using Context;
 using Dto;
 using Exceptions;
@@ -122,7 +123,8 @@ public class TransactionsController : ControllerBase
             if (customer == null) return NotFound();
             var credits = await GetCreditsFromCustomer(customer);
             var debits = await GetDebitsFromCustomer(customer);
-            var sortedTransactions = SortTransactionsByDateTime(credits, debits);
+            var transfers = await GetTransfersFromCustomer(customer);
+            var sortedTransactions = SortTransactionsByDateTime(credits, debits, transfers, customer);
             return Ok(new { transactions = sortedTransactions });
         }
         catch (Exception)
@@ -162,32 +164,43 @@ public class TransactionsController : ControllerBase
         return transfers;
     }
 
-    private List<CreditDebitDto> SortTransactionsByDateTime(List<Credit> credits, List<Debit> debits)
+    private ArrayList SortTransactionsByDateTime(
+        List<Credit> credits, List<Debit> debits, List<Transfer> transfers, Customer customer)
     {
-        var sortedTransactions = new List<CreditDebitDto>();
-        int creditIndex = 0, debitIndex = 0;
-        int max = credits.Count() + debits.Count();
+        var sortedTransactions = new ArrayList();
+        int creditIndex = 0, debitIndex = 0, transferIndex = 0;
+        int max = credits.Count() + debits.Count() + transfers.Count();
         List<long> creditTimestamps = credits
             .Select(c => new DateTimeOffset(c.CreatedAt).ToUnixTimeMilliseconds()).ToList();
         List<long> debitTimestamps = debits
             .Select(d => new DateTimeOffset(d.CreatedAt).ToUnixTimeMilliseconds()).ToList();
+        List<long> transferTimestamps = transfers
+            .Select(t => new DateTimeOffset(t.CreatedAt).ToUnixTimeMilliseconds()).ToList();
         creditTimestamps.Add(long.MaxValue);
         debitTimestamps.Add(long.MaxValue);
+        transferTimestamps.Add(long.MaxValue);
         for (int index = 0; index < max; index++)
         {
             var creditTimestamp = creditTimestamps.ElementAt(creditIndex);
             var debitTimestamp = debitTimestamps.ElementAt(debitIndex);
-            if (creditTimestamp <= debitTimestamp)
+            var transferTimestamp = transferTimestamps.ElementAt(transferIndex);
+            if (creditTimestamp <= debitTimestamp && creditTimestamp <= transferTimestamp)
             {
                 var credit = credits.ElementAt(creditIndex);
                 sortedTransactions.Add(credit.GetDataWithoutCustomer());
                 creditIndex++;
             }
-            else
+            else if (debitTimestamp <= transferTimestamp)
             {
                 var debit = debits.ElementAt(debitIndex);
                 sortedTransactions.Add(debit.GetDataWithoutCustomer());
                 debitIndex++;
+            }
+            else
+            {
+                var transfer = transfers.ElementAt(transferIndex);
+                sortedTransactions.Add(transfer.GetData(customer));
+                transferIndex++;
             }
         }
         return sortedTransactions;

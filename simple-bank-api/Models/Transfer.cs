@@ -28,4 +28,24 @@ public class Transfer : Transaction
     {
         return value > 0;
     }
+
+    public TransactionTransferDto GetData(Customer customer)
+    {
+        double value;
+        if (customer.Equals(Sender))
+        {
+            value = -1 * Value;
+        }
+        else if (customer.Equals(Recipient))
+        {
+            value = Value;
+        }
+        else
+        {
+            throw new TransactionException("transfer does not belong to the customer");
+        }
+        var dto = new TransactionTransferDto(
+            TransactionType.Transfer, value, CreatedAt, Sender.GetPublicData(), Recipient.GetPublicData());
+        return dto;
+    }
 }

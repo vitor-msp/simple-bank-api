@@ -38,4 +38,10 @@ public class Customer
         Customer customerToCompare = (Customer)obj;
         return customerToCompare.Id == Id;
     }
+
+
+    public TransactionCustomerDto GetPublicData()
+    {
+        return new TransactionCustomerDto() { Id = Id, Name = Name };
+    }
 }
