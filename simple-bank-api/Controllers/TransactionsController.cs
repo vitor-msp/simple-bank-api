@@ -77,6 +77,7 @@ public class TransactionsController : ControllerBase
             Customer? recipient = await _context.Customers
                 .FirstOrDefaultAsync(c => c.Active && c.Id == transferDto.RecipientId);
             if (recipient == null) return NotFound();
+            if (sender.Equals(recipient)) return BadRequest();
             double balance = await CalculateBalanceFromCustomer(sender);
             if (balance < transferDto.Value) return BadRequest();
             var transfer = new Tranfer(transferDto, sender, recipient);
