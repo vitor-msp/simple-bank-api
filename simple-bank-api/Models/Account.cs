@@ -34,6 +34,11 @@ public class Account
         Active = false;
     }
 
+    public TransactionAccountDto GetPublicData()
+    {
+        return new TransactionAccountDto() { AccountNumber = AccountNumber, Name = Owner.Name };
+    }
+
     public override bool Equals(object? obj)
     {
         if (obj == null) return false;
@@ -42,8 +47,8 @@ public class Account
         return accountToCompare.AccountNumber == AccountNumber;
     }
 
-    public TransactionAccountDto GetPublicData()
+    public override int GetHashCode()
     {
-        return new TransactionAccountDto() { AccountNumber = AccountNumber, Name = Owner.Name };
+        return AccountNumber;
     }
 }
