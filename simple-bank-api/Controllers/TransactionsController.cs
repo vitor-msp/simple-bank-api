@@ -73,10 +73,7 @@ public class TransactionsController : ControllerBase
             Customer? customer = await _context.Customers
                 .FirstOrDefaultAsync(c => c.Active && c.Id == customerId);
             if (customer == null) return NotFound();
-            double creditsSum = (await GetCreditTransactionsFromCustomer(customer)).Sum(c => c.Value);
-            double debitsSum = -1 * (await GetDebitTransactionsFromCustomer(customer)).Sum(d => d.Value);
-            // sum tranfers
-            double balance = creditsSum + debitsSum;
+            double balance = await CalculateBalanceFromCustomer(customer);
             return Ok(new { balance });
         }
         catch (Exception)
@@ -102,6 +99,15 @@ public class TransactionsController : ControllerBase
         {
             return StatusCode(500);
         }
+    }
+
+    private async Task<double> CalculateBalanceFromCustomer(Customer customer)
+    {
+        double creditsSum = (await GetCreditTransactionsFromCustomer(customer)).Sum(c => c.Value);
+        double debitsSum = -1 * (await GetDebitTransactionsFromCustomer(customer)).Sum(d => d.Value);
+        // sum tranfers
+        double balance = creditsSum + debitsSum;
+        return balance;
     }
 
     private async Task<List<Credit>> GetCreditTransactionsFromCustomer(Customer customer)
