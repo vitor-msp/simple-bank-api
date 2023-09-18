@@ -1,6 +1,6 @@
 namespace Dto;
 
-public class CustomerCreateDto
+public class AccountCreateDto
 {
     public string Name { get; set; } = "";
     public string Cpf { get; set; } = "";

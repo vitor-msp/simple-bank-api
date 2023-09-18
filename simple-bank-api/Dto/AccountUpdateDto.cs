@@ -1,6 +1,6 @@
 namespace Dto;
 
-public class CustomerUpdateDto
+public class AccountUpdateDto
 {
     public string Name { get; set; } = "";
 }
