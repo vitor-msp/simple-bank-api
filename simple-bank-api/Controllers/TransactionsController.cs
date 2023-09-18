@@ -66,6 +66,34 @@ public class TransactionsController : ControllerBase
         }
     }
 
+    [HttpPost("transfer/{customerId}")]
+    public async Task<IActionResult> PostTransfer(int customerId, [FromBody] TransferDto transferDto)
+    {
+        try
+        {
+            Customer? sender = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Active && c.Id == customerId);
+            if (sender == null) return NotFound();
+            Customer? recipient = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Active && c.Id == transferDto.RecipientId);
+            if (recipient == null) return NotFound();
+            double balance = await CalculateBalanceFromCustomer(sender);
+            if (balance < transferDto.Value) return BadRequest();
+            var transfer = new Tranfer(transferDto, sender, recipient);
+            _context.Tranfers.Add(transfer);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+        catch (TransactionException)
+        {
+            return BadRequest();
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
+        }
+    }
+
     [HttpGet("balance/{customerId}")]
     public async Task<IActionResult> GetBalance(int customerId)
     {
