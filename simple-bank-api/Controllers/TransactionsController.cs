@@ -27,7 +27,7 @@ public class TransactionsController : ControllerBase
         {
             Account? account = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.Active && a.AccountNumber == accountNumber);
-            if (account == null) return NotFound("Account not found.");
+            if (account == null) return NotFound(new ErrorDto("Account not found."));
             var credit = new Credit(creditDto, account);
             _context.Credits.Add(credit);
             await _context.SaveChangesAsync();
@@ -35,11 +35,11 @@ public class TransactionsController : ControllerBase
         }
         catch (TransactionException error)
         {
-            return BadRequest(error.Message);
+            return BadRequest(new ErrorDto(error.Message));
         }
         catch (Exception)
         {
-            return StatusCode(500, "Error to create credit.");
+            return StatusCode(500, new ErrorDto("Error to create credit."));
         }
     }
 
@@ -50,9 +50,9 @@ public class TransactionsController : ControllerBase
         {
             Account? account = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.Active && a.AccountNumber == accountNumber);
-            if (account == null) return NotFound("Account not found.");
+            if (account == null) return NotFound(new ErrorDto("Account not found."));
             double balance = await CalculateBalanceFromAccount(account);
-            if (balance < debitDto.Value) return BadRequest("Insufficient balance.");
+            if (balance < debitDto.Value) return BadRequest(new ErrorDto("Insufficient balance."));
             var debit = new Debit(debitDto, account);
             _context.Debits.Add(debit);
             await _context.SaveChangesAsync();
@@ -60,11 +60,11 @@ public class TransactionsController : ControllerBase
         }
         catch (TransactionException error)
         {
-            return BadRequest(error.Message);
+            return BadRequest(new ErrorDto(error.Message));
         }
         catch (Exception)
         {
-            return StatusCode(500, "Error to create debit.");
+            return StatusCode(500, new ErrorDto("Error to create debit."));
         }
     }
 
@@ -75,13 +75,14 @@ public class TransactionsController : ControllerBase
         {
             Account? sender = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.Active && a.AccountNumber == accountNumber);
-            if (sender == null) return NotFound("Sender account not found.");
+            if (sender == null) return NotFound(new ErrorDto("Sender account not found."));
             Account? recipient = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.Active && a.AccountNumber == transferDto.RecipientAccountNumber);
-            if (recipient == null) return NotFound("Recipient account not found.");
-            if (sender.Equals(recipient)) return BadRequest("Transfer to the same account is not allowed.");
+            if (recipient == null) return NotFound(new ErrorDto("Recipient account not found."));
+            if (sender.Equals(recipient))
+                return BadRequest(new ErrorDto("Transfer to the same account is not allowed."));
             double balance = await CalculateBalanceFromAccount(sender);
-            if (balance < transferDto.Value) return BadRequest("Insufficient balance.");
+            if (balance < transferDto.Value) return BadRequest(new ErrorDto("Insufficient balance."));
             var transfer = new Transfer(transferDto, sender, recipient);
             _context.Transfers.Add(transfer);
             await _context.SaveChangesAsync();
@@ -89,11 +90,11 @@ public class TransactionsController : ControllerBase
         }
         catch (TransactionException error)
         {
-            return BadRequest(error.Message);
+            return BadRequest(new ErrorDto(error.Message));
         }
         catch (Exception)
         {
-            return StatusCode(500, "Error to create transfer.");
+            return StatusCode(500, new ErrorDto("Error to create transfer."));
         }
     }
 
@@ -104,13 +105,13 @@ public class TransactionsController : ControllerBase
         {
             Account? account = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.AccountNumber == accountNumber);
-            if (account == null) return NotFound("Account not found.");
+            if (account == null) return NotFound(new ErrorDto("Account not found."));
             double balance = await CalculateBalanceFromAccount(account);
             return Ok(new { balance = CurrencyHelper.GetBrazilianCurrency(balance) });
         }
         catch (Exception)
         {
-            return StatusCode(500, "Error to get balance.");
+            return StatusCode(500, new ErrorDto("Error to get balance."));
         }
     }
 
@@ -121,7 +122,7 @@ public class TransactionsController : ControllerBase
         {
             Account? account = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.AccountNumber == accountNumber);
-            if (account == null) return NotFound("Account not found.");
+            if (account == null) return NotFound(new ErrorDto("Account not found."));
             var credits = await GetCreditsFromAccount(account);
             var debits = await GetDebitsFromAccount(account);
             var transfers = await GetTransfersFromAccount(account);
@@ -130,7 +131,7 @@ public class TransactionsController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, "Error to get transactions.");
+            return StatusCode(500, new ErrorDto("Error to get transactions."));
         }
     }
 
