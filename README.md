@@ -33,7 +33,7 @@ dotnet ef database update
 dotnet run
 ```
 
-6. Access [Swager URL](https://localhost:5000/swagger)
+1. Access [Swager URL](http://localhost:5000/swagger)
 
 ## Notes
 
