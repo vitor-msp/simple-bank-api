@@ -28,7 +28,7 @@ public class AccountsController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500);
+            return StatusCode(500, "Error to get accounts.");
         }
     }
 
@@ -39,12 +39,12 @@ public class AccountsController : ControllerBase
         {
             var account = await _context.Accounts.AsNoTracking().Include("Owner")
                 .FirstOrDefaultAsync(a => a.Active && a.AccountNumber == accountNumber);
-            if (account == null) return NotFound();
+            if (account == null) return NotFound("Account not found.");
             return Ok(account);
         }
         catch (Exception)
         {
-            return StatusCode(500);
+            return StatusCode(500, "Error to get account.");
         }
     }
 
@@ -55,12 +55,12 @@ public class AccountsController : ControllerBase
         {
             var account = await _context.Accounts.AsNoTracking().Include("Owner")
                 .FirstOrDefaultAsync(a => a.Active && a.Owner.Cpf.Equals(cpf));
-            if (account == null) return NotFound();
+            if (account == null) return NotFound("Account not found.");
             return Ok(account);
         }
         catch (Exception)
         {
-            return StatusCode(500);
+            return StatusCode(500, "Error to get account.");
         }
     }
 
@@ -71,7 +71,7 @@ public class AccountsController : ControllerBase
         {
             var existingAccount = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.Owner.Cpf.Equals(newAccountDto.Cpf));
-            if (existingAccount != null) return BadRequest();
+            if (existingAccount != null) return BadRequest("Cpf already registered.");
             var customer = new Customer(newAccountDto);
             var newAccount = new Account(customer);
             _context.Accounts.Add(newAccount);
@@ -82,7 +82,7 @@ public class AccountsController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500);
+            return StatusCode(500, "Error to create account.");
         }
     }
 
@@ -93,14 +93,14 @@ public class AccountsController : ControllerBase
         {
             var existingAccount = await _context.Accounts.Include("Owner")
                 .FirstOrDefaultAsync(a => a.Active && a.AccountNumber == accountNumber);
-            if (existingAccount == null) return NotFound();
+            if (existingAccount == null) return NotFound("Account not found.");
             existingAccount.Update(updatedAccountDto);
             await _context.SaveChangesAsync();
             return NoContent();
         }
         catch (Exception)
         {
-            return StatusCode(500);
+            return StatusCode(500, "Error to update account.");
         }
     }
 
@@ -111,14 +111,14 @@ public class AccountsController : ControllerBase
         {
             var account = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.Active && a.AccountNumber == accountNumber);
-            if (account == null) return NotFound();
+            if (account == null) return NotFound("Account not found.");
             account.Inactivate();
             await _context.SaveChangesAsync();
             return NoContent();
         }
         catch (Exception)
         {
-            return StatusCode(500);
+            return StatusCode(500, "Error to inactivate account.");
         }
     }
 }

@@ -19,16 +19,15 @@ public class Transfer : Transaction
 
     public Transfer(TransferDto transferDto, Account sender, Account recipient)
     {
-        if (!ValueIsValid(transferDto.Value))
-            throw new TransactionException("the value must be greater than zero");
+        ValueIsValid(transferDto.Value);
         Value = transferDto.Value;
         Sender = sender;
         Recipient = recipient;
     }
 
-    private bool ValueIsValid(double value)
+    private void ValueIsValid(double value)
     {
-        return value > 0;
+        if(value <= 0) throw new TransactionException("The transfer value must be greater than zero.");
     }
 
     public TransactionTransferDto GetData(Account account)
@@ -44,7 +43,7 @@ public class Transfer : Transaction
         }
         else
         {
-            throw new TransactionException("transfer does not belong to the account");
+            throw new TransactionException("Transfer does not belong to the account.");
         }
         var dto = new TransactionTransferDto(
             TransactionType.Transfer, value, CreatedAt, Sender.GetPublicData(), Recipient.GetPublicData());

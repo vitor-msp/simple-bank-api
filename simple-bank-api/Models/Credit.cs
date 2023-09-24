@@ -18,15 +18,14 @@ public class Credit : Transaction
 
     public Credit(CreditDto creditDto, Account account)
     {
-        if (!ValueIsValid(creditDto.Value))
-            throw new TransactionException("the value must be greater than zero");
+        ValidateValue(creditDto.Value);
         Value = creditDto.Value;
         Account = account;
     }
 
-    private bool ValueIsValid(double value)
+    private void ValidateValue(double value)
     {
-        return value > 0;
+        if (value <= 0) throw new TransactionException("The credit value must be greater than zero.");
     }
 
     public TransactionCreditDebitDto GetDataWithoutAccount()

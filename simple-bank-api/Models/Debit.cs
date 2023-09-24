@@ -18,15 +18,14 @@ public class Debit : Transaction
 
     public Debit(DebitDto debitDto, Account account)
     {
-        if (!ValueIsValid(debitDto.Value))
-            throw new TransactionException("the value must be greater than zero");
+        ValueIsValid(debitDto.Value);
         Value = -1 * debitDto.Value;
         Account = account;
     }
 
-    private bool ValueIsValid(double value)
+    private void ValueIsValid(double value)
     {
-        return value > 0;
+        if(value <= 0)throw new TransactionException("The debit value must be greater than zero.");
     }
 
     public TransactionCreditDebitDto GetDataWithoutAccount()
