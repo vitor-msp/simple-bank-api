@@ -33,8 +33,8 @@ dotnet ef database update
 dotnet run
 ```
 
-6. Access [Swager URL](https://localhost:7291/swagger)
+6. Access [Swager URL](https://localhost:5000/swagger)
 
 ## Notes
 
-1. The ports 7291 and 5118 in your machine must be free
+1. The port 5000 in your machine must be free
