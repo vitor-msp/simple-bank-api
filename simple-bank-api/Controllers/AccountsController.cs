@@ -24,7 +24,7 @@ public class AccountsController : ControllerBase
         {
             var accounts = await _context.Accounts.AsNoTracking().Include("Owner")
                 .Where(a => a.Active).ToListAsync();
-            return Ok(accounts);
+            return Ok(new { accounts = accounts.Select(a => a.GetPublicData()).ToList() });
         }
         catch (Exception)
         {
@@ -76,7 +76,9 @@ public class AccountsController : ControllerBase
             var newAccount = new Account(customer);
             _context.Accounts.Add(newAccount);
             await _context.SaveChangesAsync();
-            return new CreatedAtRouteResult("GetAccount", new { accountNumber = newAccount.AccountNumber }, null);
+            return new CreatedAtRouteResult("GetAccount", 
+                new { accountNumber = newAccount.AccountNumber },
+                new { accountNumber = newAccount.AccountNumber });
         }
         catch (Exception)
         {
