@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBankApi.Api", "SimpleBankApi.Api\SimpleBankApi.Api.csproj", "{114C8272-8A14-485A-9321-110D5133989A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBankApi.Tests", "SimpleBankApi.Tests\SimpleBankApi.Tests.csproj", "{BAEC9D99-C3C5-448A-8BAD-5228E3519F82}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{114C8272-8A14-485A-9321-110D5133989A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{114C8272-8A14-485A-9321-110D5133989A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{114C8272-8A14-485A-9321-110D5133989A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAEC9D99-C3C5-448A-8BAD-5228E3519F82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAEC9D99-C3C5-448A-8BAD-5228E3519F82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAEC9D99-C3C5-448A-8BAD-5228E3519F82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAEC9D99-C3C5-448A-8BAD-5228E3519F82}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
