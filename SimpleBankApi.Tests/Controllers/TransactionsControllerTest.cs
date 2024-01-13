@@ -86,6 +86,17 @@ public class TransactionsControllerTest : IDisposable
     }
 
     [Fact]
+    public async Task PostCredit_ReturnBadRequest()
+    {
+        var (sut, context) = MakeSut();
+        var input = new CreditDto() { Value = -50 };
+
+        var actionResult = await sut.PostCredit(_account.AccountNumber, input);
+
+        Assert.IsType<BadRequestObjectResult>(actionResult);
+    }
+
+    [Fact]
     public async Task PostCredit_ReturnNotFound()
     {
         var (sut, context) = MakeSut();
