@@ -56,6 +56,11 @@ public class TransactionsControllerTest : IDisposable
         };
     }
 
+    private Credit CreditExample()
+    {
+        return new Credit() { Value = 100, Account = _account, CreatedAt = DateTime.Now };
+    }
+
     [Fact]
     public async Task PostCredit()
     {
@@ -71,5 +76,24 @@ public class TransactionsControllerTest : IDisposable
         Assert.Equal(_account, savedCredits[0].Account);
         Assert.IsType<int>(savedCredits[0].Id);
         Assert.IsType<DateTime>(savedCredits[0].CreatedAt);
+    }
+
+    [Fact]
+    public async Task PostDebit()
+    {
+        var (sut, context) = MakeSut();
+        context.Credits.Add(CreditExample());
+        context.SaveChanges();
+        var input = new DebitDto() { Value = 50.56 };
+
+        var actionResult = await sut.PostDebit(_account.AccountNumber, input);
+
+        Assert.IsType<OkResult>(actionResult);
+        var savedDebits = context.Debits.Where(debit => debit.Account.AccountNumber == _account.AccountNumber).ToList();
+        Assert.Single(savedDebits);
+        Assert.Equal(input.Value, -1 * savedDebits[0].Value);
+        Assert.Equal(_account, savedDebits[0].Account);
+        Assert.IsType<int>(savedDebits[0].Id);
+        Assert.IsType<DateTime>(savedDebits[0].CreatedAt);
     }
 }
