@@ -77,7 +77,7 @@ public class TransactionsControllerTest : IDisposable
     [Theory]
     [InlineData("credit")]
     [InlineData("debit")]
-    public async Task PostCredit_And_PostDebit_ReturnOk(string type)
+    public async Task PostCredit_And_PostDebit_ReturnNotFound(string type)
     {
         var (sut, context) = MakeSut();
         var creditInput = new CreditDto() { Value = 100.56 };
@@ -93,9 +93,11 @@ public class TransactionsControllerTest : IDisposable
     [Theory]
     [InlineData("credit")]
     [InlineData("debit")]
-    public async Task PostCredit_NegativeInput(string type)
+    public async Task PostCredit_And_PostDebit_NegativeInput(string type)
     {
         var (sut, context) = MakeSut();
+        context.Credits.Add(CreditExample());
+        context.SaveChanges();
         var creditInput = new CreditDto() { Value = -50 };
         var debitInput = new DebitDto() { Value = -50 };
 
@@ -107,7 +109,18 @@ public class TransactionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async Task PostCredit_ReturnNotFound()
+    public async Task PostDebit_InsufficientBalance()
+    {
+        var (sut, context) = MakeSut();
+        var input = new DebitDto() { Value = 50 };
+
+        var actionResult = await sut.PostDebit(_account.AccountNumber, input);
+
+        Assert.IsType<BadRequestObjectResult>(actionResult);
+    }
+
+    [Fact]
+    public async Task PostCredit_ReturnOk()
     {
         var (sut, context) = MakeSut();
         var input = new CreditDto() { Value = 100.56 };
@@ -124,7 +137,7 @@ public class TransactionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async Task PostDebit()
+    public async Task PostDebit_ReturnOk()
     {
         var (sut, context) = MakeSut();
         context.Credits.Add(CreditExample());
