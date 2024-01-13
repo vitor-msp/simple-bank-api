@@ -23,15 +23,14 @@ public class AccountsControllerTest : IDisposable
         _connection = new SqliteConnection("Filename=:memory:");
         _connection.Open();
         _contextOptions = new DbContextOptionsBuilder<BankContext>().UseSqlite(_connection).Options;
-        var context = new BankContext(_contextOptions);
-        if (context.Database.EnsureCreated())
-        {
-            // add data
-        }
-        context.SaveChanges();
     }
 
-    private BankContext CreateContext() => new BankContext(_contextOptions);
+    private BankContext CreateContext()
+    {
+        var context = new BankContext(_contextOptions);
+        context.Database.EnsureCreated();
+        return context;
+    }
 
     private (AccountsController, BankContext) MakeSut()
     {
@@ -41,6 +40,17 @@ public class AccountsControllerTest : IDisposable
     }
 
     public void Dispose() => _connection.Dispose();
+
+    private Account AccountExample()
+    {
+        return new Account()
+        {
+            AccountNumber = 1,
+            Active = true,
+            CreatedAt = DateTime.Now,
+            Owner = new Customer() { Id = 1, Cpf = "0123", Name = "fulano" }
+        };
+    }
 
     [Fact]
     public async Task Post()
@@ -68,14 +78,7 @@ public class AccountsControllerTest : IDisposable
     public async Task Put()
     {
         var (sut, context) = MakeSut();
-        var account = new Account()
-        {
-            Id = 1,
-            AccountNumber = 1,
-            Active = true,
-            CreatedAt = DateTime.Now,
-            Owner = new Customer() { Id = 1, Cpf = "0123", Name = "fulano" }
-        };
+        var account = AccountExample();
         context.Accounts.Add(account);
         context.SaveChanges();
         var input = new AccountUpdateDto() { Name = "ciclano" };
@@ -92,4 +95,21 @@ public class AccountsControllerTest : IDisposable
         Assert.Equal(input.Name, savedAccount.Owner.Name);
     }
 
+    [Fact]
+    public async Task Delete()
+    {
+        var (sut, context) = MakeSut();
+        var account = AccountExample();
+        context.Accounts.Add(account);
+        context.SaveChanges();
+
+        var actionResult = await sut.Delete(account.AccountNumber);
+
+        Assert.IsType<NoContentResult>(actionResult);
+        var savedAccount = context.Accounts.Single(account => account.Id == account.Id);
+        Assert.Equal(account.AccountNumber, savedAccount.AccountNumber);
+        Assert.False(savedAccount.Active);
+        Assert.Equal(account.CreatedAt, savedAccount.CreatedAt);
+        Assert.Equal(account.Owner, savedAccount.Owner);
+    }
 }
