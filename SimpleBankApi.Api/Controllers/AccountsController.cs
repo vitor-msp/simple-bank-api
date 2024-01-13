@@ -17,14 +17,19 @@ public class AccountsController : ControllerBase
         _context = context;
     }
 
+    public class GetAllOutput
+    {
+        public List<TransactionAccountDto> Accounts { get; set; } = new();
+    }
+
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<ActionResult<GetAllOutput>> GetAll()
     {
         try
         {
             var accounts = await _context.Accounts.AsNoTracking().Include("Owner")
                 .Where(a => a.Active).ToListAsync();
-            return Ok(new { accounts = accounts.Select(a => a.GetPublicData()).ToList() });
+            return Ok(new GetAllOutput { Accounts = accounts.Select(a => a.GetPublicData()).ToList() });
         }
         catch (Exception)
         {

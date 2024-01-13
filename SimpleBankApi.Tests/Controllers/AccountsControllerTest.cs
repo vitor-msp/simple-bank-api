@@ -41,15 +41,36 @@ public class AccountsControllerTest : IDisposable
 
     public void Dispose() => _connection.Dispose();
 
-    private Account AccountExample()
+    private Account AccountExample(string cpf = "0123")
     {
         return new Account()
         {
             AccountNumber = 1,
             Active = true,
             CreatedAt = DateTime.Now,
-            Owner = new Customer() { Id = 1, Cpf = "0123", Name = "fulano" }
+            Owner = new Customer() { Cpf = cpf, Name = "fulano" }
         };
+    }
+
+    [Fact]
+    public async Task GetAll()
+    {
+        var (sut, context) = MakeSut();
+        context.Accounts.Add(AccountExample("123"));
+        context.Accounts.Add(AccountExample("321"));
+        context.SaveChanges();
+
+        var actionResult = await sut.GetAll();
+
+        var okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+        var getAllOutput = Assert.IsType<AccountsController.GetAllOutput>(okObjectResult.Value);
+        var savedAccounts = context.Accounts.ToList();
+        Assert.Equal(savedAccounts.Count, getAllOutput.Accounts.Count);
+        Assert.Equal(2, getAllOutput.Accounts.Count);
+        Assert.Equal(savedAccounts[0].AccountNumber, getAllOutput.Accounts[0].AccountNumber);
+        Assert.Equal(savedAccounts[0].Owner.Name, getAllOutput.Accounts[0].Name);
+        Assert.Equal(savedAccounts[1].AccountNumber, getAllOutput.Accounts[1].AccountNumber);
+        Assert.Equal(savedAccounts[1].Owner.Name, getAllOutput.Accounts[1].Name);
     }
 
     [Fact]
