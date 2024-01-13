@@ -1,5 +1,6 @@
 using System;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Context;
@@ -61,6 +62,11 @@ public class TransactionsControllerTest : IDisposable
         return new Credit() { Value = 100, Account = _account, CreatedAt = DateTime.Now };
     }
 
+    private Debit DebitExample()
+    {
+        return new Debit() { Value = -10, Account = _account, CreatedAt = DateTime.Now };
+    }
+
     [Fact]
     public async Task PostCredit()
     {
@@ -117,5 +123,23 @@ public class TransactionsControllerTest : IDisposable
         Assert.Equal(recipientAccount, savedTransfers[0].Recipient);
         Assert.IsType<int>(savedTransfers[0].Id);
         Assert.IsType<DateTime>(savedTransfers[0].CreatedAt);
+    }
+
+    [Fact]
+    public async Task GetBalance()
+    {
+        var (sut, context) = MakeSut();
+        var credit = CreditExample();
+        var debit = DebitExample();
+        context.Credits.Add(credit);
+        context.Debits.Add(debit);
+        context.SaveChanges();
+
+        var actionResult = await sut.GetBalance(_account.AccountNumber);
+
+        var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+        var getBalanceOutput = Assert.IsType<TransactionsController.GetBalanceOutput>(okResult.Value);
+        string expectedBalance = (credit.Value + debit.Value).ToString("c", CultureInfo.GetCultureInfo("pt-BR")); ;
+        Assert.Equal(expectedBalance, getBalanceOutput.Balance);
     }
 }

@@ -98,8 +98,13 @@ public class TransactionsController : ControllerBase
         }
     }
 
+    public class GetBalanceOutput
+    {
+        public string Balance { get; set; } = "";
+    }
+
     [HttpGet("balance/{accountNumber}")]
-    public async Task<IActionResult> GetBalance(int accountNumber)
+    public async Task<ActionResult<GetBalanceOutput>> GetBalance(int accountNumber)
     {
         try
         {
@@ -107,7 +112,7 @@ public class TransactionsController : ControllerBase
                 .FirstOrDefaultAsync(a => a.AccountNumber == accountNumber);
             if (account == null) return NotFound(new ErrorDto("Account not found."));
             double balance = await CalculateBalanceFromAccount(account);
-            return Ok(new { balance = CurrencyHelper.GetBrazilianCurrency(balance) });
+            return Ok(new GetBalanceOutput { Balance = CurrencyHelper.GetBrazilianCurrency(balance) });
         }
         catch (Exception)
         {
