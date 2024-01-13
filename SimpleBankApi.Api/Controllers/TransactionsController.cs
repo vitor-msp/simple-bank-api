@@ -120,8 +120,13 @@ public class TransactionsController : ControllerBase
         }
     }
 
+    public class GetTransactionsOutput
+    {
+        public ArrayList Transactions { get; set; } = new();
+    }
+
     [HttpGet("{accountNumber}")]
-    public async Task<IActionResult> GetTransactions(int accountNumber)
+    public async Task<ActionResult<GetTransactionsOutput>> GetTransactions(int accountNumber)
     {
         try
         {
@@ -132,7 +137,7 @@ public class TransactionsController : ControllerBase
             var debits = await GetDebitsFromAccount(account);
             var transfers = await GetTransfersFromAccount(account);
             var sortedTransactions = SortTransactionsByDateTime(credits, debits, transfers, account);
-            return Ok(new { transactions = sortedTransactions });
+            return Ok(new GetTransactionsOutput { Transactions = sortedTransactions });
         }
         catch (Exception)
         {

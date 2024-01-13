@@ -15,6 +15,8 @@ public class TransactionCreditDebitDto
     public string Value { get; set; }
     public DateTime CreatedAt { get; set; }
 
+    public TransactionCreditDebitDto() { }
+
     public TransactionCreditDebitDto(string type, double value, DateTime createdAt)
     {
         Type = type;
@@ -30,6 +32,8 @@ public class TransactionTransferDto
     public DateTime CreatedAt { get; set; }
     public TransactionAccountDto Sender { get; set; }
     public TransactionAccountDto Recipient { get; set; }
+
+    public TransactionTransferDto() { }
 
     public TransactionTransferDto(string type, double value,
         DateTime createdAt, TransactionAccountDto sender, TransactionAccountDto recipient)
