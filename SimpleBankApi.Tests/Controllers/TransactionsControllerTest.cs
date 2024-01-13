@@ -69,9 +69,14 @@ public class TransactionsControllerTest : IDisposable
         return new Debit() { Value = -10, Account = _account, CreatedAt = DateTime.Now };
     }
 
-    private Transfer TransferExample(Account recipient)
+    private Transfer TransferExampleAsSender(Account recipient)
     {
         return new Transfer() { Value = 25, Sender = _account, Recipient = recipient, CreatedAt = DateTime.Now };
+    }
+
+    private Transfer TransferExampleAsRecipient(Account sender)
+    {
+        return new Transfer() { Value = 25, Sender = sender, Recipient = _account, CreatedAt = DateTime.Now };
     }
 
     [Fact]
@@ -182,14 +187,14 @@ public class TransactionsControllerTest : IDisposable
     [Theory]
     [InlineData("debit")]
     [InlineData("transfer")]
-    public async Task PostDebit_InsufficientBalance(string type)
+    public async Task PostDebit_And_PostTransfer_InsufficientBalance(string type)
     {
         var (sut, context) = MakeSut();
         var recipientAccount = AccountExample(2, "321");
         context.Accounts.Add(recipientAccount);
         context.SaveChanges();
         var debitInput = new DebitDto() { Value = 50 };
-        var transferInput = new TransferDto() { Value = 50.56, RecipientAccountNumber = _account.AccountNumber };
+        var transferInput = new TransferDto() { Value = 50.56, RecipientAccountNumber = recipientAccount.AccountNumber };
 
         var actionResult = type == "debit"
             ? await sut.PostDebit(_account.AccountNumber, debitInput)
@@ -276,12 +281,13 @@ public class TransactionsControllerTest : IDisposable
         };
     }
 
-    private TransactionTransferDto GenerateTransactionTransferDto(Transfer transfer)
+    private TransactionTransferDto GenerateTransactionTransferDto(Transfer transfer, bool AsSender = true)
     {
+        double value = AsSender ? -1 * transfer.Value : transfer.Value;
         return new TransactionTransferDto()
         {
             Type = TransactionType.Transfer,
-            Value = (-1 * transfer.Value).ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
+            Value = value.ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
             CreatedAt = DateTime.SpecifyKind(transfer.CreatedAt, DateTimeKind.Unspecified),
             Sender = new TransactionAccountDto()
             {
@@ -303,17 +309,19 @@ public class TransactionsControllerTest : IDisposable
         var credit = CreditExample();
         var debit = DebitExample();
         var recipient = AccountExample(2, "321");
-        var transfer = TransferExample(recipient);
+        var transferAsSender = TransferExampleAsSender(recipient);
+        var transferAsRecipient = TransferExampleAsRecipient(recipient);
         context.Credits.Add(credit);
         context.Debits.Add(debit);
-        context.Transfers.Add(transfer);
+        context.Transfers.Add(transferAsSender);
+        context.Transfers.Add(transferAsRecipient);
         context.SaveChanges();
 
         var actionResult = await sut.GetTransactions(_account.AccountNumber);
 
         var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         var getTransactionsOutput = Assert.IsType<TransactionsController.GetTransactionsOutput>(okResult.Value);
-        Assert.Equal(3, getTransactionsOutput.Transactions.Count);
+        Assert.Equal(4, getTransactionsOutput.Transactions.Count);
 
         var expectedCredit = GenerateTransactionCreditDto(credit);
         var receivedCredit = getTransactionsOutput.Transactions[0] as TransactionCreditDebitDto;
@@ -327,14 +335,24 @@ public class TransactionsControllerTest : IDisposable
         Assert.Equal(expectedDebit.CreatedAt, receivedDebit?.CreatedAt);
         Assert.Equal(expectedDebit.Value, receivedDebit?.Value);
 
-        var expectedTransfer = GenerateTransactionTransferDto(transfer);
-        var receivedTransfer = getTransactionsOutput.Transactions[2] as TransactionTransferDto;
-        Assert.Equal(expectedTransfer.Type, receivedTransfer?.Type);
-        Assert.Equal(expectedTransfer.Value, receivedTransfer?.Value);
-        Assert.Equal(expectedTransfer.CreatedAt, receivedTransfer?.CreatedAt);
-        Assert.Equal(expectedTransfer.Sender.AccountNumber, receivedTransfer?.Sender.AccountNumber);
-        Assert.Equal(expectedTransfer.Sender.Name, receivedTransfer?.Sender.Name);
-        Assert.Equal(expectedTransfer.Recipient.AccountNumber, receivedTransfer?.Recipient.AccountNumber);
-        Assert.Equal(expectedTransfer.Recipient.Name, receivedTransfer?.Recipient.Name);
+        var expectedTransferAsSender = GenerateTransactionTransferDto(transferAsSender, true);
+        var receivedTransferAsSender = getTransactionsOutput.Transactions[2] as TransactionTransferDto;
+        Assert.Equal(expectedTransferAsSender.Type, receivedTransferAsSender?.Type);
+        Assert.Equal(expectedTransferAsSender.Value, receivedTransferAsSender?.Value);
+        Assert.Equal(expectedTransferAsSender.CreatedAt, receivedTransferAsSender?.CreatedAt);
+        Assert.Equal(expectedTransferAsSender.Sender.AccountNumber, receivedTransferAsSender?.Sender.AccountNumber);
+        Assert.Equal(expectedTransferAsSender.Sender.Name, receivedTransferAsSender?.Sender.Name);
+        Assert.Equal(expectedTransferAsSender.Recipient.AccountNumber, receivedTransferAsSender?.Recipient.AccountNumber);
+        Assert.Equal(expectedTransferAsSender.Recipient.Name, receivedTransferAsSender?.Recipient.Name);
+
+        var expectedTransferAsRecipient = GenerateTransactionTransferDto(transferAsRecipient, false);
+        var receivedTransferAsRecipient = getTransactionsOutput.Transactions[3] as TransactionTransferDto;
+        Assert.Equal(expectedTransferAsRecipient.Type, receivedTransferAsRecipient?.Type);
+        Assert.Equal(expectedTransferAsRecipient.Value, receivedTransferAsRecipient?.Value);
+        Assert.Equal(expectedTransferAsRecipient.CreatedAt, receivedTransferAsRecipient?.CreatedAt);
+        Assert.Equal(expectedTransferAsRecipient.Sender.AccountNumber, receivedTransferAsRecipient?.Sender.AccountNumber);
+        Assert.Equal(expectedTransferAsRecipient.Sender.Name, receivedTransferAsRecipient?.Sender.Name);
+        Assert.Equal(expectedTransferAsRecipient.Recipient.AccountNumber, receivedTransferAsRecipient?.Recipient.AccountNumber);
+        Assert.Equal(expectedTransferAsRecipient.Recipient.Name, receivedTransferAsRecipient?.Recipient.Name);
     }
 }
