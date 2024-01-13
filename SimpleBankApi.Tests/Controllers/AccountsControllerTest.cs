@@ -73,30 +73,17 @@ public class AccountsControllerTest : IDisposable
         Assert.Equal(savedAccounts[1].Owner.Name, getAllOutput.Accounts[1].Name);
     }
 
-    [Fact]
-    public async Task GetById()
+    [Theory]
+    [InlineData("id")]
+    [InlineData("cpf")]
+    public async Task GetById_And_GetByCpf(string getType)
     {
         var (sut, context) = MakeSut();
         var account = AccountExample();
         context.Accounts.Add(account);
         context.SaveChanges();
 
-        var actionResult = await sut.GetById(account.AccountNumber);
-
-        var okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-        var accountResult = Assert.IsType<Account>(okObjectResult.Value);
-        Assert.Equal(account, accountResult);
-    }
-
-    [Fact]
-    public async Task GetByCpf()
-    {
-        var (sut, context) = MakeSut();
-        var account = AccountExample();
-        context.Accounts.Add(account);
-        context.SaveChanges();
-
-        var actionResult = await sut.GetByCpf(account.Owner.Cpf);
+        var actionResult = getType == "cpf" ? await sut.GetByCpf(account.Owner.Cpf) : await sut.GetById(account.AccountNumber);
 
         var okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         var accountResult = Assert.IsType<Account>(okObjectResult.Value);
