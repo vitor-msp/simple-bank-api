@@ -426,3 +426,5 @@ obj/
 **/Migrations/**
 !**/Migrations/*FinalMigration*
 !**/Migrations/BankContextModelSnapshot.cs
+
+coverage
