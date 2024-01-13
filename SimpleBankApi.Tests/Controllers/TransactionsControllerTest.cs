@@ -45,14 +45,14 @@ public class TransactionsControllerTest : IDisposable
 
     public void Dispose() => _connection.Dispose();
 
-    private Account AccountExample()
+    private Account AccountExample(int accountNumber = 1, string cpf = "123")
     {
         return new Account()
         {
-            AccountNumber = 1,
+            AccountNumber = accountNumber,
             Active = true,
             CreatedAt = DateTime.Now,
-            Owner = new Customer() { Cpf = "0123", Name = "fulano" }
+            Owner = new Customer() { Cpf = cpf, Name = "fulano" }
         };
     }
 
@@ -95,5 +95,27 @@ public class TransactionsControllerTest : IDisposable
         Assert.Equal(_account, savedDebits[0].Account);
         Assert.IsType<int>(savedDebits[0].Id);
         Assert.IsType<DateTime>(savedDebits[0].CreatedAt);
+    }
+
+    [Fact]
+    public async Task PostTransfer()
+    {
+        var (sut, context) = MakeSut();
+        context.Credits.Add(CreditExample());
+        var recipientAccount = AccountExample(2, "321");
+        context.Accounts.Add(recipientAccount);
+        context.SaveChanges();
+        var input = new TransferDto() { Value = 50.56, RecipientAccountNumber = recipientAccount.AccountNumber };
+
+        var actionResult = await sut.PostTransfer(_account.AccountNumber, input);
+
+        Assert.IsType<OkResult>(actionResult);
+        var savedTransfers = context.Transfers.Where(transfer => transfer.Sender.AccountNumber == _account.AccountNumber).ToList();
+        Assert.Single(savedTransfers);
+        Assert.Equal(input.Value, savedTransfers[0].Value);
+        Assert.Equal(_account, savedTransfers[0].Sender);
+        Assert.Equal(recipientAccount, savedTransfers[0].Recipient);
+        Assert.IsType<int>(savedTransfers[0].Id);
+        Assert.IsType<DateTime>(savedTransfers[0].CreatedAt);
     }
 }
