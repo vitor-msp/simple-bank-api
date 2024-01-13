@@ -136,6 +136,7 @@ public class TransactionsControllerTest : IDisposable
     [InlineData("credit")]
     [InlineData("debit")]
     [InlineData("get-balance")]
+    [InlineData("get-transactions")]
     public async Task PostCredit_And_PostDebit_And_GetBalance_ReturnNotFound(string type)
     {
         var (sut, context) = MakeSut();
@@ -147,6 +148,7 @@ public class TransactionsControllerTest : IDisposable
             "credit" => await sut.PostCredit(_accountNumberNotUsed, creditInput),
             "debit" => await sut.PostDebit(_accountNumberNotUsed, debitInput),
             "get-balance" => (await sut.GetBalance(_accountNumberNotUsed)).Result,
+            "get-transactions" => (await sut.GetTransactions(_accountNumberNotUsed)).Result,
         };
 
         Assert.IsType<NotFoundObjectResult>(actionResult);
