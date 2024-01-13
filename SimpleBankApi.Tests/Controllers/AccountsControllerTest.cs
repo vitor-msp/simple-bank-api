@@ -90,7 +90,7 @@ public class AccountsControllerTest : IDisposable
     [Theory]
     [InlineData("id")]
     [InlineData("cpf")]
-    public async Task GetById_And_GetByCpf(string getType)
+    public async Task GetById_And_GetByCpf_ReturnEntity(string getType)
     {
         var (sut, context) = MakeSut();
         var account = AccountExample();
@@ -102,6 +102,18 @@ public class AccountsControllerTest : IDisposable
         var okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         var accountResult = Assert.IsType<Account>(okObjectResult.Value);
         Assert.Equal(account, accountResult);
+    }
+
+    [Theory]
+    [InlineData("id")]
+    [InlineData("cpf")]
+    public async Task GetById_And_GetByCpf_ReturnNotFound(string getType)
+    {
+        var (sut, context) = MakeSut();
+
+        var actionResult = getType == "cpf" ? await sut.GetByCpf("123") : await sut.GetById(1);
+
+        Assert.IsType<NotFoundObjectResult>(actionResult.Result);
     }
 
     [Fact]
