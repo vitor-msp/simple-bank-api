@@ -38,7 +38,7 @@ public class AccountsController : ControllerBase
     }
 
     [HttpGet("{accountNumber}", Name = "GetAccount")]
-    public async Task<IActionResult> GetById(int accountNumber)
+    public async Task<ActionResult<Account>> GetById(int accountNumber)
     {
         try
         {

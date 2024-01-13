@@ -74,6 +74,21 @@ public class AccountsControllerTest : IDisposable
     }
 
     [Fact]
+    public async Task GetById()
+    {
+        var (sut, context) = MakeSut();
+        var account = AccountExample();
+        context.Accounts.Add(account);
+        context.SaveChanges();
+
+        var actionResult = await sut.GetById(account.AccountNumber);
+
+        var okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+        var accountResult = Assert.IsType<Account>(okObjectResult.Value);
+        Assert.Equal(account, accountResult);
+    }
+
+    [Fact]
     public async Task Post()
     {
         var (sut, context) = MakeSut();
