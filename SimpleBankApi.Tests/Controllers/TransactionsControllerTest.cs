@@ -90,13 +90,18 @@ public class TransactionsControllerTest : IDisposable
         Assert.IsType<NotFoundObjectResult>(actionResult);
     }
 
-    [Fact]
-    public async Task PostCredit_ReturnBadRequest()
+    [Theory]
+    [InlineData("credit")]
+    [InlineData("debit")]
+    public async Task PostCredit_NegativeInput(string type)
     {
         var (sut, context) = MakeSut();
-        var input = new CreditDto() { Value = -50 };
+        var creditInput = new CreditDto() { Value = -50 };
+        var debitInput = new DebitDto() { Value = -50 };
 
-        var actionResult = await sut.PostCredit(_account.AccountNumber, input);
+        var actionResult = type == "credit"
+            ? await sut.PostCredit(_account.AccountNumber, creditInput)
+            : await sut.PostDebit(_account.AccountNumber, debitInput);
 
         Assert.IsType<BadRequestObjectResult>(actionResult);
     }
