@@ -117,7 +117,7 @@ public class AccountsControllerTest : IDisposable
     }
 
     [Fact]
-    public async Task Post()
+    public async Task Post_ReturnCreated()
     {
         var (sut, context) = MakeSut();
         var input = new AccountCreateDto()
@@ -136,6 +136,24 @@ public class AccountsControllerTest : IDisposable
         Assert.Equal(accountNumber, savedAccount.AccountNumber);
         Assert.True(savedAccount.Active);
         Assert.IsType<DateTime>(savedAccount.CreatedAt);
+    }
+
+    [Fact]
+    public async Task Post_ReturnBadRequest()
+    {
+        var (sut, context) = MakeSut();
+        var account = AccountExample();
+        context.Accounts.Add(account);
+        context.SaveChanges();
+        var input = new AccountCreateDto()
+        {
+            Name = "fulano de tal",
+            Cpf = account.Owner.Cpf,
+        };
+
+        var actionResult = await sut.Post(input);
+
+        Assert.IsType<BadRequestObjectResult>(actionResult.Result);
     }
 
     [Fact]
