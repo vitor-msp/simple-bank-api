@@ -64,8 +64,13 @@ public class AccountsController : ControllerBase
         }
     }
 
+    public class PostOutput
+    {
+        public int AccountNumber { get; set; }
+    }
+
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] AccountCreateDto newAccountDto)
+    public async Task<ActionResult<PostOutput>> Post([FromBody] AccountCreateDto newAccountDto)
     {
         try
         {
@@ -76,9 +81,9 @@ public class AccountsController : ControllerBase
             var newAccount = new Account(customer);
             _context.Accounts.Add(newAccount);
             await _context.SaveChangesAsync();
-            return new CreatedAtRouteResult("GetAccount", 
-                new { accountNumber = newAccount.AccountNumber },
-                new { accountNumber = newAccount.AccountNumber });
+            return new CreatedAtRouteResult("GetAccount",
+                new PostOutput { AccountNumber = newAccount.AccountNumber },
+                new PostOutput { AccountNumber = newAccount.AccountNumber });
         }
         catch (Exception)
         {

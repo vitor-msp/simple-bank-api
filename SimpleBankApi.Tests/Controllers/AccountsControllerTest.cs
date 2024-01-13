@@ -1,9 +1,10 @@
 using System;
 using System.Data.Common;
-using System.Text.Json;
+using System.Linq;
 using System.Threading.Tasks;
 using Context;
 using Controllers;
+using Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -31,17 +32,35 @@ public class AccountsControllerTest : IDisposable
 
     private BankContext CreateContext() => new BankContext(_contextOptions);
 
+    private (AccountsController, BankContext) MakeSut()
+    {
+        var context = CreateContext();
+        var controller = new AccountsController(context);
+        return (controller, context);
+    }
+
     public void Dispose() => _connection.Dispose();
 
-
     [Fact]
-    public async Task Test1()
+    public async Task Post()
     {
-        var controller = new AccountsController(CreateContext());
+        var (sut, context) = MakeSut();
+        var input = new AccountCreateDto()
+        {
+            Name = "fulano de tal",
+            Cpf = "01234567890",
+        };
 
-        var result = (await controller.GetAll()) as OkObjectResult;
+        var actionResult = await sut.Post(input);
 
-        Console.WriteLine(JsonSerializer.Serialize(result?.Value));
+        var createdAtRouteResult = Assert.IsType<CreatedAtRouteResult>(actionResult.Result);
+        Assert.Equal("GetAccount", createdAtRouteResult.RouteName);
+        var postOutput = Assert.IsType<AccountsController.PostOutput>(createdAtRouteResult.Value);
+        var accountNumber = Assert.IsType<int>(postOutput.AccountNumber);
+        var savedAccount = context.Accounts.Single(account => account.AccountNumber == accountNumber);
+        Assert.Equal(accountNumber, savedAccount.AccountNumber);
+        Assert.True(savedAccount.Active);
+        Assert.IsType<DateTime>(savedAccount.CreatedAt);
     }
 
 }
