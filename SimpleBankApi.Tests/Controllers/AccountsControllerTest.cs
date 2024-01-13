@@ -8,6 +8,7 @@ using Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Models;
 using Xunit;
 
 namespace SimpleBankApi.Tests;
@@ -61,6 +62,34 @@ public class AccountsControllerTest : IDisposable
         Assert.Equal(accountNumber, savedAccount.AccountNumber);
         Assert.True(savedAccount.Active);
         Assert.IsType<DateTime>(savedAccount.CreatedAt);
+    }
+
+    [Fact]
+    public async Task Put()
+    {
+        var (sut, context) = MakeSut();
+        var account = new Account()
+        {
+            Id = 1,
+            AccountNumber = 1,
+            Active = true,
+            CreatedAt = DateTime.Now,
+            Owner = new Customer() { Id = 1, Cpf = "0123", Name = "fulano" }
+        };
+        context.Accounts.Add(account);
+        context.SaveChanges();
+        var input = new AccountUpdateDto() { Name = "ciclano" };
+
+        var actionResult = await sut.Put(account.AccountNumber, input);
+
+        Assert.IsType<NoContentResult>(actionResult);
+        var savedAccount = context.Accounts.Single(account => account.Id == account.Id);
+        Assert.Equal(account.AccountNumber, savedAccount.AccountNumber);
+        Assert.Equal(account.Active, savedAccount.Active);
+        Assert.Equal(account.CreatedAt, savedAccount.CreatedAt);
+        Assert.Equal(account.Owner.Id, savedAccount.Owner.Id);
+        Assert.Equal(account.Owner.Cpf, savedAccount.Owner.Cpf);
+        Assert.Equal(input.Name, savedAccount.Owner.Name);
     }
 
 }
