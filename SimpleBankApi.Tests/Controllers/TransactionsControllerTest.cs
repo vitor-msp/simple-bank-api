@@ -74,13 +74,18 @@ public class TransactionsControllerTest : IDisposable
         return new Transfer() { Value = 25, Sender = _account, Recipient = recipient, CreatedAt = DateTime.Now };
     }
 
-    [Fact]
-    public async Task PostCredit_ReturnOk()
+    [Theory]
+    [InlineData("credit")]
+    [InlineData("debit")]
+    public async Task PostCredit_And_PostDebit_ReturnOk(string type)
     {
         var (sut, context) = MakeSut();
-        var input = new CreditDto() { Value = 100.56 };
+        var creditInput = new CreditDto() { Value = 100.56 };
+        var debitInput = new DebitDto() { Value = 100.56 };
 
-        var actionResult = await sut.PostCredit(_accountNumberNotUsed, input);
+        var actionResult = type == "credit"
+            ? await sut.PostCredit(_accountNumberNotUsed, creditInput)
+            : await sut.PostDebit(_accountNumberNotUsed, debitInput);
 
         Assert.IsType<NotFoundObjectResult>(actionResult);
     }
