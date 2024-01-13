@@ -151,17 +151,24 @@ public class TransactionsControllerTest : IDisposable
     [Theory]
     [InlineData("credit")]
     [InlineData("debit")]
-    public async Task PostCredit_And_PostDebit_NegativeInput(string type)
+    [InlineData("transfer")]
+    public async Task PostCredit_And_PostDebit_And_PostTransfer_NegativeInput(string type)
     {
         var (sut, context) = MakeSut();
         context.Credits.Add(CreditExample());
+        var recipientAccount = AccountExample(2, "321");
+        context.Accounts.Add(recipientAccount);
         context.SaveChanges();
         var creditInput = new CreditDto() { Value = -50 };
         var debitInput = new DebitDto() { Value = -50 };
+        var transferInput = new TransferDto() { Value = -50.56, RecipientAccountNumber = recipientAccount.AccountNumber };
 
-        var actionResult = type == "credit"
-            ? await sut.PostCredit(_account.AccountNumber, creditInput)
-            : await sut.PostDebit(_account.AccountNumber, debitInput);
+        var actionResult = (type) switch
+        {
+            "credit" => await sut.PostCredit(_account.AccountNumber, creditInput),
+            "debit" => await sut.PostDebit(_account.AccountNumber, debitInput),
+            "transfer" => await sut.PostTransfer(_account.AccountNumber, transferInput),
+        };
 
         Assert.IsType<BadRequestObjectResult>(actionResult);
     }
