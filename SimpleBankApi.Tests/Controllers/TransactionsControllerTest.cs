@@ -74,6 +74,64 @@ public class TransactionsControllerTest : IDisposable
         return new Transfer() { Value = 25, Sender = _account, Recipient = recipient, CreatedAt = DateTime.Now };
     }
 
+    [Fact]
+    public async Task PostCredit_ReturnOk()
+    {
+        var (sut, context) = MakeSut();
+        var input = new CreditDto() { Value = 100.56 };
+
+        var actionResult = await sut.PostCredit(_account.AccountNumber, input);
+
+        Assert.IsType<OkResult>(actionResult);
+        var savedCredits = context.Credits.Where(credit => credit.Account.AccountNumber == _account.AccountNumber).ToList();
+        Assert.Single(savedCredits);
+        Assert.Equal(input.Value, savedCredits[0].Value);
+        Assert.Equal(_account, savedCredits[0].Account);
+        Assert.IsType<int>(savedCredits[0].Id);
+        Assert.IsType<DateTime>(savedCredits[0].CreatedAt);
+    }
+
+    [Fact]
+    public async Task PostDebit_ReturnOk()
+    {
+        var (sut, context) = MakeSut();
+        context.Credits.Add(CreditExample());
+        context.SaveChanges();
+        var input = new DebitDto() { Value = 50.56 };
+
+        var actionResult = await sut.PostDebit(_account.AccountNumber, input);
+
+        Assert.IsType<OkResult>(actionResult);
+        var savedDebits = context.Debits.Where(debit => debit.Account.AccountNumber == _account.AccountNumber).ToList();
+        Assert.Single(savedDebits);
+        Assert.Equal(input.Value, -1 * savedDebits[0].Value);
+        Assert.Equal(_account, savedDebits[0].Account);
+        Assert.IsType<int>(savedDebits[0].Id);
+        Assert.IsType<DateTime>(savedDebits[0].CreatedAt);
+    }
+
+    [Fact]
+    public async Task PostTransfer_ReturnOk()
+    {
+        var (sut, context) = MakeSut();
+        context.Credits.Add(CreditExample());
+        var recipientAccount = AccountExample(2, "321");
+        context.Accounts.Add(recipientAccount);
+        context.SaveChanges();
+        var input = new TransferDto() { Value = 50.56, RecipientAccountNumber = recipientAccount.AccountNumber };
+
+        var actionResult = await sut.PostTransfer(_account.AccountNumber, input);
+
+        Assert.IsType<OkResult>(actionResult);
+        var savedTransfers = context.Transfers.Where(transfer => transfer.Sender.AccountNumber == _account.AccountNumber).ToList();
+        Assert.Single(savedTransfers);
+        Assert.Equal(input.Value, savedTransfers[0].Value);
+        Assert.Equal(_account, savedTransfers[0].Sender);
+        Assert.Equal(recipientAccount, savedTransfers[0].Recipient);
+        Assert.IsType<int>(savedTransfers[0].Id);
+        Assert.IsType<DateTime>(savedTransfers[0].CreatedAt);
+    }
+
     [Theory]
     [InlineData("credit")]
     [InlineData("debit")]
@@ -117,64 +175,6 @@ public class TransactionsControllerTest : IDisposable
         var actionResult = await sut.PostDebit(_account.AccountNumber, input);
 
         Assert.IsType<BadRequestObjectResult>(actionResult);
-    }
-
-    [Fact]
-    public async Task PostCredit_ReturnOk()
-    {
-        var (sut, context) = MakeSut();
-        var input = new CreditDto() { Value = 100.56 };
-
-        var actionResult = await sut.PostCredit(_account.AccountNumber, input);
-
-        Assert.IsType<OkResult>(actionResult);
-        var savedCredits = context.Credits.Where(credit => credit.Account.AccountNumber == _account.AccountNumber).ToList();
-        Assert.Single(savedCredits);
-        Assert.Equal(input.Value, savedCredits[0].Value);
-        Assert.Equal(_account, savedCredits[0].Account);
-        Assert.IsType<int>(savedCredits[0].Id);
-        Assert.IsType<DateTime>(savedCredits[0].CreatedAt);
-    }
-
-    [Fact]
-    public async Task PostDebit_ReturnOk()
-    {
-        var (sut, context) = MakeSut();
-        context.Credits.Add(CreditExample());
-        context.SaveChanges();
-        var input = new DebitDto() { Value = 50.56 };
-
-        var actionResult = await sut.PostDebit(_account.AccountNumber, input);
-
-        Assert.IsType<OkResult>(actionResult);
-        var savedDebits = context.Debits.Where(debit => debit.Account.AccountNumber == _account.AccountNumber).ToList();
-        Assert.Single(savedDebits);
-        Assert.Equal(input.Value, -1 * savedDebits[0].Value);
-        Assert.Equal(_account, savedDebits[0].Account);
-        Assert.IsType<int>(savedDebits[0].Id);
-        Assert.IsType<DateTime>(savedDebits[0].CreatedAt);
-    }
-
-    [Fact]
-    public async Task PostTransfer()
-    {
-        var (sut, context) = MakeSut();
-        context.Credits.Add(CreditExample());
-        var recipientAccount = AccountExample(2, "321");
-        context.Accounts.Add(recipientAccount);
-        context.SaveChanges();
-        var input = new TransferDto() { Value = 50.56, RecipientAccountNumber = recipientAccount.AccountNumber };
-
-        var actionResult = await sut.PostTransfer(_account.AccountNumber, input);
-
-        Assert.IsType<OkResult>(actionResult);
-        var savedTransfers = context.Transfers.Where(transfer => transfer.Sender.AccountNumber == _account.AccountNumber).ToList();
-        Assert.Single(savedTransfers);
-        Assert.Equal(input.Value, savedTransfers[0].Value);
-        Assert.Equal(_account, savedTransfers[0].Sender);
-        Assert.Equal(recipientAccount, savedTransfers[0].Recipient);
-        Assert.IsType<int>(savedTransfers[0].Id);
-        Assert.IsType<DateTime>(savedTransfers[0].CreatedAt);
     }
 
     [Fact]
