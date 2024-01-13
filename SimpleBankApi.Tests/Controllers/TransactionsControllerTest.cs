@@ -205,6 +205,19 @@ public class TransactionsControllerTest : IDisposable
     }
 
     [Fact]
+    public async Task PostTransfer_SameAccount()
+    {
+        var (sut, context) = MakeSut();
+        context.Credits.Add(CreditExample());
+        context.SaveChanges();
+        var input = new TransferDto() { Value = 50.56, RecipientAccountNumber = _account.AccountNumber };
+
+        var actionResult = await sut.PostTransfer(_account.AccountNumber, input);
+
+        Assert.IsType<BadRequestObjectResult>(actionResult);
+    }
+
+    [Fact]
     public async Task GetBalance()
     {
         var (sut, context) = MakeSut();
