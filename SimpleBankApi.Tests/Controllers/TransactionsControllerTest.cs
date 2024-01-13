@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
@@ -21,6 +19,8 @@ public class TransactionsControllerTest : IDisposable
     private readonly DbConnection _connection;
     private readonly DbContextOptions<BankContext> _contextOptions;
     private readonly Account _account;
+
+    private const int _accountNumberNotUsed = 1000;
 
     public TransactionsControllerTest()
     {
@@ -75,7 +75,18 @@ public class TransactionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async Task PostCredit()
+    public async Task PostCredit_ReturnOk()
+    {
+        var (sut, context) = MakeSut();
+        var input = new CreditDto() { Value = 100.56 };
+
+        var actionResult = await sut.PostCredit(_accountNumberNotUsed, input);
+
+        Assert.IsType<NotFoundObjectResult>(actionResult);
+    }
+
+    [Fact]
+    public async Task PostCredit_ReturnNotFound()
     {
         var (sut, context) = MakeSut();
         var input = new CreditDto() { Value = 100.56 };
