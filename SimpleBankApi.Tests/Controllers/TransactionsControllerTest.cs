@@ -192,6 +192,19 @@ public class TransactionsControllerTest : IDisposable
     }
 
     [Fact]
+    public async Task PostTransfer_RecipientNotFound()
+    {
+        var (sut, context) = MakeSut();
+        context.Credits.Add(CreditExample());
+        context.SaveChanges();
+        var input = new TransferDto() { Value = 50.56, RecipientAccountNumber = _accountNumberNotUsed };
+
+        var actionResult = await sut.PostTransfer(_account.AccountNumber, input);
+
+        Assert.IsType<NotFoundObjectResult>(actionResult);
+    }
+
+    [Fact]
     public async Task GetBalance()
     {
         var (sut, context) = MakeSut();
