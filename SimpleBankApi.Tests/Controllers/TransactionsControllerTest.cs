@@ -166,13 +166,21 @@ public class TransactionsControllerTest : IDisposable
         Assert.IsType<BadRequestObjectResult>(actionResult);
     }
 
-    [Fact]
-    public async Task PostDebit_InsufficientBalance()
+    [Theory]
+    [InlineData("debit")]
+    [InlineData("transfer")]
+    public async Task PostDebit_InsufficientBalance(string type)
     {
         var (sut, context) = MakeSut();
-        var input = new DebitDto() { Value = 50 };
+        var recipientAccount = AccountExample(2, "321");
+        context.Accounts.Add(recipientAccount);
+        context.SaveChanges();
+        var debitInput = new DebitDto() { Value = 50 };
+        var transferInput = new TransferDto() { Value = 50.56, RecipientAccountNumber = _account.AccountNumber };
 
-        var actionResult = await sut.PostDebit(_account.AccountNumber, input);
+        var actionResult = type == "debit"
+            ? await sut.PostDebit(_account.AccountNumber, debitInput)
+            : await sut.PostTransfer(_account.AccountNumber, transferInput);
 
         Assert.IsType<BadRequestObjectResult>(actionResult);
     }
