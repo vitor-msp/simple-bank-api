@@ -54,7 +54,7 @@ public class AccountsController : ControllerBase
     }
 
     [HttpGet("bycpf/{cpf}")]
-    public async Task<IActionResult> GetByCpf(string cpf)
+    public async Task<ActionResult<Account>> GetByCpf(string cpf)
     {
         try
         {
