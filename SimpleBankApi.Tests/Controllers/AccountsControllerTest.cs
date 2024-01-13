@@ -53,7 +53,7 @@ public class AccountsControllerTest : IDisposable
     }
 
     [Fact]
-    public async Task GetAll()
+    public async Task GetAll_ReturnNotEmpty()
     {
         var (sut, context) = MakeSut();
         context.Accounts.Add(AccountExample("123"));
@@ -71,6 +71,20 @@ public class AccountsControllerTest : IDisposable
         Assert.Equal(savedAccounts[0].Owner.Name, getAllOutput.Accounts[0].Name);
         Assert.Equal(savedAccounts[1].AccountNumber, getAllOutput.Accounts[1].AccountNumber);
         Assert.Equal(savedAccounts[1].Owner.Name, getAllOutput.Accounts[1].Name);
+    }
+
+    [Fact]
+    public async Task GetAll_ReturnEmpty()
+    {
+        var (sut, context) = MakeSut();
+
+        var actionResult = await sut.GetAll();
+
+        var okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+        var getAllOutput = Assert.IsType<AccountsController.GetAllOutput>(okObjectResult.Value);
+        var savedAccounts = context.Accounts.ToList();
+        Assert.Equal(savedAccounts.Count, getAllOutput.Accounts.Count);
+        Assert.Empty(getAllOutput.Accounts);
     }
 
     [Theory]
