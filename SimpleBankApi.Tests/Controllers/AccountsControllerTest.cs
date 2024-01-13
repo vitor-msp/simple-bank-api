@@ -177,13 +177,15 @@ public class AccountsControllerTest : IDisposable
         Assert.Equal(input.Name, savedAccount.Owner.Name);
     }
 
-    [Fact]
-    public async Task Put_ReturnNotFound()
+    [Theory]
+    [InlineData("put")]
+    [InlineData("delete")]
+    public async Task Put_And_Delete_ReturnNotFound(string type)
     {
         var (sut, context) = MakeSut();
         var input = new AccountUpdateDto() { Name = "ciclano" };
 
-        var actionResult = await sut.Put(1, input);
+        var actionResult = type == "put" ? await sut.Put(1, input) : await sut.Delete(1);
 
         Assert.IsType<NotFoundObjectResult>(actionResult);
     }
