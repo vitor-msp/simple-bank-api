@@ -157,7 +157,7 @@ public class AccountsControllerTest : IDisposable
     }
 
     [Fact]
-    public async Task Put()
+    public async Task Put_ReturnNoContent()
     {
         var (sut, context) = MakeSut();
         var account = AccountExample();
@@ -175,6 +175,17 @@ public class AccountsControllerTest : IDisposable
         Assert.Equal(account.Owner.Id, savedAccount.Owner.Id);
         Assert.Equal(account.Owner.Cpf, savedAccount.Owner.Cpf);
         Assert.Equal(input.Name, savedAccount.Owner.Name);
+    }
+
+    [Fact]
+    public async Task Put_ReturnNotFound()
+    {
+        var (sut, context) = MakeSut();
+        var input = new AccountUpdateDto() { Name = "ciclano" };
+
+        var actionResult = await sut.Put(1, input);
+
+        Assert.IsType<NotFoundObjectResult>(actionResult);
     }
 
     [Fact]
