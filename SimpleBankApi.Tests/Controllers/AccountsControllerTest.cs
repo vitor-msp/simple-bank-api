@@ -38,7 +38,7 @@ public class AccountsControllerTest : IDisposable
     {
         var context = CreateContext();
         var accountsRepository = new AccountsRepository(context);
-        var controller = new AccountsController(accountsRepository, new CreateAccountUseCase(accountsRepository));
+        var controller = new AccountsController(accountsRepository, new CreateAccountUseCase(accountsRepository), new UpdateAccountUseCase(accountsRepository));
         return (controller, context);
     }
 

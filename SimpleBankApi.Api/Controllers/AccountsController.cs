@@ -12,10 +12,13 @@ public class AccountsController : ControllerBase
     private readonly IAccountsRepository _accountsRepository;
     private readonly ICreateAccountUseCase _createAccountUseCase;
 
-    public AccountsController(IAccountsRepository accountsRepository, ICreateAccountUseCase createAccountUseCase)
+    private readonly IUpdateAccountUseCase _updateAccountUseCase;
+
+    public AccountsController(IAccountsRepository accountsRepository, ICreateAccountUseCase createAccountUseCase, IUpdateAccountUseCase updateAccountUseCase)
     {
         _accountsRepository = accountsRepository;
         _createAccountUseCase = createAccountUseCase;
+        _updateAccountUseCase = updateAccountUseCase;
     }
 
     public class GetAllOutput
@@ -100,16 +103,15 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var account = await _accountsRepository.GetByAccountNumber(accountNumber);
-            if (account == null) return NotFound(new ErrorDto("Account not found."));
-            account.Update(new CustomerUpdateableFields() { Name = updatedAccountDto.Name });
-            await _accountsRepository.Save(account);
+            await _updateAccountUseCase.Execute(accountNumber, updatedAccountDto);
             return NoContent();
         }
-        catch (Exception error)
+        catch (ApplicationException error)
         {
-            System.Console.WriteLine(error.Message);
-            System.Console.WriteLine(error.StackTrace);
+            return NotFound(new ErrorDto(error.Message));
+        }
+        catch (Exception)
+        {
             return StatusCode(500, new ErrorDto("Error to update account."));
         }
     }
