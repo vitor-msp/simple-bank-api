@@ -4,6 +4,11 @@ public class TransferFields : TransactionFields
 {
     public TransferFields() : base() { }
 
-    public new static TransferFields Rebuild(int id, DateTime createdAt, double value)
-        => (TransferFields)TransactionFields.Rebuild(id, createdAt, value);
+    private TransferFields(int id, DateTime createdAt) : base(id, createdAt) { }
+
+    public static TransferFields Rebuild(int id, DateTime createdAt, double value)
+        => new TransferFields(id, createdAt)
+        {
+            Value = value
+        };
 }

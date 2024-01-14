@@ -13,9 +13,10 @@ public class Account
 
     public AccountFields GetFields() => _fields;
 
-    public void Update(CustomerUpdateableFields customerFields)
+    public void Update(CustomerUpdateableFields fields)
     {
-        Owner?.Update(customerFields);
+        if (Owner == null) throw new Exception();
+        Owner.Update(fields);
     }
 
     public void Inactivate()

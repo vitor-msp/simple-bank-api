@@ -16,7 +16,14 @@ public class AccountsRepository : IAccountsRepository
     public async Task<List<Account>> GetAll()
     {
         var accountsDB = await _context.Accounts.AsNoTracking().Include("Owner").Where(accountDB => accountDB.Active).ToListAsync();
-        return accountsDB.Select(accountDB => accountDB.GetEntity()).ToList();
+        return accountsDB.Select(accountDB =>
+        {
+            var account = accountDB.GetEntity();
+            if (accountDB.Owner == null) throw new Exception();
+            account.Owner = accountDB.Owner.GetEntity();
+            return account;
+
+        }).ToList();
     }
 
     public async Task<Account?> GetByAccountNumber(int accountNumber)
@@ -24,7 +31,10 @@ public class AccountsRepository : IAccountsRepository
         var accountDB = await _context.Accounts.AsNoTracking().Include("Owner")
             .FirstOrDefaultAsync(accountDB => accountDB.Active && accountDB.AccountNumber == accountNumber);
         if (accountDB == null) return null;
-        return accountDB.GetEntity();
+        if (accountDB.Owner == null) throw new Exception();
+        var account = accountDB.GetEntity();
+        account.Owner = accountDB.Owner.GetEntity();
+        return account;
     }
 
     public async Task<Account?> GetByCpf(string cpf)
@@ -32,16 +42,19 @@ public class AccountsRepository : IAccountsRepository
         var accountDB = await _context.Accounts.AsNoTracking().Include("Owner")
             .FirstOrDefaultAsync(accountDB => accountDB.Active && accountDB.Owner != null && accountDB.Owner.Cpf.Equals(cpf));
         if (accountDB == null) return null;
-        return accountDB.GetEntity();
+        var account = accountDB.GetEntity();
+        if (accountDB.Owner == null) throw new Exception();
+        account.Owner = accountDB.Owner.GetEntity();
+        return account;
     }
 
     public async Task Save(Account account)
     {
-        var accountDB = _context.Accounts.Find(account.GetFields().Id);
+        var accountDB = await _context.Accounts.Include("Owner")
+            .FirstOrDefaultAsync(accountDB => accountDB.Active && accountDB.AccountNumber == account.GetFields().AccountNumber);
         if (accountDB == null) await Add(account);
         else await Update(accountDB, account);
     }
-
 
     private async Task Add(Account account)
     {
@@ -55,10 +68,9 @@ public class AccountsRepository : IAccountsRepository
 
     private async Task Update(AccountDB accountDB, Account account)
     {
+        if (account.Owner == null || accountDB.Owner == null) throw new Exception();
         accountDB.Hydrate(account);
-        if (account.Owner == null) throw new Exception();
-        var customerDB = new CustomerDB(account.Owner);
-        accountDB.Owner = customerDB;
+        accountDB.Owner.Hydrate(account.Owner);
         await _context.SaveChangesAsync();
     }
 }

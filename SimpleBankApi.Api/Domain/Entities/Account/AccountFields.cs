@@ -18,7 +18,12 @@ public class AccountFields
         Active = true;
     }
 
-    private AccountFields(int id, int accountNumber, DateTime createdAt) { }
+    private AccountFields(int id, int accountNumber, DateTime createdAt)
+    {
+        Id = id;
+        AccountNumber = accountNumber;
+        CreatedAt = createdAt;
+    }
 
     public static AccountFields Rebuild(int id, int accountNumber, DateTime createdAt, bool active)
     {

@@ -30,6 +30,5 @@ public class AccountDB
         Id = fields.Id;
         AccountNumber = fields.AccountNumber;
         Active = fields.Active;
-        Active = fields.Active;
     }
 }

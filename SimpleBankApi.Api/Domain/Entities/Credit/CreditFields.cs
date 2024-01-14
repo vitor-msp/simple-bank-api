@@ -4,6 +4,11 @@ public class CreditFields : TransactionFields
 {
     public CreditFields() : base() { }
 
-    public new static CreditFields Rebuild(int id, DateTime createdAt, double value)
-        => (CreditFields)TransactionFields.Rebuild(id, createdAt, value);
+    private CreditFields(int id, DateTime createdAt) : base(id, createdAt) { }
+
+    public static CreditFields Rebuild(int id, DateTime createdAt, double value)
+        => new CreditFields(id, createdAt)
+        {
+            Value = value
+        };
 }

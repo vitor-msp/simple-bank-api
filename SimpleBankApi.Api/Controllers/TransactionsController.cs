@@ -1,10 +1,8 @@
 using System.Collections;
-using Context;
 using Dto;
 using Exceptions;
 using Helpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Models;
 
 namespace Controllers;
@@ -13,24 +11,25 @@ namespace Controllers;
 [Route("transactions")]
 public class TransactionsController : ControllerBase
 {
-    private readonly BankContext _context;
+    private readonly ITransactionsRepository _transactionsRepository;
+    private readonly IAccountsRepository _accountsRepository;
 
-    public TransactionsController(BankContext context)
+    public TransactionsController(ITransactionsRepository transactionsRepository, IAccountsRepository accountsRepository)
     {
-        _context = context;
+        _transactionsRepository = transactionsRepository;
+        _accountsRepository = accountsRepository;
     }
 
+
     [HttpPost("credit/{accountNumber}")]
-    public async Task<IActionResult> PostCredit(int accountNumber, [FromBody] CreditDto creditDto)
+    public async Task<ActionResult> PostCredit(int accountNumber, [FromBody] CreditDto creditDto)
     {
         try
         {
-            Account? account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.GetFields().Active && a.GetFields().AccountNumber == accountNumber);
+            Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
             if (account == null) return NotFound(new ErrorDto("Account not found."));
             var credit = new Credit(new CreditFields() { Value = creditDto.Value }) { Account = account };
-            _context.Credits.Add(credit);
-            await _context.SaveChangesAsync();
+            await _transactionsRepository.SaveCredit(credit);
             return Ok();
         }
         catch (TransactionException error)
@@ -44,18 +43,16 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("debit/{accountNumber}")]
-    public async Task<IActionResult> PostDebit(int accountNumber, [FromBody] DebitDto debitDto)
+    public async Task<ActionResult> PostDebit(int accountNumber, [FromBody] DebitDto debitDto)
     {
         try
         {
-            Account? account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.GetFields().Active && a.GetFields().AccountNumber == accountNumber);
+            Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
             if (account == null) return NotFound(new ErrorDto("Account not found."));
             double balance = await CalculateBalanceFromAccount(account);
             if (balance < debitDto.Value) return BadRequest(new ErrorDto("Insufficient balance."));
             var debit = new Debit(new DebitFields() { Value = debitDto.Value }) { Account = account };
-            _context.Debits.Add(debit);
-            await _context.SaveChangesAsync();
+            await _transactionsRepository.SaveDebit(debit);
             return Ok();
         }
         catch (TransactionException error)
@@ -69,23 +66,20 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("transfer/{accountNumber}")]
-    public async Task<IActionResult> PostTransfer(int accountNumber, [FromBody] TransferDto transferDto)
+    public async Task<ActionResult> PostTransfer(int accountNumber, [FromBody] TransferDto transferDto)
     {
         try
         {
-            Account? sender = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.GetFields().Active && a.GetFields().AccountNumber == accountNumber);
+            Account? sender = await _accountsRepository.GetByAccountNumber(accountNumber);
             if (sender == null) return NotFound(new ErrorDto("Sender account not found."));
-            Account? recipient = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.GetFields().Active && a.GetFields().AccountNumber == transferDto.RecipientAccountNumber);
+            Account? recipient = await _accountsRepository.GetByAccountNumber(transferDto.RecipientAccountNumber);
             if (recipient == null) return NotFound(new ErrorDto("Recipient account not found."));
             if (sender.Equals(recipient))
                 return BadRequest(new ErrorDto("Transfer to the same account is not allowed."));
             double balance = await CalculateBalanceFromAccount(sender);
             if (balance < transferDto.Value) return BadRequest(new ErrorDto("Insufficient balance."));
             var transfer = new Transfer(new TransferFields() { Value = transferDto.Value }) { Sender = sender, Recipient = recipient };
-            _context.Transfers.Add(transfer);
-            await _context.SaveChangesAsync();
+            await _transactionsRepository.SaveTransfer(transfer);
             return Ok();
         }
         catch (TransactionException error)
@@ -108,8 +102,7 @@ public class TransactionsController : ControllerBase
     {
         try
         {
-            Account? account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.GetFields().AccountNumber == accountNumber);
+            Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
             if (account == null) return NotFound(new ErrorDto("Account not found."));
             double balance = await CalculateBalanceFromAccount(account);
             return Ok(new GetBalanceOutput { Balance = CurrencyHelper.GetBrazilianCurrency(balance) });
@@ -130,8 +123,7 @@ public class TransactionsController : ControllerBase
     {
         try
         {
-            Account? account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.GetFields().AccountNumber == accountNumber);
+            Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
             if (account == null) return NotFound(new ErrorDto("Account not found."));
             var credits = await GetCreditsFromAccount(account);
             var debits = await GetDebitsFromAccount(account);
@@ -139,8 +131,10 @@ public class TransactionsController : ControllerBase
             var sortedTransactions = SortTransactionsByDateTime(credits, debits, transfers, account);
             return Ok(new GetTransactionsOutput { Transactions = sortedTransactions });
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            System.Console.WriteLine(error.Message);
+            System.Console.WriteLine(error.StackTrace);
             return StatusCode(500, new ErrorDto("Error to get transactions."));
         }
     }
@@ -148,7 +142,7 @@ public class TransactionsController : ControllerBase
     private async Task<double> CalculateBalanceFromAccount(Account account)
     {
         double creditSum = (await GetCreditsFromAccount(account)).Sum(c => c.GetFields().Value);
-        double debitSum = (await GetDebitsFromAccount(account)).Sum(d => d.GetFields().Value);
+        double debitSum = -1 * (await GetDebitsFromAccount(account)).Sum(d => d.GetFields().Value);
         var transfers = await GetTransfersFromAccount(account);
         double transferSum = transfers.Sum(t => t.Sender.Equals(account) ? (-1 * t.GetFields().Value) : t.GetFields().Value);
         double balance = creditSum + debitSum + transferSum;
@@ -157,23 +151,19 @@ public class TransactionsController : ControllerBase
 
     private async Task<List<Credit>> GetCreditsFromAccount(Account account)
     {
-        var credits = await _context.Credits.AsNoTracking().Include("Account")
-            .Where(c => c.Account.Equals(account)).ToListAsync();
+        var credits = await _transactionsRepository.GetCreditsFromAccount(account.GetFields().AccountNumber);
         return credits;
     }
 
     private async Task<List<Debit>> GetDebitsFromAccount(Account account)
     {
-        var debits = await _context.Debits.AsNoTracking().Include("Account")
-            .Where(d => d.Account.Equals(account)).ToListAsync();
+        var debits = await _transactionsRepository.GetDebitsFromAccount(account.GetFields().AccountNumber);
         return debits;
     }
 
     private async Task<List<Transfer>> GetTransfersFromAccount(Account account)
     {
-        var transfers = await _context.Transfers.AsNoTracking()
-            .Include("Sender.Owner").Include("Recipient.Owner")
-            .Where(t => t.Sender.Equals(account) || t.Recipient.Equals(account)).ToListAsync();
+        var transfers = await _transactionsRepository.GetTransfersFromAccount(account.GetFields().AccountNumber);
         return transfers;
     }
 

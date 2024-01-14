@@ -4,6 +4,11 @@ public class DebitFields : TransactionFields
 {
     public DebitFields() : base() { }
 
-    public new static DebitFields Rebuild(int id, DateTime createdAt, double value)
-        => (DebitFields)TransactionFields.Rebuild(id, createdAt, value);
+    private DebitFields(int id, DateTime createdAt) : base(id, createdAt) { }
+
+    public static DebitFields Rebuild(int id, DateTime createdAt, double value)
+        => new DebitFields(id, createdAt)
+        {
+            Value = value
+        };
 }

@@ -1,5 +1,7 @@
 using Context;
 using Microsoft.EntityFrameworkCore;
+using Models;
+using Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,9 @@ builder.Services.AddSwaggerGen();
 // db config
 builder.Services.AddDbContext<BankContext>(
     options => options.UseSqlite(builder.Configuration.GetConnectionString("SqliteConnection")));
+
+builder.Services.AddScoped<IAccountsRepository, AccountsRepository>();
+builder.Services.AddScoped<ITransactionsRepository, TransactionsRepository>();
 
 var app = builder.Build();
 

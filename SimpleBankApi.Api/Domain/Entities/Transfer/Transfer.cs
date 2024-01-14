@@ -13,11 +13,11 @@ public class Transfer : Transaction
     public TransactionTransferDto GetData(Account account)
     {
         double value;
-        if (account.Equals(Sender))
+        if (Sender != null && account.GetFields().AccountNumber == Sender.GetFields().AccountNumber)
         {
             value = -1 * _fields.Value;
         }
-        else if (account.Equals(Recipient))
+        else if (Recipient != null && account.GetFields().AccountNumber == Recipient.GetFields().AccountNumber)
         {
             value = _fields.Value;
         }

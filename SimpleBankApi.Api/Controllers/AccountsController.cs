@@ -1,7 +1,5 @@
-using Context;
 using Dto;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Models;
 
 namespace Controllers;
@@ -10,11 +8,11 @@ namespace Controllers;
 [Route("accounts")]
 public class AccountsController : ControllerBase
 {
-    private readonly BankContext _context;
+    private readonly IAccountsRepository _accountsRepository;
 
-    public AccountsController(BankContext context)
+    public AccountsController(IAccountsRepository accountsRepository)
     {
-        _context = context;
+        _accountsRepository = accountsRepository;
     }
 
     public class GetAllOutput
@@ -27,8 +25,7 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var accounts = await _context.Accounts.AsNoTracking().Include("Owner")
-                .Where(a => a.GetFields().Active).ToListAsync();
+            var accounts = await _accountsRepository.GetAll();
             return Ok(new GetAllOutput
             {
                 Accounts = accounts.Select(a => new TransactionAccountDto(a.GetPublicData())).ToList()
@@ -45,8 +42,7 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var account = await _context.Accounts.AsNoTracking().Include("Owner")
-                .FirstOrDefaultAsync(a => a.GetFields().Active && a.GetFields().AccountNumber == accountNumber);
+            var account = await _accountsRepository.GetByAccountNumber(accountNumber);
             if (account == null) return NotFound(new ErrorDto("Account not found."));
             return Ok(account);
         }
@@ -61,10 +57,7 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var account = await _context.Accounts.AsNoTracking().Include("Owner")
-                .FirstOrDefaultAsync(a =>
-                    a.GetFields().Active && a.Owner != null && a.Owner.GetFields().Cpf != null
-                    && a.Owner != null && a.Owner.GetFields().Cpf != null && a.Owner.GetFields().Cpf!.Equals(cpf));
+            var account = await _accountsRepository.GetByCpf(cpf);
             if (account == null) return NotFound(new ErrorDto("Account not found."));
             return Ok(account);
         }
@@ -84,15 +77,11 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var existingAccount = await _context.Accounts
-                .FirstOrDefaultAsync(a =>
-                    a.Owner != null && a.Owner.GetFields().Cpf != null && a.Owner.GetFields().Cpf!.Equals(newAccountDto.Cpf));
+            var existingAccount = await _accountsRepository.GetByCpf(newAccountDto.Cpf);
             if (existingAccount != null) return BadRequest(new ErrorDto("Cpf already registered."));
             var customer = new Customer(new CustomerFields() { Cpf = newAccountDto.Cpf, Name = newAccountDto.Name });
-            var newAccount = new Account(new AccountFields());
-            newAccount.Owner = customer;
-            _context.Accounts.Add(newAccount);
-            await _context.SaveChangesAsync();
+            var newAccount = new Account(new AccountFields()) { Owner = customer };
+            await _accountsRepository.Save(newAccount);
             return new CreatedAtRouteResult("GetAccount",
                 new PostOutput { AccountNumber = newAccount.GetFields().AccountNumber },
                 new PostOutput { AccountNumber = newAccount.GetFields().AccountNumber });
@@ -104,33 +93,33 @@ public class AccountsController : ControllerBase
     }
 
     [HttpPut("{accountNumber}")]
-    public async Task<IActionResult> Put(int accountNumber, [FromBody] AccountUpdateDto updatedAccountDto)
+    public async Task<ActionResult> Put(int accountNumber, [FromBody] AccountUpdateDto updatedAccountDto)
     {
         try
         {
-            var existingAccount = await _context.Accounts.Include("Owner")
-                .FirstOrDefaultAsync(a => a.GetFields().Active && a.GetFields().AccountNumber == accountNumber);
-            if (existingAccount == null) return NotFound(new ErrorDto("Account not found."));
-            existingAccount.Update(new CustomerUpdateableFields() { Name = updatedAccountDto.Name });
-            await _context.SaveChangesAsync();
+            var account = await _accountsRepository.GetByAccountNumber(accountNumber);
+            if (account == null) return NotFound(new ErrorDto("Account not found."));
+            account.Update(new CustomerUpdateableFields() { Name = updatedAccountDto.Name });
+            await _accountsRepository.Save(account);
             return NoContent();
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            System.Console.WriteLine(error.Message);
+            System.Console.WriteLine(error.StackTrace);
             return StatusCode(500, new ErrorDto("Error to update account."));
         }
     }
 
     [HttpDelete("{accountNumber}")]
-    public async Task<IActionResult> Delete(int accountNumber)
+    public async Task<ActionResult> Delete(int accountNumber)
     {
         try
         {
-            var account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.GetFields().Active && a.GetFields().AccountNumber == accountNumber);
+            var account = await _accountsRepository.GetByAccountNumber(accountNumber);
             if (account == null) return NotFound(new ErrorDto("Account not found."));
             account.Inactivate();
-            await _context.SaveChangesAsync();
+            await _accountsRepository.Save(account);
             return NoContent();
         }
         catch (Exception)

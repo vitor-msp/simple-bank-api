@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Models;
 
-public class TransactionFields
+public abstract class TransactionFields
 {
     [JsonIgnore]
     public int Id { get; private set; }
@@ -14,17 +14,9 @@ public class TransactionFields
         CreatedAt = DateTime.Now;
     }
 
-    private TransactionFields(int id, DateTime createdAt)
+    protected TransactionFields(int id, DateTime createdAt)
     {
         Id = id;
         CreatedAt = createdAt;
-    }
-
-    protected static TransactionFields Rebuild(int id, DateTime createdAt, double value)
-    {
-        return new TransactionFields(id, createdAt)
-        {
-            Value = value
-        };
     }
 }
