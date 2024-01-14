@@ -1,3 +1,4 @@
+using Application;
 using Context;
 using Microsoft.EntityFrameworkCore;
 using Models;
@@ -18,6 +19,7 @@ builder.Services.AddDbContext<BankContext>(
 
 builder.Services.AddScoped<IAccountsRepository, AccountsRepository>();
 builder.Services.AddScoped<ITransactionsRepository, TransactionsRepository>();
+builder.Services.AddScoped<ICreateAccountUseCase, CreateAccountUseCase>();
 
 var app = builder.Build();
 

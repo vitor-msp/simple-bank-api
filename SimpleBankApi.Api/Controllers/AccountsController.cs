@@ -1,3 +1,4 @@
+using Application;
 using Dto;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -9,10 +10,12 @@ namespace Controllers;
 public class AccountsController : ControllerBase
 {
     private readonly IAccountsRepository _accountsRepository;
+    private readonly ICreateAccountUseCase _createAccountUseCase;
 
-    public AccountsController(IAccountsRepository accountsRepository)
+    public AccountsController(IAccountsRepository accountsRepository, ICreateAccountUseCase createAccountUseCase)
     {
         _accountsRepository = accountsRepository;
+        _createAccountUseCase = createAccountUseCase;
     }
 
     public class GetAllOutput
@@ -77,14 +80,14 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var existingAccount = await _accountsRepository.GetByCpf(newAccountDto.Cpf);
-            if (existingAccount != null) return BadRequest(new ErrorDto("Cpf already registered."));
-            var customer = new Customer(new CustomerFields() { Cpf = newAccountDto.Cpf, Name = newAccountDto.Name });
-            var newAccount = new Account(new AccountFields()) { Owner = customer };
-            await _accountsRepository.Save(newAccount);
+            var accountNumber = await _createAccountUseCase.Execute(newAccountDto);
             return new CreatedAtRouteResult("GetAccount",
-                new PostOutput { AccountNumber = newAccount.GetFields().AccountNumber },
-                new PostOutput { AccountNumber = newAccount.GetFields().AccountNumber });
+                new PostOutput { AccountNumber = accountNumber },
+                new PostOutput { AccountNumber = accountNumber });
+        }
+        catch (ApplicationException error)
+        {
+            return BadRequest(new ErrorDto(error.Message));
         }
         catch (Exception)
         {

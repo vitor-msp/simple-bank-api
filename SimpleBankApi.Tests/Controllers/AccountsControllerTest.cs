@@ -2,6 +2,7 @@ using System;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
+using Application;
 using Context;
 using Controllers;
 using Dto;
@@ -36,7 +37,8 @@ public class AccountsControllerTest : IDisposable
     private (AccountsController, BankContext) MakeSut()
     {
         var context = CreateContext();
-        var controller = new AccountsController(new AccountsRepository(context));
+        var accountsRepository = new AccountsRepository(context);
+        var controller = new AccountsController(accountsRepository, new CreateAccountUseCase(accountsRepository));
         return (controller, context);
     }
 
