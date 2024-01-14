@@ -43,13 +43,14 @@ public class AccountsControllerTest : IDisposable
 
     private Account AccountExample(string cpf = "0123")
     {
-        return new Account()
+        var account = new Account(AccountFields.Rebuild(1, 1, DateTime.Now, true));
+        var customer = new Customer(new CustomerFields()
         {
-            AccountNumber = 1,
-            Active = true,
-            CreatedAt = DateTime.Now,
-            Owner = new Customer() { Cpf = cpf, Name = "fulano" }
-        };
+            Cpf = cpf,
+            Name = "fulano",
+        });
+        account.Owner = customer;
+        return account;
     }
 
     [Fact]
@@ -67,10 +68,10 @@ public class AccountsControllerTest : IDisposable
         var savedAccounts = context.Accounts.ToList();
         Assert.Equal(savedAccounts.Count, getAllOutput.Accounts.Count);
         Assert.Equal(2, getAllOutput.Accounts.Count);
-        Assert.Equal(savedAccounts[0].AccountNumber, getAllOutput.Accounts[0].AccountNumber);
-        Assert.Equal(savedAccounts[0].Owner.Name, getAllOutput.Accounts[0].Name);
-        Assert.Equal(savedAccounts[1].AccountNumber, getAllOutput.Accounts[1].AccountNumber);
-        Assert.Equal(savedAccounts[1].Owner.Name, getAllOutput.Accounts[1].Name);
+        Assert.Equal(savedAccounts[0].GetFields().AccountNumber, getAllOutput.Accounts[0].AccountNumber);
+        Assert.Equal(savedAccounts[0].Owner?.GetFields().Name, getAllOutput.Accounts[0].Name);
+        Assert.Equal(savedAccounts[1].GetFields().AccountNumber, getAllOutput.Accounts[1].AccountNumber);
+        Assert.Equal(savedAccounts[1].Owner?.GetFields().Name, getAllOutput.Accounts[1].Name);
     }
 
     [Fact]
@@ -97,7 +98,9 @@ public class AccountsControllerTest : IDisposable
         context.Accounts.Add(account);
         context.SaveChanges();
 
-        var actionResult = getType == "cpf" ? await sut.GetByCpf(account.Owner.Cpf) : await sut.GetById(account.AccountNumber);
+        var actionResult = getType == "cpf"
+            ? await sut.GetByCpf(account.Owner?.GetFields().Cpf ?? "")
+            : await sut.GetById(account.GetFields().AccountNumber);
 
         var okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         var accountResult = Assert.IsType<Account>(okObjectResult.Value);
@@ -132,10 +135,10 @@ public class AccountsControllerTest : IDisposable
         Assert.Equal("GetAccount", createdAtRouteResult.RouteName);
         var postOutput = Assert.IsType<AccountsController.PostOutput>(createdAtRouteResult.Value);
         var accountNumber = Assert.IsType<int>(postOutput.AccountNumber);
-        var savedAccount = context.Accounts.Single(account => account.AccountNumber == accountNumber);
-        Assert.Equal(accountNumber, savedAccount.AccountNumber);
-        Assert.True(savedAccount.Active);
-        Assert.IsType<DateTime>(savedAccount.CreatedAt);
+        var savedAccount = context.Accounts.Single(account => account.GetFields().AccountNumber == accountNumber);
+        Assert.Equal(accountNumber, savedAccount.GetFields().AccountNumber);
+        Assert.True(savedAccount.GetFields().Active);
+        Assert.IsType<DateTime>(savedAccount.GetFields().CreatedAt);
     }
 
     [Fact]
@@ -148,7 +151,7 @@ public class AccountsControllerTest : IDisposable
         var input = new AccountCreateDto()
         {
             Name = "fulano de tal",
-            Cpf = account.Owner.Cpf,
+            Cpf = account.Owner?.GetFields().Cpf ?? "",
         };
 
         var actionResult = await sut.Post(input);
@@ -165,16 +168,16 @@ public class AccountsControllerTest : IDisposable
         context.SaveChanges();
         var input = new AccountUpdateDto() { Name = "ciclano" };
 
-        var actionResult = await sut.Put(account.AccountNumber, input);
+        var actionResult = await sut.Put(account.GetFields().AccountNumber, input);
 
         Assert.IsType<NoContentResult>(actionResult);
-        var savedAccount = context.Accounts.Single(account => account.Id == account.Id);
-        Assert.Equal(account.AccountNumber, savedAccount.AccountNumber);
-        Assert.Equal(account.Active, savedAccount.Active);
-        Assert.Equal(account.CreatedAt, savedAccount.CreatedAt);
-        Assert.Equal(account.Owner.Id, savedAccount.Owner.Id);
-        Assert.Equal(account.Owner.Cpf, savedAccount.Owner.Cpf);
-        Assert.Equal(input.Name, savedAccount.Owner.Name);
+        var savedAccount = context.Accounts.Single(account => account.GetFields().Id == account.GetFields().Id);
+        Assert.Equal(account.GetFields().AccountNumber, savedAccount.GetFields().AccountNumber);
+        Assert.Equal(account.GetFields().Active, savedAccount.GetFields().Active);
+        Assert.Equal(account.GetFields().CreatedAt, savedAccount.GetFields().CreatedAt);
+        Assert.Equal(account.Owner?.GetFields().Id, savedAccount.Owner?.GetFields().Id);
+        Assert.Equal(account.Owner?.GetFields().Cpf, savedAccount.Owner?.GetFields().Cpf);
+        Assert.Equal(input.Name, savedAccount.Owner?.GetFields().Name);
     }
 
     [Theory]
@@ -198,13 +201,13 @@ public class AccountsControllerTest : IDisposable
         context.Accounts.Add(account);
         context.SaveChanges();
 
-        var actionResult = await sut.Delete(account.AccountNumber);
+        var actionResult = await sut.Delete(account.GetFields().AccountNumber);
 
         Assert.IsType<NoContentResult>(actionResult);
-        var savedAccount = context.Accounts.Single(account => account.Id == account.Id);
-        Assert.Equal(account.AccountNumber, savedAccount.AccountNumber);
-        Assert.False(savedAccount.Active);
-        Assert.Equal(account.CreatedAt, savedAccount.CreatedAt);
+        var savedAccount = context.Accounts.Single(account => account.GetFields().Id == account.GetFields().Id);
+        Assert.Equal(account.GetFields().AccountNumber, savedAccount.GetFields().AccountNumber);
+        Assert.False(savedAccount.GetFields().Active);
+        Assert.Equal(account.GetFields().CreatedAt, savedAccount.GetFields().CreatedAt);
         Assert.Equal(account.Owner, savedAccount.Owner);
     }
 }

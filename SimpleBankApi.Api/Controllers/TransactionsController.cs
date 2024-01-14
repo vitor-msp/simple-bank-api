@@ -26,9 +26,9 @@ public class TransactionsController : ControllerBase
         try
         {
             Account? account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.Active && a.AccountNumber == accountNumber);
+                .FirstOrDefaultAsync(a => a.GetFields().Active && a.GetFields().AccountNumber == accountNumber);
             if (account == null) return NotFound(new ErrorDto("Account not found."));
-            var credit = new Credit(creditDto, account);
+            var credit = new Credit(new CreditFields() { Value = creditDto.Value }) { Account = account };
             _context.Credits.Add(credit);
             await _context.SaveChangesAsync();
             return Ok();
@@ -49,11 +49,11 @@ public class TransactionsController : ControllerBase
         try
         {
             Account? account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.Active && a.AccountNumber == accountNumber);
+                .FirstOrDefaultAsync(a => a.GetFields().Active && a.GetFields().AccountNumber == accountNumber);
             if (account == null) return NotFound(new ErrorDto("Account not found."));
             double balance = await CalculateBalanceFromAccount(account);
             if (balance < debitDto.Value) return BadRequest(new ErrorDto("Insufficient balance."));
-            var debit = new Debit(debitDto, account);
+            var debit = new Debit(new DebitFields() { Value = debitDto.Value }) { Account = account };
             _context.Debits.Add(debit);
             await _context.SaveChangesAsync();
             return Ok();
@@ -74,16 +74,16 @@ public class TransactionsController : ControllerBase
         try
         {
             Account? sender = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.Active && a.AccountNumber == accountNumber);
+                .FirstOrDefaultAsync(a => a.GetFields().Active && a.GetFields().AccountNumber == accountNumber);
             if (sender == null) return NotFound(new ErrorDto("Sender account not found."));
             Account? recipient = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.Active && a.AccountNumber == transferDto.RecipientAccountNumber);
+                .FirstOrDefaultAsync(a => a.GetFields().Active && a.GetFields().AccountNumber == transferDto.RecipientAccountNumber);
             if (recipient == null) return NotFound(new ErrorDto("Recipient account not found."));
             if (sender.Equals(recipient))
                 return BadRequest(new ErrorDto("Transfer to the same account is not allowed."));
             double balance = await CalculateBalanceFromAccount(sender);
             if (balance < transferDto.Value) return BadRequest(new ErrorDto("Insufficient balance."));
-            var transfer = new Transfer(transferDto, sender, recipient);
+            var transfer = new Transfer(new TransferFields() { Value = transferDto.Value }) { Sender = sender, Recipient = recipient };
             _context.Transfers.Add(transfer);
             await _context.SaveChangesAsync();
             return Ok();
@@ -109,7 +109,7 @@ public class TransactionsController : ControllerBase
         try
         {
             Account? account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.AccountNumber == accountNumber);
+                .FirstOrDefaultAsync(a => a.GetFields().AccountNumber == accountNumber);
             if (account == null) return NotFound(new ErrorDto("Account not found."));
             double balance = await CalculateBalanceFromAccount(account);
             return Ok(new GetBalanceOutput { Balance = CurrencyHelper.GetBrazilianCurrency(balance) });
@@ -131,7 +131,7 @@ public class TransactionsController : ControllerBase
         try
         {
             Account? account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.AccountNumber == accountNumber);
+                .FirstOrDefaultAsync(a => a.GetFields().AccountNumber == accountNumber);
             if (account == null) return NotFound(new ErrorDto("Account not found."));
             var credits = await GetCreditsFromAccount(account);
             var debits = await GetDebitsFromAccount(account);
@@ -147,10 +147,10 @@ public class TransactionsController : ControllerBase
 
     private async Task<double> CalculateBalanceFromAccount(Account account)
     {
-        double creditSum = (await GetCreditsFromAccount(account)).Sum(c => c.Value);
-        double debitSum = (await GetDebitsFromAccount(account)).Sum(d => d.Value);
+        double creditSum = (await GetCreditsFromAccount(account)).Sum(c => c.GetFields().Value);
+        double debitSum = (await GetDebitsFromAccount(account)).Sum(d => d.GetFields().Value);
         var transfers = await GetTransfersFromAccount(account);
-        double transferSum = transfers.Sum(t => t.Sender.Equals(account) ? (-1 * t.Value) : t.Value);
+        double transferSum = transfers.Sum(t => t.Sender.Equals(account) ? (-1 * t.GetFields().Value) : t.GetFields().Value);
         double balance = creditSum + debitSum + transferSum;
         return balance;
     }
@@ -184,11 +184,11 @@ public class TransactionsController : ControllerBase
         int creditIndex = 0, debitIndex = 0, transferIndex = 0;
         int max = credits.Count() + debits.Count() + transfers.Count();
         List<long> creditTimestamps = credits
-            .Select(c => new DateTimeOffset(c.CreatedAt).ToUnixTimeMilliseconds()).ToList();
+            .Select(c => new DateTimeOffset(c.GetFields().CreatedAt).ToUnixTimeMilliseconds()).ToList();
         List<long> debitTimestamps = debits
-            .Select(d => new DateTimeOffset(d.CreatedAt).ToUnixTimeMilliseconds()).ToList();
+            .Select(d => new DateTimeOffset(d.GetFields().CreatedAt).ToUnixTimeMilliseconds()).ToList();
         List<long> transferTimestamps = transfers
-            .Select(t => new DateTimeOffset(t.CreatedAt).ToUnixTimeMilliseconds()).ToList();
+            .Select(t => new DateTimeOffset(t.GetFields().CreatedAt).ToUnixTimeMilliseconds()).ToList();
         creditTimestamps.Add(long.MaxValue);
         debitTimestamps.Add(long.MaxValue);
         transferTimestamps.Add(long.MaxValue);
@@ -200,13 +200,13 @@ public class TransactionsController : ControllerBase
             if (creditTimestamp <= debitTimestamp && creditTimestamp <= transferTimestamp)
             {
                 var credit = credits.ElementAt(creditIndex);
-                sortedTransactions.Add(credit.GetDataWithoutAccount());
+                sortedTransactions.Add(new TransactionCreditDebitDto(credit.GetDataWithoutAccount()));
                 creditIndex++;
             }
             else if (debitTimestamp <= transferTimestamp)
             {
                 var debit = debits.ElementAt(debitIndex);
-                sortedTransactions.Add(debit.GetDataWithoutAccount());
+                sortedTransactions.Add(new TransactionCreditDebitDto(debit.GetDataWithoutAccount()));
                 debitIndex++;
             }
             else

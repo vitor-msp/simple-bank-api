@@ -50,33 +50,31 @@ public class TransactionsControllerTest : IDisposable
 
     private Account AccountExample(int accountNumber = 1, string cpf = "123")
     {
-        return new Account()
+        var account = new Account(AccountFields.Rebuild(1, accountNumber, DateTime.Now, true))
         {
-            AccountNumber = accountNumber,
-            Active = true,
-            CreatedAt = DateTime.Now,
-            Owner = new Customer() { Cpf = cpf, Name = "fulano" }
+            Owner = new Customer(new CustomerFields() { Cpf = cpf, Name = "fulano" })
         };
+        return account;
     }
 
     private Credit CreditExample()
     {
-        return new Credit() { Value = 100, Account = _account, CreatedAt = DateTime.Now };
+        return new Credit(CreditFields.Rebuild(1, DateTime.Now, 100)) { Account = _account };
     }
 
     private Debit DebitExample()
     {
-        return new Debit() { Value = -10, Account = _account, CreatedAt = DateTime.Now };
+        return new Debit(DebitFields.Rebuild(1, DateTime.Now, -10)) { Account = _account };
     }
 
     private Transfer TransferExampleAsSender(Account recipient)
     {
-        return new Transfer() { Value = 25, Sender = _account, Recipient = recipient, CreatedAt = DateTime.Now };
+        return new Transfer(TransferFields.Rebuild(1, DateTime.Now, 25)) { Sender = _account, Recipient = recipient };
     }
 
     private Transfer TransferExampleAsRecipient(Account sender)
     {
-        return new Transfer() { Value = 25, Sender = sender, Recipient = _account, CreatedAt = DateTime.Now };
+        return new Transfer(TransferFields.Rebuild(1, DateTime.Now, 25)) { Sender = sender, Recipient = _account };
     }
 
     [Fact]
@@ -85,15 +83,15 @@ public class TransactionsControllerTest : IDisposable
         var (sut, context) = MakeSut();
         var input = new CreditDto() { Value = 100.56 };
 
-        var actionResult = await sut.PostCredit(_account.AccountNumber, input);
+        var actionResult = await sut.PostCredit(_account.GetFields().AccountNumber, input);
 
         Assert.IsType<OkResult>(actionResult);
-        var savedCredits = context.Credits.Where(credit => credit.Account.AccountNumber == _account.AccountNumber).ToList();
+        var savedCredits = context.Credits.Where(credit => credit.Account.GetFields().AccountNumber == _account.GetFields().AccountNumber).ToList();
         Assert.Single(savedCredits);
-        Assert.Equal(input.Value, savedCredits[0].Value);
+        Assert.Equal(input.Value, savedCredits[0].GetFields().Value);
         Assert.Equal(_account, savedCredits[0].Account);
-        Assert.IsType<int>(savedCredits[0].Id);
-        Assert.IsType<DateTime>(savedCredits[0].CreatedAt);
+        Assert.IsType<int>(savedCredits[0].GetFields().Id);
+        Assert.IsType<DateTime>(savedCredits[0].GetFields().CreatedAt);
     }
 
     [Fact]
@@ -104,15 +102,15 @@ public class TransactionsControllerTest : IDisposable
         context.SaveChanges();
         var input = new DebitDto() { Value = 50.56 };
 
-        var actionResult = await sut.PostDebit(_account.AccountNumber, input);
+        var actionResult = await sut.PostDebit(_account.GetFields().AccountNumber, input);
 
         Assert.IsType<OkResult>(actionResult);
-        var savedDebits = context.Debits.Where(debit => debit.Account.AccountNumber == _account.AccountNumber).ToList();
+        var savedDebits = context.Debits.Where(debit => debit.Account.GetFields().AccountNumber == _account.GetFields().AccountNumber).ToList();
         Assert.Single(savedDebits);
-        Assert.Equal(input.Value, -1 * savedDebits[0].Value);
+        Assert.Equal(input.Value, -1 * savedDebits[0].GetFields().Value);
         Assert.Equal(_account, savedDebits[0].Account);
-        Assert.IsType<int>(savedDebits[0].Id);
-        Assert.IsType<DateTime>(savedDebits[0].CreatedAt);
+        Assert.IsType<int>(savedDebits[0].GetFields().Id);
+        Assert.IsType<DateTime>(savedDebits[0].GetFields().CreatedAt);
     }
 
     [Fact]
@@ -123,18 +121,18 @@ public class TransactionsControllerTest : IDisposable
         var recipientAccount = AccountExample(2, "321");
         context.Accounts.Add(recipientAccount);
         context.SaveChanges();
-        var input = new TransferDto() { Value = 50.56, RecipientAccountNumber = recipientAccount.AccountNumber };
+        var input = new TransferDto() { Value = 50.56, RecipientAccountNumber = recipientAccount.GetFields().AccountNumber };
 
-        var actionResult = await sut.PostTransfer(_account.AccountNumber, input);
+        var actionResult = await sut.PostTransfer(_account.GetFields().AccountNumber, input);
 
         Assert.IsType<OkResult>(actionResult);
-        var savedTransfers = context.Transfers.Where(transfer => transfer.Sender.AccountNumber == _account.AccountNumber).ToList();
+        var savedTransfers = context.Transfers.Where(transfer => transfer.Sender.GetFields().AccountNumber == _account.GetFields().AccountNumber).ToList();
         Assert.Single(savedTransfers);
-        Assert.Equal(input.Value, savedTransfers[0].Value);
+        Assert.Equal(input.Value, savedTransfers[0].GetFields().Value);
         Assert.Equal(_account, savedTransfers[0].Sender);
         Assert.Equal(recipientAccount, savedTransfers[0].Recipient);
-        Assert.IsType<int>(savedTransfers[0].Id);
-        Assert.IsType<DateTime>(savedTransfers[0].CreatedAt);
+        Assert.IsType<int>(savedTransfers[0].GetFields().Id);
+        Assert.IsType<DateTime>(savedTransfers[0].GetFields().CreatedAt);
     }
 
     [Theory]
@@ -172,13 +170,13 @@ public class TransactionsControllerTest : IDisposable
         context.SaveChanges();
         var creditInput = new CreditDto() { Value = -50 };
         var debitInput = new DebitDto() { Value = -50 };
-        var transferInput = new TransferDto() { Value = -50.56, RecipientAccountNumber = recipientAccount.AccountNumber };
+        var transferInput = new TransferDto() { Value = -50.56, RecipientAccountNumber = recipientAccount.GetFields().AccountNumber };
 
         var actionResult = (type) switch
         {
-            "credit" => await sut.PostCredit(_account.AccountNumber, creditInput),
-            "debit" => await sut.PostDebit(_account.AccountNumber, debitInput),
-            "transfer" => await sut.PostTransfer(_account.AccountNumber, transferInput),
+            "credit" => await sut.PostCredit(_account.GetFields().AccountNumber, creditInput),
+            "debit" => await sut.PostDebit(_account.GetFields().AccountNumber, debitInput),
+            "transfer" => await sut.PostTransfer(_account.GetFields().AccountNumber, transferInput),
         };
 
         Assert.IsType<BadRequestObjectResult>(actionResult);
@@ -194,11 +192,11 @@ public class TransactionsControllerTest : IDisposable
         context.Accounts.Add(recipientAccount);
         context.SaveChanges();
         var debitInput = new DebitDto() { Value = 50 };
-        var transferInput = new TransferDto() { Value = 50.56, RecipientAccountNumber = recipientAccount.AccountNumber };
+        var transferInput = new TransferDto() { Value = 50.56, RecipientAccountNumber = recipientAccount.GetFields().AccountNumber };
 
         var actionResult = type == "debit"
-            ? await sut.PostDebit(_account.AccountNumber, debitInput)
-            : await sut.PostTransfer(_account.AccountNumber, transferInput);
+            ? await sut.PostDebit(_account.GetFields().AccountNumber, debitInput)
+            : await sut.PostTransfer(_account.GetFields().AccountNumber, transferInput);
 
         Assert.IsType<BadRequestObjectResult>(actionResult);
     }
@@ -210,7 +208,7 @@ public class TransactionsControllerTest : IDisposable
         var recipientAccount = AccountExample(2, "321");
         context.Accounts.Add(recipientAccount);
         context.SaveChanges();
-        var input = new TransferDto() { Value = 50.56, RecipientAccountNumber = recipientAccount.AccountNumber };
+        var input = new TransferDto() { Value = 50.56, RecipientAccountNumber = recipientAccount.GetFields().AccountNumber };
 
         var actionResult = await sut.PostTransfer(_accountNumberNotUsed, input);
 
@@ -225,7 +223,7 @@ public class TransactionsControllerTest : IDisposable
         context.SaveChanges();
         var input = new TransferDto() { Value = 50.56, RecipientAccountNumber = _accountNumberNotUsed };
 
-        var actionResult = await sut.PostTransfer(_account.AccountNumber, input);
+        var actionResult = await sut.PostTransfer(_account.GetFields().AccountNumber, input);
 
         Assert.IsType<NotFoundObjectResult>(actionResult);
     }
@@ -236,9 +234,9 @@ public class TransactionsControllerTest : IDisposable
         var (sut, context) = MakeSut();
         context.Credits.Add(CreditExample());
         context.SaveChanges();
-        var input = new TransferDto() { Value = 50.56, RecipientAccountNumber = _account.AccountNumber };
+        var input = new TransferDto() { Value = 50.56, RecipientAccountNumber = _account.GetFields().AccountNumber };
 
-        var actionResult = await sut.PostTransfer(_account.AccountNumber, input);
+        var actionResult = await sut.PostTransfer(_account.GetFields().AccountNumber, input);
 
         Assert.IsType<BadRequestObjectResult>(actionResult);
     }
@@ -253,11 +251,11 @@ public class TransactionsControllerTest : IDisposable
         context.Debits.Add(debit);
         context.SaveChanges();
 
-        var actionResult = await sut.GetBalance(_account.AccountNumber);
+        var actionResult = await sut.GetBalance(_account.GetFields().AccountNumber);
 
         var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         var getBalanceOutput = Assert.IsType<TransactionsController.GetBalanceOutput>(okResult.Value);
-        string expectedBalance = (credit.Value + debit.Value).ToString("c", CultureInfo.GetCultureInfo("pt-BR")); ;
+        string expectedBalance = (credit.GetFields().Value + debit.GetFields().Value).ToString("c", CultureInfo.GetCultureInfo("pt-BR")); ;
         Assert.Equal(expectedBalance, getBalanceOutput.Balance);
     }
 
@@ -266,8 +264,8 @@ public class TransactionsControllerTest : IDisposable
         return new TransactionCreditDebitDto()
         {
             Type = TransactionType.Credit,
-            Value = credit.Value.ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
-            CreatedAt = DateTime.SpecifyKind(credit.CreatedAt, DateTimeKind.Unspecified)
+            Value = credit.GetFields().Value.ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
+            CreatedAt = DateTime.SpecifyKind(credit.GetFields().CreatedAt, DateTimeKind.Unspecified)
         };
     }
 
@@ -276,28 +274,28 @@ public class TransactionsControllerTest : IDisposable
         return new TransactionCreditDebitDto()
         {
             Type = TransactionType.Debit,
-            Value = debit.Value.ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
-            CreatedAt = DateTime.SpecifyKind(debit.CreatedAt, DateTimeKind.Unspecified)
+            Value = debit.GetFields().Value.ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
+            CreatedAt = DateTime.SpecifyKind(debit.GetFields().CreatedAt, DateTimeKind.Unspecified)
         };
     }
 
     private TransactionTransferDto GenerateTransactionTransferDto(Transfer transfer, bool AsSender = true)
     {
-        double value = AsSender ? -1 * transfer.Value : transfer.Value;
+        double value = AsSender ? -1 * transfer.GetFields().Value : transfer.GetFields().Value;
         return new TransactionTransferDto()
         {
             Type = TransactionType.Transfer,
             Value = value.ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
-            CreatedAt = DateTime.SpecifyKind(transfer.CreatedAt, DateTimeKind.Unspecified),
+            CreatedAt = DateTime.SpecifyKind(transfer.GetFields().CreatedAt, DateTimeKind.Unspecified),
             Sender = new TransactionAccountDto()
             {
-                AccountNumber = transfer.Sender.AccountNumber,
-                Name = transfer.Sender.Owner.Name
+                AccountNumber = transfer.Sender.GetFields().AccountNumber,
+                Name = transfer.Sender.Owner.GetFields().Name
             },
             Recipient = new TransactionAccountDto()
             {
-                AccountNumber = transfer.Recipient.AccountNumber,
-                Name = transfer.Recipient.Owner.Name
+                AccountNumber = transfer.Recipient.GetFields().AccountNumber,
+                Name = transfer.Recipient.Owner.GetFields().Name
             }
         };
     }
@@ -317,7 +315,7 @@ public class TransactionsControllerTest : IDisposable
         context.Transfers.Add(transferAsRecipient);
         context.SaveChanges();
 
-        var actionResult = await sut.GetTransactions(_account.AccountNumber);
+        var actionResult = await sut.GetTransactions(_account.GetFields().AccountNumber);
 
         var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         var getTransactionsOutput = Assert.IsType<TransactionsController.GetTransactionsOutput>(okResult.Value);
