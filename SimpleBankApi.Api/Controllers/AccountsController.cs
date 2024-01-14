@@ -13,12 +13,16 @@ public class AccountsController : ControllerBase
     private readonly ICreateAccountUseCase _createAccountUseCase;
 
     private readonly IUpdateAccountUseCase _updateAccountUseCase;
+    private readonly IDeleteAccountUseCase _deleteAccountUseCase;
 
-    public AccountsController(IAccountsRepository accountsRepository, ICreateAccountUseCase createAccountUseCase, IUpdateAccountUseCase updateAccountUseCase)
+    public AccountsController(IAccountsRepository accountsRepository,
+        ICreateAccountUseCase createAccountUseCase, IUpdateAccountUseCase updateAccountUseCase,
+        IDeleteAccountUseCase deleteAccountUseCase)
     {
         _accountsRepository = accountsRepository;
         _createAccountUseCase = createAccountUseCase;
         _updateAccountUseCase = updateAccountUseCase;
+        _deleteAccountUseCase = deleteAccountUseCase;
     }
 
     public class GetAllOutput
@@ -121,11 +125,12 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var account = await _accountsRepository.GetByAccountNumber(accountNumber);
-            if (account == null) return NotFound(new ErrorDto("Account not found."));
-            account.Inactivate();
-            await _accountsRepository.Save(account);
+            await _deleteAccountUseCase.Execute(accountNumber);
             return NoContent();
+        }
+        catch (ApplicationException error)
+        {
+            return NotFound(new ErrorDto(error.Message));
         }
         catch (Exception)
         {
