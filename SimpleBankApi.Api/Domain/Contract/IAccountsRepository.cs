@@ -6,5 +6,4 @@ public interface IAccountsRepository
     Task<Account?> GetByAccountNumber(int accountNumber);
     Task<Account?> GetByCpf(string cpf);
     Task Save(Account account);
-    Task Delete(Account account);
 }

@@ -1,11 +1,9 @@
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Models;
 
 public class TransactionFields
 {
-    [Key]
     [JsonIgnore]
     public int Id { get; private set; }
     public double Value { get; set; }

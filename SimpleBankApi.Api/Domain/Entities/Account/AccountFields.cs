@@ -1,11 +1,9 @@
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Models;
 
 public class AccountFields
 {
-    [Key]
     [JsonIgnore]
     public int Id { get; private set; }
     public int AccountNumber { get; private set; }

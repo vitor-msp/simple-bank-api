@@ -1,13 +1,9 @@
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
 
 namespace Models;
 
-[Index(nameof(Cpf), IsUnique = true)]
 public class CustomerFields
 {
-    [Key]
     [JsonIgnore]
     public int Id { get; private set; }
     public string? Cpf { get; set; }
