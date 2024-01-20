@@ -21,6 +21,9 @@ builder.Services.AddScoped<IAccountsRepository, AccountsRepository>();
 builder.Services.AddScoped<ITransactionsRepository, TransactionsRepository>();
 builder.Services.AddScoped<ICreateAccountUseCase, CreateAccountUseCase>();
 
+builder.Services.AddScoped<IPostCreditUseCase, PostCreditUseCase>();
+builder.Services.AddScoped<IPostDebitUseCase, PostDebitUseCase>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

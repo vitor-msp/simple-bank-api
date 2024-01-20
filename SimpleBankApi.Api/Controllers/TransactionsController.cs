@@ -1,4 +1,6 @@
 using System.Collections;
+using Application;
+using Application.Exceptions;
 using Dto;
 using Exceptions;
 using Helpers;
@@ -13,11 +15,20 @@ public class TransactionsController : ControllerBase
 {
     private readonly ITransactionsRepository _transactionsRepository;
     private readonly IAccountsRepository _accountsRepository;
+    private readonly IPostCreditUseCase _postCreditUseCase;
+    private readonly IPostDebitUseCase _postDebitUseCase;
 
-    public TransactionsController(ITransactionsRepository transactionsRepository, IAccountsRepository accountsRepository)
+    public TransactionsController(
+        ITransactionsRepository transactionsRepository,
+        IAccountsRepository accountsRepository,
+        IPostCreditUseCase postCreditUseCase,
+        IPostDebitUseCase postDebitUseCase
+        )
     {
         _transactionsRepository = transactionsRepository;
         _accountsRepository = accountsRepository;
+        _postCreditUseCase = postCreditUseCase;
+        _postDebitUseCase = postDebitUseCase;
     }
 
 
@@ -26,11 +37,12 @@ public class TransactionsController : ControllerBase
     {
         try
         {
-            Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
-            if (account == null) return NotFound(new ErrorDto("Account not found."));
-            var credit = new Credit(new CreditFields() { Value = creditDto.Value }) { Account = account };
-            await _transactionsRepository.SaveCredit(credit);
+            await _postCreditUseCase.Execute(accountNumber, creditDto);
             return Ok();
+        }
+        catch (EntityNotFoundException error)
+        {
+            return NotFound(new ErrorDto(error.Message));
         }
         catch (TransactionException error)
         {
@@ -47,13 +59,16 @@ public class TransactionsController : ControllerBase
     {
         try
         {
-            Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
-            if (account == null) return NotFound(new ErrorDto("Account not found."));
-            double balance = await CalculateBalanceFromAccount(account);
-            if (balance < debitDto.Value) return BadRequest(new ErrorDto("Insufficient balance."));
-            var debit = new Debit(new DebitFields() { Value = debitDto.Value }) { Account = account };
-            await _transactionsRepository.SaveDebit(debit);
+            await _postDebitUseCase.Execute(accountNumber, debitDto);
             return Ok();
+        }
+        catch (EntityNotFoundException error)
+        {
+            return NotFound(new ErrorDto(error.Message));
+        }
+        catch (InvalidInputException error)
+        {
+            return BadRequest(new ErrorDto(error.Message));
         }
         catch (TransactionException error)
         {

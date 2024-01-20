@@ -3,6 +3,7 @@ using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Application;
 using Context;
 using Controllers;
 using Dto;
@@ -42,7 +43,14 @@ public class TransactionsControllerTest : IDisposable
     private async Task<(TransactionsController, BankContext)> MakeSut()
     {
         var context = CreateContext();
-        var controller = new TransactionsController(new TransactionsRepository(context), new AccountsRepository(context));
+        var transactionsRepository = new TransactionsRepository(context);
+        var accountsRepository = new AccountsRepository(context);
+
+        var controller = new TransactionsController(
+           transactionsRepository, accountsRepository,
+            new PostCreditUseCase(transactionsRepository, accountsRepository),
+             new PostDebitUseCase(transactionsRepository, accountsRepository));
+
         context.Accounts.Add(_account);
         await context.SaveChangesAsync();
         return (controller, context);
