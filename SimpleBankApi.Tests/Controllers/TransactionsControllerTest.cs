@@ -49,7 +49,8 @@ public class TransactionsControllerTest : IDisposable
         var controller = new TransactionsController(
            transactionsRepository, accountsRepository,
             new PostCreditUseCase(transactionsRepository, accountsRepository),
-             new PostDebitUseCase(transactionsRepository, accountsRepository));
+            new PostDebitUseCase(transactionsRepository, accountsRepository),
+            new PostTransferUseCase(transactionsRepository, accountsRepository));
 
         context.Accounts.Add(_account);
         await context.SaveChangesAsync();

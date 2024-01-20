@@ -17,18 +17,21 @@ public class TransactionsController : ControllerBase
     private readonly IAccountsRepository _accountsRepository;
     private readonly IPostCreditUseCase _postCreditUseCase;
     private readonly IPostDebitUseCase _postDebitUseCase;
+    private readonly IPostTransferUseCase _postTransferUseCase;
 
     public TransactionsController(
         ITransactionsRepository transactionsRepository,
         IAccountsRepository accountsRepository,
         IPostCreditUseCase postCreditUseCase,
-        IPostDebitUseCase postDebitUseCase
+        IPostDebitUseCase postDebitUseCase,
+        IPostTransferUseCase postTransferUseCase
         )
     {
         _transactionsRepository = transactionsRepository;
         _accountsRepository = accountsRepository;
         _postCreditUseCase = postCreditUseCase;
         _postDebitUseCase = postDebitUseCase;
+        _postTransferUseCase = postTransferUseCase;
     }
 
 
@@ -85,17 +88,16 @@ public class TransactionsController : ControllerBase
     {
         try
         {
-            Account? sender = await _accountsRepository.GetByAccountNumber(accountNumber);
-            if (sender == null) return NotFound(new ErrorDto("Sender account not found."));
-            Account? recipient = await _accountsRepository.GetByAccountNumber(transferDto.RecipientAccountNumber);
-            if (recipient == null) return NotFound(new ErrorDto("Recipient account not found."));
-            if (sender.Equals(recipient))
-                return BadRequest(new ErrorDto("Transfer to the same account is not allowed."));
-            double balance = await CalculateBalanceFromAccount(sender);
-            if (balance < transferDto.Value) return BadRequest(new ErrorDto("Insufficient balance."));
-            var transfer = new Transfer(new TransferFields() { Value = transferDto.Value }) { Sender = sender, Recipient = recipient };
-            await _transactionsRepository.SaveTransfer(transfer);
+            await _postTransferUseCase.Execute(accountNumber, transferDto);
             return Ok();
+        }
+        catch (EntityNotFoundException error)
+        {
+            return NotFound(new ErrorDto(error.Message));
+        }
+        catch (InvalidInputException error)
+        {
+            return BadRequest(new ErrorDto(error.Message));
         }
         catch (TransactionException error)
         {
