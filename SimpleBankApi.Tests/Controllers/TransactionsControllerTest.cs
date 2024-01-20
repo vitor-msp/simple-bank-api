@@ -47,11 +47,11 @@ public class TransactionsControllerTest : IDisposable
         var accountsRepository = new AccountsRepository(context);
 
         var controller = new TransactionsController(
-           transactionsRepository, accountsRepository,
             new PostCreditUseCase(transactionsRepository, accountsRepository),
             new PostDebitUseCase(transactionsRepository, accountsRepository),
             new PostTransferUseCase(transactionsRepository, accountsRepository),
-            new GetBalanceUseCase(transactionsRepository, accountsRepository));
+            new GetBalanceUseCase(transactionsRepository, accountsRepository),
+            new GetTransactionsUseCase(transactionsRepository, accountsRepository));
 
         context.Accounts.Add(_account);
         await context.SaveChangesAsync();
@@ -333,7 +333,7 @@ public class TransactionsControllerTest : IDisposable
         var actionResult = await sut.GetTransactions(_account.AccountNumber);
 
         var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-        var getTransactionsOutput = Assert.IsType<TransactionsController.GetTransactionsOutput>(okResult.Value);
+        var getTransactionsOutput = Assert.IsType<GetTransactionsOutput>(okResult.Value);
         Assert.Equal(4, getTransactionsOutput.Transactions.Count);
 
         var expectedCredit = GenerateTransactionCreditDto(credit);

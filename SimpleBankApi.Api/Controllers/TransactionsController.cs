@@ -1,10 +1,8 @@
-using System.Collections;
 using Application;
 using Application.Exceptions;
 using Dto;
 using Exceptions;
 using Microsoft.AspNetCore.Mvc;
-using Models;
 
 namespace Controllers;
 
@@ -12,28 +10,25 @@ namespace Controllers;
 [Route("transactions")]
 public class TransactionsController : ControllerBase
 {
-    private readonly ITransactionsRepository _transactionsRepository;
-    private readonly IAccountsRepository _accountsRepository;
     private readonly IPostCreditUseCase _postCreditUseCase;
     private readonly IPostDebitUseCase _postDebitUseCase;
     private readonly IPostTransferUseCase _postTransferUseCase;
     private readonly IGetBalanceUseCase _getBalanceUseCase;
+    private readonly IGetTransactionsUseCase _getTransactionsUseCase;
 
     public TransactionsController(
-        ITransactionsRepository transactionsRepository,
-        IAccountsRepository accountsRepository,
         IPostCreditUseCase postCreditUseCase,
         IPostDebitUseCase postDebitUseCase,
         IPostTransferUseCase postTransferUseCase,
-        IGetBalanceUseCase getBalanceUseCase
+        IGetBalanceUseCase getBalanceUseCase,
+        IGetTransactionsUseCase getTransactionsUseCase
         )
     {
-        _transactionsRepository = transactionsRepository;
-        _accountsRepository = accountsRepository;
         _postCreditUseCase = postCreditUseCase;
         _postDebitUseCase = postDebitUseCase;
         _postTransferUseCase = postTransferUseCase;
         _getBalanceUseCase = getBalanceUseCase;
+        _getTransactionsUseCase = getTransactionsUseCase;
     }
 
     [HttpPost("credit/{accountNumber}")]
@@ -129,89 +124,22 @@ public class TransactionsController : ControllerBase
         }
     }
 
-    public class GetTransactionsOutput
-    {
-        public ArrayList Transactions { get; set; } = new();
-    }
-
     [HttpGet("{accountNumber}")]
     public async Task<ActionResult<GetTransactionsOutput>> GetTransactions(int accountNumber)
     {
         try
         {
-            Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
-            if (account == null) return NotFound(new ErrorDto("Account not found."));
-            var credits = await GetCreditsFromAccount(account);
-            var debits = await GetDebitsFromAccount(account);
-            var transfers = await GetTransfersFromAccount(account);
-            var sortedTransactions = SortTransactionsByDateTime(credits, debits, transfers, account);
-            return Ok(new GetTransactionsOutput { Transactions = sortedTransactions });
+            var output = await _getTransactionsUseCase.Execute(accountNumber);
+            return Ok(output);
         }
-        catch (Exception error)
+        catch (EntityNotFoundException error)
         {
-            System.Console.WriteLine(error.Message);
-            System.Console.WriteLine(error.StackTrace);
+            return NotFound(new ErrorDto(error.Message));
+
+        }
+        catch (Exception)
+        {
             return StatusCode(500, new ErrorDto("Error to get transactions."));
         }
-    }
-
-    private async Task<List<Credit>> GetCreditsFromAccount(Account account)
-    {
-        var credits = await _transactionsRepository.GetCreditsFromAccount(account.GetFields().AccountNumber);
-        return credits;
-    }
-
-    private async Task<List<Debit>> GetDebitsFromAccount(Account account)
-    {
-        var debits = await _transactionsRepository.GetDebitsFromAccount(account.GetFields().AccountNumber);
-        return debits;
-    }
-
-    private async Task<List<Transfer>> GetTransfersFromAccount(Account account)
-    {
-        var transfers = await _transactionsRepository.GetTransfersFromAccount(account.GetFields().AccountNumber);
-        return transfers;
-    }
-
-    private ArrayList SortTransactionsByDateTime(
-        List<Credit> credits, List<Debit> debits, List<Transfer> transfers, Account account)
-    {
-        var sortedTransactions = new ArrayList();
-        int creditIndex = 0, debitIndex = 0, transferIndex = 0;
-        int max = credits.Count() + debits.Count() + transfers.Count();
-        List<long> creditTimestamps = credits
-            .Select(c => new DateTimeOffset(c.GetFields().CreatedAt).ToUnixTimeMilliseconds()).ToList();
-        List<long> debitTimestamps = debits
-            .Select(d => new DateTimeOffset(d.GetFields().CreatedAt).ToUnixTimeMilliseconds()).ToList();
-        List<long> transferTimestamps = transfers
-            .Select(t => new DateTimeOffset(t.GetFields().CreatedAt).ToUnixTimeMilliseconds()).ToList();
-        creditTimestamps.Add(long.MaxValue);
-        debitTimestamps.Add(long.MaxValue);
-        transferTimestamps.Add(long.MaxValue);
-        for (int index = 0; index < max; index++)
-        {
-            var creditTimestamp = creditTimestamps.ElementAt(creditIndex);
-            var debitTimestamp = debitTimestamps.ElementAt(debitIndex);
-            var transferTimestamp = transferTimestamps.ElementAt(transferIndex);
-            if (creditTimestamp <= debitTimestamp && creditTimestamp <= transferTimestamp)
-            {
-                var credit = credits.ElementAt(creditIndex);
-                sortedTransactions.Add(new TransactionCreditDebitDto(credit.GetDataWithoutAccount()));
-                creditIndex++;
-            }
-            else if (debitTimestamp <= transferTimestamp)
-            {
-                var debit = debits.ElementAt(debitIndex);
-                sortedTransactions.Add(new TransactionCreditDebitDto(debit.GetDataWithoutAccount()));
-                debitIndex++;
-            }
-            else
-            {
-                var transfer = transfers.ElementAt(transferIndex);
-                sortedTransactions.Add(transfer.GetData(account));
-                transferIndex++;
-            }
-        }
-        return sortedTransactions;
     }
 }

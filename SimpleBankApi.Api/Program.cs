@@ -23,6 +23,9 @@ builder.Services.AddScoped<ICreateAccountUseCase, CreateAccountUseCase>();
 
 builder.Services.AddScoped<IPostCreditUseCase, PostCreditUseCase>();
 builder.Services.AddScoped<IPostDebitUseCase, PostDebitUseCase>();
+builder.Services.AddScoped<IPostTransferUseCase, PostTransferUseCase>();
+builder.Services.AddScoped<IGetBalanceUseCase, GetBalanceUseCase>();
+builder.Services.AddScoped<IGetTransactionsUseCase, GetTransactionsUseCase>();
 
 var app = builder.Build();
 
