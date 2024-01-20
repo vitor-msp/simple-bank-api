@@ -1,5 +1,6 @@
 using Application;
 using Dto;
+using Input;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 
@@ -11,18 +12,19 @@ public class AccountsController : ControllerBase
 {
     private readonly IAccountsRepository _accountsRepository;
     private readonly ICreateAccountUseCase _createAccountUseCase;
-
     private readonly IUpdateAccountUseCase _updateAccountUseCase;
     private readonly IDeleteAccountUseCase _deleteAccountUseCase;
+    private readonly IGetAllAccountsUseCase _getAllAccountUseCase;
 
     public AccountsController(IAccountsRepository accountsRepository,
         ICreateAccountUseCase createAccountUseCase, IUpdateAccountUseCase updateAccountUseCase,
-        IDeleteAccountUseCase deleteAccountUseCase)
+        IDeleteAccountUseCase deleteAccountUseCase, IGetAllAccountsUseCase getAllAccountUseCase)
     {
         _accountsRepository = accountsRepository;
         _createAccountUseCase = createAccountUseCase;
         _updateAccountUseCase = updateAccountUseCase;
         _deleteAccountUseCase = deleteAccountUseCase;
+        _getAllAccountUseCase = getAllAccountUseCase;
     }
 
     [HttpGet]
@@ -30,11 +32,8 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var accounts = await _accountsRepository.GetAll();
-            return Ok(new GetAllAccountsOutput
-            {
-                Accounts = accounts.Select(a => new TransactionAccountDto(a.GetPublicData())).ToList()
-            });
+            var output = await _getAllAccountUseCase.Execute();
+            return Ok(output);
         }
         catch (Exception)
         {
@@ -73,7 +72,7 @@ public class AccountsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<PostAccountOutput>> Post([FromBody] AccountCreateDto newAccountDto)
+    public async Task<ActionResult<PostAccountOutput>> Post([FromBody] CreateAccountInput newAccountDto)
     {
         try
         {

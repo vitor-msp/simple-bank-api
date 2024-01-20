@@ -1,8 +1,8 @@
-using Dto;
+using Input;
 
 namespace Application;
 
 public interface ICreateAccountUseCase
 {
-    Task<int> Execute(AccountCreateDto input);
+    Task<int> Execute(CreateAccountInput input);
 }

@@ -6,6 +6,7 @@ using Application;
 using Context;
 using Controllers;
 using Dto;
+using Input;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -38,9 +39,9 @@ public class AccountsControllerTest : IDisposable
     {
         var context = CreateContext();
         var accountsRepository = new AccountsRepository(context);
-        var controller = new AccountsController(accountsRepository, 
+        var controller = new AccountsController(accountsRepository,
             new CreateAccountUseCase(accountsRepository), new UpdateAccountUseCase(accountsRepository),
-            new DeleteAccountUseCase(accountsRepository));
+            new DeleteAccountUseCase(accountsRepository), new GetAllAccountsUseCase(accountsRepository));
         return (controller, context);
     }
 
@@ -135,7 +136,7 @@ public class AccountsControllerTest : IDisposable
     public async Task Post_ReturnCreated()
     {
         var (sut, context) = MakeSut();
-        var input = new AccountCreateDto()
+        var input = new CreateAccountInput()
         {
             Name = "fulano de tal",
             Cpf = "01234567890",
@@ -160,7 +161,7 @@ public class AccountsControllerTest : IDisposable
         var account = AccountExample();
         context.Accounts.Add(account);
         await context.SaveChangesAsync();
-        var input = new AccountCreateDto()
+        var input = new CreateAccountInput()
         {
             Name = "fulano de tal",
             Cpf = account.Owner?.Cpf ?? "",

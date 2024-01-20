@@ -1,4 +1,4 @@
-using Dto;
+using Input;
 using Models;
 
 namespace Application;
@@ -12,7 +12,7 @@ public class CreateAccountUseCase : ICreateAccountUseCase
         _accountsRepository = accountsRepository;
     }
 
-    public async Task<int> Execute(AccountCreateDto input)
+    public async Task<int> Execute(CreateAccountInput input)
     {
         var existingAccount = await _accountsRepository.GetByCpf(input.Cpf);
         if (existingAccount != null) throw new ApplicationException("Cpf already registered.");
