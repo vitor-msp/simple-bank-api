@@ -25,18 +25,13 @@ public class AccountsController : ControllerBase
         _deleteAccountUseCase = deleteAccountUseCase;
     }
 
-    public class GetAllOutput
-    {
-        public List<TransactionAccountDto> Accounts { get; set; } = new();
-    }
-
     [HttpGet]
-    public async Task<ActionResult<GetAllOutput>> GetAll()
+    public async Task<ActionResult<GetAllAccountsOutput>> GetAll()
     {
         try
         {
             var accounts = await _accountsRepository.GetAll();
-            return Ok(new GetAllOutput
+            return Ok(new GetAllAccountsOutput
             {
                 Accounts = accounts.Select(a => new TransactionAccountDto(a.GetPublicData())).ToList()
             });
@@ -77,20 +72,14 @@ public class AccountsController : ControllerBase
         }
     }
 
-    public class PostOutput
-    {
-        public int AccountNumber { get; set; }
-    }
-
     [HttpPost]
-    public async Task<ActionResult<PostOutput>> Post([FromBody] AccountCreateDto newAccountDto)
+    public async Task<ActionResult<PostAccountOutput>> Post([FromBody] AccountCreateDto newAccountDto)
     {
         try
         {
             var accountNumber = await _createAccountUseCase.Execute(newAccountDto);
-            return new CreatedAtRouteResult("GetAccount",
-                new PostOutput { AccountNumber = accountNumber },
-                new PostOutput { AccountNumber = accountNumber });
+            var postAccountOutput = new PostAccountOutput() { AccountNumber = accountNumber };
+            return new CreatedAtRouteResult("GetAccount", postAccountOutput, postAccountOutput);
         }
         catch (ApplicationException error)
         {

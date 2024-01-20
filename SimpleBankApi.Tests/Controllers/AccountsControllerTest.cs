@@ -72,7 +72,7 @@ public class AccountsControllerTest : IDisposable
         var actionResult = await sut.GetAll();
 
         var okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-        var getAllOutput = Assert.IsType<AccountsController.GetAllOutput>(okObjectResult.Value);
+        var getAllOutput = Assert.IsType<GetAllAccountsOutput>(okObjectResult.Value);
         var savedAccounts = context.Accounts.ToList();
         Assert.Equal(savedAccounts.Count, getAllOutput.Accounts.Count);
         Assert.Equal(2, getAllOutput.Accounts.Count);
@@ -90,7 +90,7 @@ public class AccountsControllerTest : IDisposable
         var actionResult = await sut.GetAll();
 
         var okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-        var getAllOutput = Assert.IsType<AccountsController.GetAllOutput>(okObjectResult.Value);
+        var getAllOutput = Assert.IsType<GetAllAccountsOutput>(okObjectResult.Value);
         var savedAccounts = context.Accounts.ToList();
         Assert.Equal(savedAccounts.Count, getAllOutput.Accounts.Count);
         Assert.Empty(getAllOutput.Accounts);
@@ -145,7 +145,7 @@ public class AccountsControllerTest : IDisposable
 
         var createdAtRouteResult = Assert.IsType<CreatedAtRouteResult>(actionResult.Result);
         Assert.Equal("GetAccount", createdAtRouteResult.RouteName);
-        var postOutput = Assert.IsType<AccountsController.PostOutput>(createdAtRouteResult.Value);
+        var postOutput = Assert.IsType<PostAccountOutput>(createdAtRouteResult.Value);
         var accountNumber = Assert.IsType<int>(postOutput.AccountNumber);
         var savedAccount = context.Accounts.Single(account => account.AccountNumber == accountNumber);
         Assert.Equal(accountNumber, savedAccount.AccountNumber);

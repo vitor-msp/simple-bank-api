@@ -22,7 +22,6 @@ public class AccountsRepository : IAccountsRepository
             if (accountDB.Owner == null) throw new Exception();
             account.Owner = accountDB.Owner.GetEntity();
             return account;
-
         }).ToList();
     }
 

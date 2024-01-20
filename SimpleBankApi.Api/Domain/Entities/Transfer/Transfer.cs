@@ -1,4 +1,4 @@
-using System.Transactions;
+using Exceptions;
 
 namespace Models;
 
@@ -23,7 +23,7 @@ public class Transfer : Transaction
         }
         else
         {
-            throw new TransactionException("Transfer does not belong to the account.");
+            throw new DomainException("Transfer does not belong to the account.");
         }
         var dto = new TransactionTransferDto(
             TransactionType.Transfer, value, _fields.CreatedAt, Sender.GetPublicData(), Recipient.GetPublicData());

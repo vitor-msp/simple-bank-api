@@ -16,6 +16,6 @@ public abstract class Transaction
 
     private static void ValidateFields(TransactionFields fields)
     {
-        if (fields.Value <= 0) throw new TransactionException("The transaction value must be greater than zero.");
+        if (fields.Value <= 0) throw new DomainException("The transaction value must be greater than zero.");
     }
 }

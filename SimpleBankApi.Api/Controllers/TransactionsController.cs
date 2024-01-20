@@ -43,7 +43,7 @@ public class TransactionsController : ControllerBase
         {
             return NotFound(new ErrorDto(error.Message));
         }
-        catch (TransactionException error)
+        catch (DomainException error)
         {
             return BadRequest(new ErrorDto(error.Message));
         }
@@ -69,7 +69,7 @@ public class TransactionsController : ControllerBase
         {
             return BadRequest(new ErrorDto(error.Message));
         }
-        catch (TransactionException error)
+        catch (DomainException error)
         {
             return BadRequest(new ErrorDto(error.Message));
         }
@@ -95,7 +95,7 @@ public class TransactionsController : ControllerBase
         {
             return BadRequest(new ErrorDto(error.Message));
         }
-        catch (TransactionException error)
+        catch (DomainException error)
         {
             return BadRequest(new ErrorDto(error.Message));
         }
