@@ -3,7 +3,6 @@ using Application;
 using Application.Exceptions;
 using Dto;
 using Exceptions;
-using Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 
@@ -18,13 +17,15 @@ public class TransactionsController : ControllerBase
     private readonly IPostCreditUseCase _postCreditUseCase;
     private readonly IPostDebitUseCase _postDebitUseCase;
     private readonly IPostTransferUseCase _postTransferUseCase;
+    private readonly IGetBalanceUseCase _getBalanceUseCase;
 
     public TransactionsController(
         ITransactionsRepository transactionsRepository,
         IAccountsRepository accountsRepository,
         IPostCreditUseCase postCreditUseCase,
         IPostDebitUseCase postDebitUseCase,
-        IPostTransferUseCase postTransferUseCase
+        IPostTransferUseCase postTransferUseCase,
+        IGetBalanceUseCase getBalanceUseCase
         )
     {
         _transactionsRepository = transactionsRepository;
@@ -32,8 +33,8 @@ public class TransactionsController : ControllerBase
         _postCreditUseCase = postCreditUseCase;
         _postDebitUseCase = postDebitUseCase;
         _postTransferUseCase = postTransferUseCase;
+        _getBalanceUseCase = getBalanceUseCase;
     }
-
 
     [HttpPost("credit/{accountNumber}")]
     public async Task<ActionResult> PostCredit(int accountNumber, [FromBody] CreditDto creditDto)
@@ -109,20 +110,18 @@ public class TransactionsController : ControllerBase
         }
     }
 
-    public class GetBalanceOutput
-    {
-        public string Balance { get; set; } = "";
-    }
-
     [HttpGet("balance/{accountNumber}")]
     public async Task<ActionResult<GetBalanceOutput>> GetBalance(int accountNumber)
     {
         try
         {
-            Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
-            if (account == null) return NotFound(new ErrorDto("Account not found."));
-            double balance = await CalculateBalanceFromAccount(account);
-            return Ok(new GetBalanceOutput { Balance = CurrencyHelper.GetBrazilianCurrency(balance) });
+            var output = await _getBalanceUseCase.Execute(accountNumber);
+            return Ok(output);
+        }
+        catch (EntityNotFoundException error)
+        {
+            return NotFound(new ErrorDto(error.Message));
+
         }
         catch (Exception)
         {
@@ -154,16 +153,6 @@ public class TransactionsController : ControllerBase
             System.Console.WriteLine(error.StackTrace);
             return StatusCode(500, new ErrorDto("Error to get transactions."));
         }
-    }
-
-    private async Task<double> CalculateBalanceFromAccount(Account account)
-    {
-        double creditSum = (await GetCreditsFromAccount(account)).Sum(c => c.GetFields().Value);
-        double debitSum = -1 * (await GetDebitsFromAccount(account)).Sum(d => d.GetFields().Value);
-        var transfers = await GetTransfersFromAccount(account);
-        double transferSum = transfers.Sum(t => t.Sender.Equals(account) ? (-1 * t.GetFields().Value) : t.GetFields().Value);
-        double balance = creditSum + debitSum + transferSum;
-        return balance;
     }
 
     private async Task<List<Credit>> GetCreditsFromAccount(Account account)

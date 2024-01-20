@@ -50,7 +50,8 @@ public class TransactionsControllerTest : IDisposable
            transactionsRepository, accountsRepository,
             new PostCreditUseCase(transactionsRepository, accountsRepository),
             new PostDebitUseCase(transactionsRepository, accountsRepository),
-            new PostTransferUseCase(transactionsRepository, accountsRepository));
+            new PostTransferUseCase(transactionsRepository, accountsRepository),
+            new GetBalanceUseCase(transactionsRepository, accountsRepository));
 
         context.Accounts.Add(_account);
         await context.SaveChangesAsync();
@@ -268,7 +269,7 @@ public class TransactionsControllerTest : IDisposable
         var actionResult = await sut.GetBalance(_account.AccountNumber);
 
         var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-        var getBalanceOutput = Assert.IsType<TransactionsController.GetBalanceOutput>(okResult.Value);
+        var getBalanceOutput = Assert.IsType<GetBalanceOutput>(okResult.Value);
         string expectedBalance = (credit.Value - debit.Value).ToString("c", CultureInfo.GetCultureInfo("pt-BR")); ;
         Assert.Equal(expectedBalance, getBalanceOutput.Balance);
     }
