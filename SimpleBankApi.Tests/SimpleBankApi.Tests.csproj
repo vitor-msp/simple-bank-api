@@ -22,6 +22,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SimpleBankApi.Api\SimpleBankApi.Api.csproj" />
+    <ProjectReference Include="..\SimpleBankApi.Domain\SimpleBankApi.Domain.csproj" />
+    <ProjectReference Include="..\SimpleBankApi.Application\SimpleBankApi.Application.csproj" />
+    <ProjectReference Include="..\SimpleBankApi.Factory\SimpleBankApi.Factory.csproj" />
+    <ProjectReference Include="..\SimpleBankApi.Repository\SimpleBankApi.Repository.csproj" />
   </ItemGroup>
 
 </Project>
