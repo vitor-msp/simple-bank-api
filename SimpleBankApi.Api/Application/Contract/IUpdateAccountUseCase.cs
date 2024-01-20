@@ -1,8 +1,8 @@
-using Dto;
+using Input;
 
 namespace Application;
 
 public interface IUpdateAccountUseCase
 {
-    Task Execute(int accountNumber, AccountUpdateDto updatedAccountDto);
+    Task Execute(int accountNumber, AccountUpdateInput updatedAccountDto);
 }

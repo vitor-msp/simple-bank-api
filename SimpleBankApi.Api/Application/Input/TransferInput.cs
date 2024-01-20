@@ -1,6 +1,6 @@
-namespace Dto;
+namespace Input;
 
-public class TransferDto
+public class TransferInput
 {
     public double Value { get; set; }
     public int RecipientAccountNumber { get; set; }

@@ -1,7 +1,7 @@
 using Application;
 using Application.Exceptions;
-using Dto;
 using Exceptions;
+using Input;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Controllers;
@@ -32,7 +32,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("credit/{accountNumber}")]
-    public async Task<ActionResult> PostCredit(int accountNumber, [FromBody] CreditDto creditDto)
+    public async Task<ActionResult> PostCredit(int accountNumber, [FromBody] CreditInput creditDto)
     {
         try
         {
@@ -54,7 +54,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("debit/{accountNumber}")]
-    public async Task<ActionResult> PostDebit(int accountNumber, [FromBody] DebitDto debitDto)
+    public async Task<ActionResult> PostDebit(int accountNumber, [FromBody] DebitInput debitDto)
     {
         try
         {
@@ -80,7 +80,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("transfer/{accountNumber}")]
-    public async Task<ActionResult> PostTransfer(int accountNumber, [FromBody] TransferDto transferDto)
+    public async Task<ActionResult> PostTransfer(int accountNumber, [FromBody] TransferInput transferDto)
     {
         try
         {

@@ -1,6 +1,5 @@
 using Application;
 using Application.Exceptions;
-using Dto;
 using Input;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -99,7 +98,7 @@ public class AccountsController : ControllerBase
     }
 
     [HttpPut("{accountNumber}")]
-    public async Task<ActionResult> Put(int accountNumber, [FromBody] AccountUpdateDto updatedAccountDto)
+    public async Task<ActionResult> Put(int accountNumber, [FromBody] AccountUpdateInput updatedAccountDto)
     {
         try
         {

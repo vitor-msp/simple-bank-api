@@ -1,6 +1,6 @@
-namespace Dto;
+namespace Input;
 
-public class CreditDto
+public class CreditInput
 {
     public double Value { get; set; }
 }

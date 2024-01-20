@@ -1,6 +1,6 @@
 using Helpers;
 
-namespace Dto;
+namespace Models;
 
 public class TransactionCreditDebitDto
 {

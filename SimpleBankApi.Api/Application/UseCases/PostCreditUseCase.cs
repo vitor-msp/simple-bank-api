@@ -1,5 +1,5 @@
 using Application.Exceptions;
-using Dto;
+using Input;
 using Models;
 
 namespace Application;
@@ -15,7 +15,7 @@ public class PostCreditUseCase : IPostCreditUseCase
         _accountsRepository = accountsRepository;
     }
 
-    public async Task Execute(int accountNumber, CreditDto creditDto)
+    public async Task Execute(int accountNumber, CreditInput creditDto)
     {
         Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");

@@ -1,5 +1,5 @@
 using Application.Exceptions;
-using Dto;
+using Input;
 using Models;
 
 namespace Application;
@@ -15,7 +15,7 @@ public class PostTransferUseCase : IPostTransferUseCase
         _accountsRepository = accountsRepository;
     }
 
-    public async Task Execute(int accountNumber, TransferDto transferDto)
+    public async Task Execute(int accountNumber, TransferInput transferDto)
     {
         Account? sender = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (sender == null) throw new EntityNotFoundException("Sender account not found.");

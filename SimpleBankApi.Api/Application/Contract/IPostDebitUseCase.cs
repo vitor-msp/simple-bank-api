@@ -1,8 +1,8 @@
-using Dto;
+using Input;
 
 namespace Application;
 
 public interface IPostDebitUseCase
 {
-    Task Execute(int accountNumber, DebitDto debitDto);
+    Task Execute(int accountNumber, DebitInput debitDto);
 }

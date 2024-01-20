@@ -1,4 +1,4 @@
-namespace Dto;
+namespace Controllers;
 
 public class ErrorDto
 {

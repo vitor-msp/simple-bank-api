@@ -1,6 +1,6 @@
-namespace Dto;
+namespace Input;
 
-public class DebitDto
+public class DebitInput
 {
     public double Value { get; set; }
 }

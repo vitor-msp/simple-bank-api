@@ -1,5 +1,5 @@
 using Application.Exceptions;
-using Dto;
+using Input;
 using Models;
 
 namespace Application;
@@ -13,7 +13,7 @@ public class UpdateAccountUseCase : IUpdateAccountUseCase
         _accountsRepository = accountsRepository;
     }
 
-    public async Task Execute(int accountNumber, AccountUpdateDto updatedAccountDto)
+    public async Task Execute(int accountNumber, AccountUpdateInput updatedAccountDto)
     {
         var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
