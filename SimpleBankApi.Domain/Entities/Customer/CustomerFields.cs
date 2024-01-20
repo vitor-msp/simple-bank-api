@@ -9,7 +9,6 @@ public class CustomerFields
     public string? Cpf { get; set; }
     public string? Name { get; set; }
 
-
     public CustomerFields() { }
 
     private CustomerFields(int id)
