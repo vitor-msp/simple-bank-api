@@ -4,5 +4,5 @@ namespace SimpleBankApi.Application.Exceptions;
 
 public interface IPostDebitUseCase
 {
-    Task Execute(int accountNumber, DebitInput debitDto);
+    Task Execute(int accountNumber, DebitInput input);
 }

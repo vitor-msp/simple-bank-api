@@ -16,6 +16,7 @@ public class DeleteAccountUseCase : IDeleteAccountUseCase
     {
         var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
+
         account.Inactivate();
         await _accountsRepository.Save(account);
     }

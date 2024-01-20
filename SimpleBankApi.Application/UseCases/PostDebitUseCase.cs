@@ -17,16 +17,16 @@ public class PostDebitUseCase : IPostDebitUseCase
         _accountsRepository = accountsRepository;
     }
 
-    public async Task Execute(int accountNumber, DebitInput debitDto)
+    public async Task Execute(int accountNumber, DebitInput input)
     {
         Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
 
         var calculateBalance = new CalculateBalance(_transactionsRepository);
         double balance = await calculateBalance.FromAccount(account);
-        if (balance < debitDto.Value) throw new InvalidInputException("Insufficient balance.");
+        if (balance < input.Value) throw new InvalidInputException("Insufficient balance.");
 
-        var debit = new Debit(new DebitFields() { Value = debitDto.Value }) { Account = account };
+        var debit = new Debit(input.GetFiels()) { Account = account };
         await _transactionsRepository.SaveDebit(debit);
     }
 }

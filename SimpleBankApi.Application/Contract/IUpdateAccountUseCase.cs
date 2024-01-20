@@ -4,5 +4,5 @@ namespace SimpleBankApi.Application.Exceptions;
 
 public interface IUpdateAccountUseCase
 {
-    Task Execute(int accountNumber, AccountUpdateInput updatedAccountDto);
+    Task Execute(int accountNumber, UpdateAccountInput input);
 }

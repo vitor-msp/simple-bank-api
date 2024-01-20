@@ -181,7 +181,7 @@ public class AccountsControllerTest : IDisposable
         var account = AccountExample();
         context.Accounts.Add(account);
         await context.SaveChangesAsync();
-        var input = new AccountUpdateInput() { Name = "ciclano" };
+        var input = new UpdateAccountInput() { Name = "ciclano" };
 
         var actionResult = await sut.Put(account.AccountNumber, input);
 
@@ -201,7 +201,7 @@ public class AccountsControllerTest : IDisposable
     public async Task Put_And_Delete_ReturnNotFound(string type)
     {
         var (sut, context) = MakeSut();
-        var input = new AccountUpdateInput() { Name = "ciclano" };
+        var input = new UpdateAccountInput() { Name = "ciclano" };
 
         var actionResult = type == "put" ? await sut.Put(1, input) : await sut.Delete(1);
 

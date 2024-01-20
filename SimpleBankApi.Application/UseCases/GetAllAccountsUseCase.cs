@@ -19,7 +19,8 @@ public class GetAllAccountsUseCase : IGetAllAccountsUseCase
         var accounts = await _accountsRepository.GetAll();
         return new GetAllAccountsOutput
         {
-            Accounts = accounts.Select(a => new TransactionAccountDto(a.GetPublicData())).ToList()
+            Accounts = accounts.Select(account
+                 => new TransactionAccountDto(account.GetPublicData())).ToList()
         };
     }
 }

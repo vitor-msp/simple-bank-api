@@ -98,7 +98,7 @@ public class AccountsController : ControllerBase
     }
 
     [HttpPut("{accountNumber}")]
-    public async Task<ActionResult> Put(int accountNumber, [FromBody] AccountUpdateInput updatedAccountDto)
+    public async Task<ActionResult> Put(int accountNumber, [FromBody] UpdateAccountInput updatedAccountDto)
     {
         try
         {

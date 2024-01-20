@@ -14,12 +14,12 @@ public class UpdateAccountUseCase : IUpdateAccountUseCase
         _accountsRepository = accountsRepository;
     }
 
-    public async Task Execute(int accountNumber, AccountUpdateInput updatedAccountDto)
+    public async Task Execute(int accountNumber, UpdateAccountInput input)
     {
         var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
 
-        account.Update(new CustomerUpdateableFields() { Name = updatedAccountDto.Name });
+        account.Update(input.GetFields());
         await _accountsRepository.Save(account);
     }
 }
