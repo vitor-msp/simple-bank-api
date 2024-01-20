@@ -39,9 +39,10 @@ public class AccountsControllerTest : IDisposable
     {
         var context = CreateContext();
         var accountsRepository = new AccountsRepository(context);
-        var controller = new AccountsController(accountsRepository,
+        var controller = new AccountsController(
             new CreateAccountUseCase(accountsRepository), new UpdateAccountUseCase(accountsRepository),
-            new DeleteAccountUseCase(accountsRepository), new GetAllAccountsUseCase(accountsRepository));
+            new DeleteAccountUseCase(accountsRepository), new GetAllAccountsUseCase(accountsRepository),
+            new GetAccountUseCase(accountsRepository));
         return (controller, context);
     }
 

@@ -1,3 +1,4 @@
+using Application.Exceptions;
 using Input;
 using Models;
 
@@ -15,7 +16,7 @@ public class CreateAccountUseCase : ICreateAccountUseCase
     public async Task<int> Execute(CreateAccountInput input)
     {
         var existingAccount = await _accountsRepository.GetByCpf(input.Cpf);
-        if (existingAccount != null) throw new ApplicationException("Cpf already registered.");
+        if (existingAccount != null) throw new InvalidInputException("Cpf already registered.");
 
         var customer = new Customer(new CustomerFields() { Cpf = input.Cpf, Name = input.Name });
         var newAccount = new Account(new AccountFields()) { Owner = customer };

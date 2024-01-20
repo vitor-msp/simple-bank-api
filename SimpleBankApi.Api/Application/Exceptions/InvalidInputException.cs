@@ -1,6 +1,6 @@
 namespace Application.Exceptions;
 
-public class InvalidInputException : ApplicationException
+public class InvalidInputException : Exception
 {
     public InvalidInputException(string message) : base(message) { }
 }

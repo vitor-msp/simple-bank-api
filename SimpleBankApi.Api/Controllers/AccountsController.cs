@@ -1,4 +1,5 @@
 using Application;
+using Application.Exceptions;
 using Dto;
 using Input;
 using Microsoft.AspNetCore.Mvc;
@@ -10,21 +11,22 @@ namespace Controllers;
 [Route("accounts")]
 public class AccountsController : ControllerBase
 {
-    private readonly IAccountsRepository _accountsRepository;
     private readonly ICreateAccountUseCase _createAccountUseCase;
     private readonly IUpdateAccountUseCase _updateAccountUseCase;
     private readonly IDeleteAccountUseCase _deleteAccountUseCase;
-    private readonly IGetAllAccountsUseCase _getAllAccountUseCase;
+    private readonly IGetAllAccountsUseCase _getAllAccountsUseCase;
+    private readonly IGetAccountUseCase _getAccountUseCase;
 
-    public AccountsController(IAccountsRepository accountsRepository,
+    public AccountsController(
         ICreateAccountUseCase createAccountUseCase, IUpdateAccountUseCase updateAccountUseCase,
-        IDeleteAccountUseCase deleteAccountUseCase, IGetAllAccountsUseCase getAllAccountUseCase)
+        IDeleteAccountUseCase deleteAccountUseCase, IGetAllAccountsUseCase getAllAccountsUseCase,
+        IGetAccountUseCase getAccountUseCase)
     {
-        _accountsRepository = accountsRepository;
         _createAccountUseCase = createAccountUseCase;
         _updateAccountUseCase = updateAccountUseCase;
         _deleteAccountUseCase = deleteAccountUseCase;
-        _getAllAccountUseCase = getAllAccountUseCase;
+        _getAllAccountsUseCase = getAllAccountsUseCase;
+        _getAccountUseCase = getAccountUseCase;
     }
 
     [HttpGet]
@@ -32,7 +34,7 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var output = await _getAllAccountUseCase.Execute();
+            var output = await _getAllAccountsUseCase.Execute();
             return Ok(output);
         }
         catch (Exception)
@@ -46,9 +48,12 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var account = await _accountsRepository.GetByAccountNumber(accountNumber);
-            if (account == null) return NotFound(new ErrorDto("Account not found."));
-            return Ok(account);
+            var output = await _getAccountUseCase.ByAccountNumber(accountNumber);
+            return Ok(output);
+        }
+        catch (EntityNotFoundException error)
+        {
+            return NotFound(new ErrorDto(error.Message));
         }
         catch (Exception)
         {
@@ -61,9 +66,12 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var account = await _accountsRepository.GetByCpf(cpf);
-            if (account == null) return NotFound(new ErrorDto("Account not found."));
-            return Ok(account);
+            var output = await _getAccountUseCase.ByCpf(cpf);
+            return Ok(output);
+        }
+        catch (EntityNotFoundException error)
+        {
+            return NotFound(new ErrorDto(error.Message));
         }
         catch (Exception)
         {
@@ -80,7 +88,7 @@ public class AccountsController : ControllerBase
             var postAccountOutput = new PostAccountOutput() { AccountNumber = accountNumber };
             return new CreatedAtRouteResult("GetAccount", postAccountOutput, postAccountOutput);
         }
-        catch (ApplicationException error)
+        catch (InvalidInputException error)
         {
             return BadRequest(new ErrorDto(error.Message));
         }
@@ -98,7 +106,7 @@ public class AccountsController : ControllerBase
             await _updateAccountUseCase.Execute(accountNumber, updatedAccountDto);
             return NoContent();
         }
-        catch (ApplicationException error)
+        catch (EntityNotFoundException error)
         {
             return NotFound(new ErrorDto(error.Message));
         }
@@ -116,7 +124,7 @@ public class AccountsController : ControllerBase
             await _deleteAccountUseCase.Execute(accountNumber);
             return NoContent();
         }
-        catch (ApplicationException error)
+        catch (EntityNotFoundException error)
         {
             return NotFound(new ErrorDto(error.Message));
         }

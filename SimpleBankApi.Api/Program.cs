@@ -20,6 +20,8 @@ builder.Services.AddDbContext<BankContext>(
 builder.Services.AddScoped<IAccountsRepository, AccountsRepository>();
 builder.Services.AddScoped<ITransactionsRepository, TransactionsRepository>();
 builder.Services.AddScoped<ICreateAccountUseCase, CreateAccountUseCase>();
+builder.Services.AddScoped<IGetAllAccountsUseCase, GetAllAccountsUseCase>();
+builder.Services.AddScoped<IGetAccountUseCase, GetAccountUseCase>();
 
 builder.Services.AddScoped<IPostCreditUseCase, PostCreditUseCase>();
 builder.Services.AddScoped<IPostDebitUseCase, PostDebitUseCase>();
