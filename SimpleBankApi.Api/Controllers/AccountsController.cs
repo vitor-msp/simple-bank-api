@@ -1,10 +1,10 @@
-using Application;
-using Application.Exceptions;
-using Input;
 using Microsoft.AspNetCore.Mvc;
-using Models;
+using SimpleBankApi.Api.Presenters;
+using SimpleBankApi.Application.Exceptions;
+using SimpleBankApi.Application.Input;
+using SimpleBankApi.Application.Output;
 
-namespace Controllers;
+namespace SimpleBankApi.Api.Controllers;
 
 [ApiController]
 [Route("accounts")]
@@ -38,12 +38,12 @@ public class AccountsController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, new ErrorDto("Error to get accounts."));
+            return StatusCode(500, new ErrorPresenter("Error to get accounts."));
         }
     }
 
     [HttpGet("{accountNumber}", Name = "GetAccount")]
-    public async Task<ActionResult<Account>> GetById(int accountNumber)
+    public async Task<ActionResult<object>> GetById(int accountNumber)
     {
         try
         {
@@ -52,16 +52,16 @@ public class AccountsController : ControllerBase
         }
         catch (EntityNotFoundException error)
         {
-            return NotFound(new ErrorDto(error.Message));
+            return NotFound(new ErrorPresenter(error.Message));
         }
         catch (Exception)
         {
-            return StatusCode(500, new ErrorDto("Error to get account."));
+            return StatusCode(500, new ErrorPresenter("Error to get account."));
         }
     }
 
     [HttpGet("bycpf/{cpf}")]
-    public async Task<ActionResult<Account>> GetByCpf(string cpf)
+    public async Task<ActionResult<object>> GetByCpf(string cpf)
     {
         try
         {
@@ -70,11 +70,11 @@ public class AccountsController : ControllerBase
         }
         catch (EntityNotFoundException error)
         {
-            return NotFound(new ErrorDto(error.Message));
+            return NotFound(new ErrorPresenter(error.Message));
         }
         catch (Exception)
         {
-            return StatusCode(500, new ErrorDto("Error to get account."));
+            return StatusCode(500, new ErrorPresenter("Error to get account."));
         }
     }
 
@@ -89,11 +89,11 @@ public class AccountsController : ControllerBase
         }
         catch (InvalidInputException error)
         {
-            return BadRequest(new ErrorDto(error.Message));
+            return BadRequest(new ErrorPresenter(error.Message));
         }
         catch (Exception)
         {
-            return StatusCode(500, new ErrorDto("Error to create account."));
+            return StatusCode(500, new ErrorPresenter("Error to create account."));
         }
     }
 
@@ -107,11 +107,11 @@ public class AccountsController : ControllerBase
         }
         catch (EntityNotFoundException error)
         {
-            return NotFound(new ErrorDto(error.Message));
+            return NotFound(new ErrorPresenter(error.Message));
         }
         catch (Exception)
         {
-            return StatusCode(500, new ErrorDto("Error to update account."));
+            return StatusCode(500, new ErrorPresenter("Error to update account."));
         }
     }
 
@@ -125,11 +125,11 @@ public class AccountsController : ControllerBase
         }
         catch (EntityNotFoundException error)
         {
-            return NotFound(new ErrorDto(error.Message));
+            return NotFound(new ErrorPresenter(error.Message));
         }
         catch (Exception)
         {
-            return StatusCode(500, new ErrorDto("Error to inactivate account."));
+            return StatusCode(500, new ErrorPresenter("Error to inactivate account."));
         }
     }
 }

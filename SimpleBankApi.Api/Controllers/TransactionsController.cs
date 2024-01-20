@@ -1,10 +1,11 @@
-using Application;
-using Application.Exceptions;
-using Exceptions;
-using Input;
 using Microsoft.AspNetCore.Mvc;
+using SimpleBankApi.Api.Presenters;
+using SimpleBankApi.Application.Exceptions;
+using SimpleBankApi.Application.Input;
+using SimpleBankApi.Application.Output;
+using SimpleBankApi.Domain.Exceptions;
 
-namespace Controllers;
+namespace SimpleBankApi.Api.Controllers;
 
 [ApiController]
 [Route("transactions")]
@@ -41,15 +42,15 @@ public class TransactionsController : ControllerBase
         }
         catch (EntityNotFoundException error)
         {
-            return NotFound(new ErrorDto(error.Message));
+            return NotFound(new ErrorPresenter(error.Message));
         }
         catch (DomainException error)
         {
-            return BadRequest(new ErrorDto(error.Message));
+            return BadRequest(new ErrorPresenter(error.Message));
         }
         catch (Exception)
         {
-            return StatusCode(500, new ErrorDto("Error to create credit."));
+            return StatusCode(500, new ErrorPresenter("Error to create credit."));
         }
     }
 
@@ -63,19 +64,19 @@ public class TransactionsController : ControllerBase
         }
         catch (EntityNotFoundException error)
         {
-            return NotFound(new ErrorDto(error.Message));
+            return NotFound(new ErrorPresenter(error.Message));
         }
         catch (InvalidInputException error)
         {
-            return BadRequest(new ErrorDto(error.Message));
+            return BadRequest(new ErrorPresenter(error.Message));
         }
         catch (DomainException error)
         {
-            return BadRequest(new ErrorDto(error.Message));
+            return BadRequest(new ErrorPresenter(error.Message));
         }
         catch (Exception)
         {
-            return StatusCode(500, new ErrorDto("Error to create debit."));
+            return StatusCode(500, new ErrorPresenter("Error to create debit."));
         }
     }
 
@@ -89,19 +90,19 @@ public class TransactionsController : ControllerBase
         }
         catch (EntityNotFoundException error)
         {
-            return NotFound(new ErrorDto(error.Message));
+            return NotFound(new ErrorPresenter(error.Message));
         }
         catch (InvalidInputException error)
         {
-            return BadRequest(new ErrorDto(error.Message));
+            return BadRequest(new ErrorPresenter(error.Message));
         }
         catch (DomainException error)
         {
-            return BadRequest(new ErrorDto(error.Message));
+            return BadRequest(new ErrorPresenter(error.Message));
         }
         catch (Exception)
         {
-            return StatusCode(500, new ErrorDto("Error to create transfer."));
+            return StatusCode(500, new ErrorPresenter("Error to create transfer."));
         }
     }
 
@@ -115,12 +116,12 @@ public class TransactionsController : ControllerBase
         }
         catch (EntityNotFoundException error)
         {
-            return NotFound(new ErrorDto(error.Message));
+            return NotFound(new ErrorPresenter(error.Message));
 
         }
         catch (Exception)
         {
-            return StatusCode(500, new ErrorDto("Error to get balance."));
+            return StatusCode(500, new ErrorPresenter("Error to get balance."));
         }
     }
 
@@ -134,12 +135,12 @@ public class TransactionsController : ControllerBase
         }
         catch (EntityNotFoundException error)
         {
-            return NotFound(new ErrorDto(error.Message));
+            return NotFound(new ErrorPresenter(error.Message));
 
         }
         catch (Exception)
         {
-            return StatusCode(500, new ErrorDto("Error to get transactions."));
+            return StatusCode(500, new ErrorPresenter("Error to get transactions."));
         }
     }
 }
