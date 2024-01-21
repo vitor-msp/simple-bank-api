@@ -1,6 +1,6 @@
 namespace SimpleBankApi.Domain.Entities;
 
-public class Debit : Transaction
+public class Debit : Transaction, IDebit
 {
     public Account? Account { get; set; }
 
