@@ -11,9 +11,13 @@ namespace SimpleBankApi.Tests;
 
 public class CalculateBalanceTest
 {
-    private readonly IAccount _account = new Account(AccountFields.Rebuild(1, 1, DateTime.Now, true));
+    private readonly int _accountNumber = 1;
+    private readonly IAccount _account;
 
-    public CalculateBalanceTest() { }
+    public CalculateBalanceTest()
+    {
+        _account = new Account(AccountFields.Rebuild(1, _accountNumber, DateTime.Now, true));
+    }
 
     private List<ICredit> GetCreditsExample()
     {
@@ -60,34 +64,40 @@ public class CalculateBalanceTest
     [Fact]
     public async Task NoBalance()
     {
-        var transactionsRepository = new Mock<ITransactionsRepository>();
-        transactionsRepository.Setup(mock => mock.GetCreditsFromAccount(It.IsAny<int>()))
+        var transactionsRepositoryMock = new Mock<ITransactionsRepository>();
+        transactionsRepositoryMock.Setup(mock => mock.GetCreditsFromAccount(It.IsAny<int>()))
             .Returns(Task.FromResult(new List<ICredit>()));
-        transactionsRepository.Setup(mock => mock.GetDebitsFromAccount(It.IsAny<int>()))
+        transactionsRepositoryMock.Setup(mock => mock.GetDebitsFromAccount(It.IsAny<int>()))
             .Returns(Task.FromResult(new List<IDebit>()));
-        transactionsRepository.Setup(mock => mock.GetTransfersFromAccount(It.IsAny<int>()))
+        transactionsRepositoryMock.Setup(mock => mock.GetTransfersFromAccount(It.IsAny<int>()))
             .Returns(Task.FromResult(new List<ITransfer>()));
 
-        var calculateBalance = new CalculateBalance(transactionsRepository.Object);
+        var calculateBalance = new CalculateBalance(transactionsRepositoryMock.Object);
         double balance = await calculateBalance.FromAccount(_account);
 
         Assert.Equal(0, balance);
+        transactionsRepositoryMock.Verify(mock => mock.GetCreditsFromAccount(_accountNumber), Times.Once);
+        transactionsRepositoryMock.Verify(mock => mock.GetDebitsFromAccount(_accountNumber), Times.Once);
+        transactionsRepositoryMock.Verify(mock => mock.GetTransfersFromAccount(_accountNumber), Times.Once);
     }
 
     [Fact]
     public async Task WithBalance()
     {
-        var transactionsRepository = new Mock<ITransactionsRepository>();
-        transactionsRepository.Setup(mock => mock.GetCreditsFromAccount(It.IsAny<int>()))
+        var transactionsRepositoryMock = new Mock<ITransactionsRepository>();
+        transactionsRepositoryMock.Setup(mock => mock.GetCreditsFromAccount(It.IsAny<int>()))
             .Returns(Task.FromResult(GetCreditsExample()));
-        transactionsRepository.Setup(mock => mock.GetDebitsFromAccount(It.IsAny<int>()))
+        transactionsRepositoryMock.Setup(mock => mock.GetDebitsFromAccount(It.IsAny<int>()))
             .Returns(Task.FromResult(GetDebitsExample()));
-        transactionsRepository.Setup(mock => mock.GetTransfersFromAccount(It.IsAny<int>()))
+        transactionsRepositoryMock.Setup(mock => mock.GetTransfersFromAccount(It.IsAny<int>()))
             .Returns(Task.FromResult(GetTransfersExample()));
 
-        var calculateBalance = new CalculateBalance(transactionsRepository.Object);
+        var calculateBalance = new CalculateBalance(transactionsRepositoryMock.Object);
         double balance = await calculateBalance.FromAccount(_account);
 
         Assert.Equal(34.75, balance);
+        transactionsRepositoryMock.Verify(mock => mock.GetCreditsFromAccount(_accountNumber), Times.Once);
+        transactionsRepositoryMock.Verify(mock => mock.GetDebitsFromAccount(_accountNumber), Times.Once);
+        transactionsRepositoryMock.Verify(mock => mock.GetTransfersFromAccount(_accountNumber), Times.Once);
     }
 }
