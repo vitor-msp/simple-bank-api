@@ -70,10 +70,10 @@ public class AccountTest
         var anotherAccount = new Account(
            AccountFields.Rebuild(3642, 2668651, _accountCreatedAt, _accountActive));
 
-        var nullResult = account.Equals(null);
-        var objResult = account.Equals(new object() { });
-        var anotherAccountResult = account.Equals(anotherAccount);
-        var sameAccountResult = account.Equals(GetAccountExample());
+        bool nullResult = account.Equals(null);
+        bool objResult = account?.Equals(new object() { }) ?? false;
+        bool anotherAccountResult = account?.Equals(anotherAccount) ?? false;
+        bool sameAccountResult = account?.Equals(GetAccountExample()) ?? false;
 
         Assert.False(nullResult);
         Assert.False(objResult);

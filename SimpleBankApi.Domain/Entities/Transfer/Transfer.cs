@@ -2,7 +2,7 @@ using SimpleBankApi.Domain.Exceptions;
 
 namespace SimpleBankApi.Domain.Entities;
 
-public class Transfer : Transaction
+public class Transfer : Transaction, ITransfer
 {
     public Account? Sender { get; set; }
     public Account? Recipient { get; set; }
