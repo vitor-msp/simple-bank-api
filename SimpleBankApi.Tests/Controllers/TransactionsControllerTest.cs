@@ -11,6 +11,8 @@ using SimpleBankApi.Application.Input;
 using SimpleBankApi.Application.Output;
 using SimpleBankApi.Application.UseCases;
 using SimpleBankApi.Domain;
+using SimpleBankApi.Domain.Dto;
+using SimpleBankApi.Domain.Helpers;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Database.Schema;
 using SimpleBankApi.Repository.Implementations;
@@ -101,7 +103,8 @@ public class TransactionsControllerTest : IDisposable
         var actionResult = await sut.PostCredit(_account.AccountNumber, input);
 
         Assert.IsType<OkResult>(actionResult);
-        var savedCredits = context.Credits.Where(credit => credit.Account.AccountNumber == _account.AccountNumber).ToList();
+        var savedCredits = context.Credits.Where(credit
+            => credit.Account != null && credit.Account.AccountNumber == _account.AccountNumber).ToList();
         Assert.Single(savedCredits);
         Assert.Equal(input.Value, savedCredits[0].Value);
         Assert.Equal(_account, savedCredits[0].Account);
@@ -275,36 +278,58 @@ public class TransactionsControllerTest : IDisposable
         Assert.Equal(expectedBalance, getBalanceOutput.Balance);
     }
 
-    private TransactionCreditDebitDto GenerateTransactionCreditInput(CreditDB credit)
+    private TransactionDto GenerateTransactionCreditDto(CreditDB credit)
     {
-        return new TransactionCreditDebitDto()
+        return new TransactionDto()
         {
             Type = TransactionType.Credit,
-            Value = credit.Value.ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
-            CreatedAt = DateTime.SpecifyKind(credit.CreatedAt, DateTimeKind.Unspecified)
+            CreditDto = new CreditDto()
+            {
+                Value = credit.Value.ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
+                CreatedAt = DateTime.SpecifyKind(credit.CreatedAt, DateTimeKind.Unspecified)
+            }
         };
     }
 
-    private TransactionCreditDebitDto GenerateTransactionDebitInput(DebitDB debit)
+    private TransactionDto GenerateTransactionDebitDto(DebitDB debit)
     {
-        return new TransactionCreditDebitDto()
+        return new TransactionDto()
         {
             Type = TransactionType.Debit,
-            Value = debit.Value.ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
-            CreatedAt = DateTime.SpecifyKind(debit.CreatedAt, DateTimeKind.Unspecified)
+            DebitDto = new DebitDto()
+            {
+                Value = debit.Value.ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
+                CreatedAt = DateTime.SpecifyKind(debit.CreatedAt, DateTimeKind.Unspecified)
+            }
         };
     }
 
-    private TransactionTransferDto GenerateTransactionTransferInput(TransferDB transfer, bool AsSender = true)
+    private TransactionDto GenerateTransactionTransferDto(TransferDB transfer, bool AsSender = true)
     {
+        if (transfer.Sender?.Owner == null || transfer.Recipient?.Owner == null)
+            throw new Exception();
+
         double value = AsSender ? -1 * transfer.Value : transfer.Value;
-        return new TransactionTransferDto(
-             TransactionType.Transfer,
-             value,
-             transfer.CreatedAt,
-            (transfer.Sender.AccountNumber, transfer.Sender.Owner.Name),
-            (transfer.Recipient.AccountNumber, transfer.Recipient.Owner.Name)
-        );
+        return new TransactionDto()
+        {
+            Type = TransactionType.Transfer,
+            TransferDto = new TransferDto()
+            {
+                Value = CurrencyHelper.GetBrazilianCurrency(value),
+                CreatedAt = transfer.CreatedAt,
+                Sender = new AccountDto()
+                {
+                    AccountNumber = transfer.Sender.AccountNumber,
+                    Name = transfer.Sender.Owner.Name
+                },
+                Recipient = new AccountDto()
+                {
+                    AccountNumber = transfer.Recipient.AccountNumber,
+                    Name = transfer.Recipient.Owner.Name
+                },
+            }
+
+        };
     }
 
     [Fact]
@@ -326,38 +351,38 @@ public class TransactionsControllerTest : IDisposable
 
         var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         var getTransactionsOutput = Assert.IsType<GetTransactionsOutput>(okResult.Value);
-        Assert.Equal(4, getTransactionsOutput.Transactions.Count);
+        Assert.Equal(4, getTransactionsOutput.Statement.Transactions.Count);
 
-        var expectedCredit = GenerateTransactionCreditInput(credit);
-        var receivedCredit = getTransactionsOutput.Transactions[0] as TransactionCreditDebitDto;
-        Assert.Equal(expectedCredit.Type, receivedCredit?.Type);
-        Assert.Equal(expectedCredit.CreatedAt, receivedCredit?.CreatedAt);
-        Assert.Equal(expectedCredit.Value, receivedCredit?.Value);
+        var expectedCredit = GenerateTransactionCreditDto(credit);
+        var receivedCredit = getTransactionsOutput.Statement.Transactions[0];
+        Assert.Equal(expectedCredit.Type, receivedCredit.Type);
+        Assert.Equal(expectedCredit.CreditDto?.CreatedAt, receivedCredit.CreditDto?.CreatedAt);
+        Assert.Equal(expectedCredit.CreditDto?.Value, receivedCredit.CreditDto?.Value);
 
-        var expectedDebit = GenerateTransactionDebitInput(debit);
-        var receivedDebit = getTransactionsOutput.Transactions[1] as TransactionCreditDebitDto;
-        Assert.Equal(expectedDebit.Type, receivedDebit?.Type);
-        Assert.Equal(expectedDebit.CreatedAt, receivedDebit?.CreatedAt);
-        Assert.Equal(expectedDebit.Value, receivedDebit?.Value);
+        var expectedDebit = GenerateTransactionDebitDto(debit);
+        var receivedDebit = getTransactionsOutput.Statement.Transactions[1];
+        Assert.Equal(expectedDebit.Type, receivedDebit.Type);
+        Assert.Equal(expectedDebit.DebitDto?.CreatedAt, receivedDebit.DebitDto?.CreatedAt);
+        Assert.Equal(expectedDebit.DebitDto?.Value, receivedDebit.DebitDto?.Value);
 
-        var expectedTransferAsSender = GenerateTransactionTransferInput(transferAsSender, true);
-        var receivedTransferAsSender = getTransactionsOutput.Transactions[2] as TransactionTransferDto;
-        Assert.Equal(expectedTransferAsSender.Type, receivedTransferAsSender?.Type);
-        Assert.Equal(expectedTransferAsSender.Value, receivedTransferAsSender?.Value);
-        Assert.Equal(expectedTransferAsSender.CreatedAt, receivedTransferAsSender?.CreatedAt);
-        Assert.Equal(expectedTransferAsSender.Sender.AccountNumber, receivedTransferAsSender?.Sender.AccountNumber);
-        Assert.Equal(expectedTransferAsSender.Sender.Name, receivedTransferAsSender?.Sender.Name);
-        Assert.Equal(expectedTransferAsSender.Recipient.AccountNumber, receivedTransferAsSender?.Recipient.AccountNumber);
-        Assert.Equal(expectedTransferAsSender.Recipient.Name, receivedTransferAsSender?.Recipient.Name);
+        var expectedTransferAsSender = GenerateTransactionTransferDto(transferAsSender, true);
+        var receivedTransferAsSender = getTransactionsOutput.Statement.Transactions[2];
+        Assert.Equal(expectedTransferAsSender.Type, receivedTransferAsSender.Type);
+        Assert.Equal(expectedTransferAsSender.TransferDto?.Value, receivedTransferAsSender.TransferDto?.Value);
+        Assert.Equal(expectedTransferAsSender.TransferDto?.CreatedAt, receivedTransferAsSender.TransferDto?.CreatedAt);
+        Assert.Equal(expectedTransferAsSender.TransferDto?.Sender?.AccountNumber, receivedTransferAsSender.TransferDto?.Sender?.AccountNumber);
+        Assert.Equal(expectedTransferAsSender.TransferDto?.Sender?.Name, receivedTransferAsSender.TransferDto?.Sender?.Name);
+        Assert.Equal(expectedTransferAsSender.TransferDto?.Recipient?.AccountNumber, receivedTransferAsSender.TransferDto?.Recipient?.AccountNumber);
+        Assert.Equal(expectedTransferAsSender.TransferDto?.Recipient?.Name, receivedTransferAsSender.TransferDto?.Recipient?.Name);
 
-        var expectedTransferAsRecipient = GenerateTransactionTransferInput(transferAsRecipient, false);
-        var receivedTransferAsRecipient = getTransactionsOutput.Transactions[3] as TransactionTransferDto;
-        Assert.Equal(expectedTransferAsRecipient.Type, receivedTransferAsRecipient?.Type);
-        Assert.Equal(expectedTransferAsRecipient.Value, receivedTransferAsRecipient?.Value);
-        Assert.Equal(expectedTransferAsRecipient.CreatedAt, receivedTransferAsRecipient?.CreatedAt);
-        Assert.Equal(expectedTransferAsRecipient.Sender.AccountNumber, receivedTransferAsRecipient?.Sender.AccountNumber);
-        Assert.Equal(expectedTransferAsRecipient.Sender.Name, receivedTransferAsRecipient?.Sender.Name);
-        Assert.Equal(expectedTransferAsRecipient.Recipient.AccountNumber, receivedTransferAsRecipient?.Recipient.AccountNumber);
-        Assert.Equal(expectedTransferAsRecipient.Recipient.Name, receivedTransferAsRecipient?.Recipient.Name);
+        var expectedTransferAsRecipient = GenerateTransactionTransferDto(transferAsRecipient, false);
+        var receivedTransferAsRecipient = getTransactionsOutput.Statement.Transactions[3];
+        Assert.Equal(expectedTransferAsRecipient.Type, receivedTransferAsRecipient.Type);
+        Assert.Equal(expectedTransferAsRecipient.TransferDto?.Value, receivedTransferAsRecipient.TransferDto?.Value);
+        Assert.Equal(expectedTransferAsRecipient.TransferDto?.CreatedAt, receivedTransferAsRecipient.TransferDto?.CreatedAt);
+        Assert.Equal(expectedTransferAsRecipient.TransferDto?.Sender?.AccountNumber, receivedTransferAsRecipient.TransferDto?.Sender?.AccountNumber);
+        Assert.Equal(expectedTransferAsRecipient.TransferDto?.Sender?.Name, receivedTransferAsRecipient.TransferDto?.Sender?.Name);
+        Assert.Equal(expectedTransferAsRecipient.TransferDto?.Recipient?.AccountNumber, receivedTransferAsRecipient.TransferDto?.Recipient?.AccountNumber);
+        Assert.Equal(expectedTransferAsRecipient.TransferDto?.Recipient?.Name, receivedTransferAsRecipient.TransferDto?.Recipient?.Name);
     }
 }

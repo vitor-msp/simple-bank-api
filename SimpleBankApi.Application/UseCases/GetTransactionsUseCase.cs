@@ -27,8 +27,8 @@ public class GetTransactionsUseCase : IGetTransactionsUseCase
         var transfers = await GetTransfersFromAccount(account);
 
         var prepareStatement = new PrepareStatement();
-        var sortedTransactions = prepareStatement.SortTransactionsByDateTime(credits, debits, transfers, account);
-        return new GetTransactionsOutput() { Transactions = sortedTransactions };
+        var statement = prepareStatement.SortTransactionsByDateTime(credits, debits, transfers, account);
+        return new GetTransactionsOutput() { Statement = statement };
     }
 
     private async Task<List<ICredit>> GetCreditsFromAccount(IAccount account)

@@ -14,8 +14,8 @@ public class CalculateBalance
 
     public async Task<double> FromAccount(IAccount account)
     {
-        double creditSum = (await GetCreditsFromAccount(account)).Sum(c => c.GetFields().Value);
-        double debitSum = -1 * (await GetDebitsFromAccount(account)).Sum(d => d.GetFields().Value);
+        double creditSum = (await GetCreditsFromAccount(account)).Sum(credit => credit.GetFields().Value);
+        double debitSum = -1 * (await GetDebitsFromAccount(account)).Sum(debit => debit.GetFields().Value);
 
         var transfers = await GetTransfersFromAccount(account);
         double transferSum = transfers.Sum(transfer

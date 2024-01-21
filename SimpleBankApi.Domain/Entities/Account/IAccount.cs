@@ -13,6 +13,4 @@ public interface IAccount
     public bool Equals(object? obj);
 
     public int GetHashCode();
-
-    public (int, string) GetPublicData();
 }

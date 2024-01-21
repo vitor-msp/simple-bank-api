@@ -25,13 +25,6 @@ public class Account : IAccount
     {
         _fields.Active = false;
     }
-
-    /// to check
-    public (int, string) GetPublicData()
-    {
-        return (_fields.AccountNumber, Owner?.GetFields().Name ?? "");
-    }
-
     public override bool Equals(object? obj)
     {
         if (obj == null) return false;

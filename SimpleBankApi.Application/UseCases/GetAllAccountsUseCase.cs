@@ -1,7 +1,7 @@
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.Output;
-using SimpleBankApi.Domain;
 using SimpleBankApi.Domain.Contract;
+using SimpleBankApi.Domain.Dto;
 
 namespace SimpleBankApi.Application.UseCases;
 
@@ -19,8 +19,7 @@ public class GetAllAccountsUseCase : IGetAllAccountsUseCase
         var accounts = await _accountsRepository.GetAll();
         return new GetAllAccountsOutput
         {
-            Accounts = accounts.Select(account
-                 => new TransactionAccountDto(account.GetPublicData())).ToList()
+            Accounts = accounts.Select(account => AccountDto.Build(account)).ToList()
         };
     }
 }

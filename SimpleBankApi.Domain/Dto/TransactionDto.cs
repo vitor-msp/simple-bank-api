@@ -1,26 +1,38 @@
-using SimpleBankApi.Domain.Helpers;
+using SimpleBankApi.Domain.Entities;
 
-namespace SimpleBankApi.Domain;
+namespace SimpleBankApi.Domain.Dto;
 
-public class TransactionCreditDebitDto
+public class TransactionDto
 {
     public string Type { get; set; } = "";
-    public string Value { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public CreditDto? CreditDto { get; set; }
+    public DebitDto? DebitDto { get; set; }
+    public TransferDto? TransferDto { get; set; }
 
-    public TransactionCreditDebitDto() { }
-
-    public TransactionCreditDebitDto((string, double, DateTime) input)
+    public static TransactionDto BuildFromCredit(ICredit credit)
     {
-        Type = input.Item1;
-        Value = CurrencyHelper.GetBrazilianCurrency(input.Item2);
-        CreatedAt = input.Item3;
+        return new TransactionDto()
+        {
+            Type = TransactionType.Credit,
+            CreditDto = CreditDto.Build(credit)
+        };
     }
 
-    public TransactionCreditDebitDto(string type, double value, DateTime createdAt)
+    public static TransactionDto BuildFromDebit(IDebit debit)
     {
-        Type = type;
-        Value = CurrencyHelper.GetBrazilianCurrency(value);
-        CreatedAt = createdAt;
+        return new TransactionDto()
+        {
+            Type = TransactionType.Debit,
+            DebitDto = DebitDto.Build(debit)
+        };
+    }
+
+    public static TransactionDto BuildFromTransfer(ITransfer transfer, IAccount account)
+    {
+        return new TransactionDto()
+        {
+            Type = TransactionType.Transfer,
+            TransferDto = TransferDto.Build(transfer, account)
+        };
     }
 }

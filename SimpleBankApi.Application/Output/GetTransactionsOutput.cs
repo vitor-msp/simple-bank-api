@@ -1,8 +1,8 @@
-using System.Collections;
+using SimpleBankApi.Domain.Dto;
 
 namespace SimpleBankApi.Application.Output;
 
 public class GetTransactionsOutput
 {
-    public ArrayList Transactions { get; set; } = new();
+    public StatementDto Statement { get; set; } = new();
 }
