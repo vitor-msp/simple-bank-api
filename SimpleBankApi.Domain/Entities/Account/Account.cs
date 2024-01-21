@@ -27,10 +27,10 @@ public class Account : IAccount
     }
 
     /// to check
-    // public (int, string) GetPublicData()
-    // {
-    //     return (_fields.AccountNumber, Owner?.GetFields().Name ?? "");
-    // }
+    public (int, string) GetPublicData()
+    {
+        return (_fields.AccountNumber, Owner?.GetFields().Name ?? "");
+    }
 
     public override bool Equals(object? obj)
     {

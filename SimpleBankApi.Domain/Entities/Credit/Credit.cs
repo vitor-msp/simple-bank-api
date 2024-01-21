@@ -1,6 +1,6 @@
 namespace SimpleBankApi.Domain.Entities;
 
-public class Credit : Transaction
+public class Credit : Transaction, ICredit
 {
     public Account? Account { get; set; }
 
