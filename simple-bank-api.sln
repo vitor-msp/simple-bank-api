@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBankApi.Repository", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBankApi.Factory", "SimpleBankApi.Factory\SimpleBankApi.Factory.csproj", "{A0745DE0-A621-44DB-95AE-6D974A5428B7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBankApi.Domain.Tests", "SimpleBankApi.Domain.Tests\SimpleBankApi.Domain.Tests.csproj", "{169F6C2A-29A8-408C-BAA2-F50624209F63}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{A0745DE0-A621-44DB-95AE-6D974A5428B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0745DE0-A621-44DB-95AE-6D974A5428B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0745DE0-A621-44DB-95AE-6D974A5428B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{169F6C2A-29A8-408C-BAA2-F50624209F63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{169F6C2A-29A8-408C-BAA2-F50624209F63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{169F6C2A-29A8-408C-BAA2-F50624209F63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{169F6C2A-29A8-408C-BAA2-F50624209F63}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
