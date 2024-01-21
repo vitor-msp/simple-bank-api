@@ -1,6 +1,6 @@
 namespace SimpleBankApi.Domain.Entities;
 
-public class Customer
+public class Customer : ICustomer
 {
     private readonly CustomerFields _fields;
 

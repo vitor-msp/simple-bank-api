@@ -1,10 +1,12 @@
+using SimpleBankApi.Domain.Exceptions;
+
 namespace SimpleBankApi.Domain.Entities;
 
-public class Account
+public class Account : IAccount
 {
     private readonly AccountFields _fields;
 
-    public Customer? Owner { get; set; }
+    public ICustomer? Owner { get; set; }
 
     public Account(AccountFields fields)
     {
@@ -15,7 +17,7 @@ public class Account
 
     public void Update(CustomerUpdateableFields fields)
     {
-        if (Owner == null) throw new Exception();
+        if (Owner == null) throw new DomainException("owner not setted");
         Owner.Update(fields);
     }
 
@@ -25,12 +27,11 @@ public class Account
     }
 
     /// to check
-    public (int, string) GetPublicData()
-    {
-        return (_fields.AccountNumber, Owner?.GetFields().Name ?? "");
-    }
+    // public (int, string) GetPublicData()
+    // {
+    //     return (_fields.AccountNumber, Owner?.GetFields().Name ?? "");
+    // }
 
-    /// to check
     public override bool Equals(object? obj)
     {
         if (obj == null) return false;
@@ -39,7 +40,6 @@ public class Account
         return accountToCompare._fields.AccountNumber == _fields.AccountNumber;
     }
 
-    /// to check
     public override int GetHashCode()
     {
         return _fields.AccountNumber;

@@ -18,7 +18,10 @@ public class CalculateBalance
         double debitSum = -1 * (await GetDebitsFromAccount(account)).Sum(d => d.GetFields().Value);
 
         var transfers = await GetTransfersFromAccount(account);
-        double transferSum = transfers.Sum(t => t.Sender != null && t.Sender.Equals(account) ? (-1 * t.GetFields().Value) : t.GetFields().Value);
+        double transferSum = transfers.Sum(transfer
+            => transfer.Sender != null && transfer.Sender.Equals(account)
+                ? (-1 * transfer.GetFields().Value)
+                : transfer.GetFields().Value);
 
         double balance = creditSum + debitSum + transferSum;
         return balance;

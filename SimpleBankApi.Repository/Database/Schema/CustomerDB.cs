@@ -14,17 +14,17 @@ public class CustomerDB
 
     public CustomerDB() { }
 
-    public CustomerDB(Customer customer)
+    public CustomerDB(ICustomer customer)
     {
         Hydrate(customer);
     }
 
-    public Customer GetEntity()
+    public ICustomer GetEntity()
     {
         return new Customer(CustomerFields.Rebuild(Id, Cpf, Name));
     }
 
-    public void Hydrate(Customer customer)
+    public void Hydrate(ICustomer customer)
     {
         var fields = customer.GetFields();
         Id = fields.Id;

@@ -17,7 +17,8 @@ public class AccountsRepository : IAccountsRepository
 
     public async Task<List<Account>> GetAll()
     {
-        var accountsDB = await _context.Accounts.AsNoTracking().Include("Owner").Where(accountDB => accountDB.Active).ToListAsync();
+        var accountsDB = await _context.Accounts.AsNoTracking().Include("Owner")
+            .Where(accountDB => accountDB.Active).ToListAsync();
         return accountsDB.Select(accountDB =>
         {
             var account = accountDB.GetEntity();
@@ -41,7 +42,8 @@ public class AccountsRepository : IAccountsRepository
     public async Task<Account?> GetByCpf(string cpf)
     {
         var accountDB = await _context.Accounts.AsNoTracking().Include("Owner")
-            .FirstOrDefaultAsync(accountDB => accountDB.Active && accountDB.Owner != null && accountDB.Owner.Cpf.Equals(cpf));
+            .FirstOrDefaultAsync(accountDB =>
+                accountDB.Active && accountDB.Owner != null && accountDB.Owner.Cpf.Equals(cpf));
         if (accountDB == null) return null;
         var account = accountDB.GetEntity();
         if (accountDB.Owner == null) throw new Exception();
@@ -52,7 +54,8 @@ public class AccountsRepository : IAccountsRepository
     public async Task Save(Account account)
     {
         var accountDB = await _context.Accounts.Include("Owner")
-            .FirstOrDefaultAsync(accountDB => accountDB.Active && accountDB.AccountNumber == account.GetFields().AccountNumber);
+            .FirstOrDefaultAsync(accountDB => 
+                accountDB.Active && accountDB.AccountNumber == account.GetFields().AccountNumber);
         if (accountDB == null) await Add(account);
         else await Update(accountDB, account);
     }
