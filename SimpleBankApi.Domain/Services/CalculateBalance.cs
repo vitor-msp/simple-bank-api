@@ -14,31 +14,36 @@ public class CalculateBalance
 
     public async Task<double> FromAccount(IAccount account)
     {
-        double creditSum = (await GetCreditsFromAccount(account)).Sum(credit => credit.GetFields().Value);
-        double debitSum = -1 * (await GetDebitsFromAccount(account)).Sum(debit => debit.GetFields().Value);
-
-        var transfers = await GetTransfersFromAccount(account);
-        double transferSum = transfers.Sum(transfer
-            => transfer.Sender != null && transfer.Sender.Equals(account)
-                ? (-1 * transfer.GetFields().Value)
-                : transfer.GetFields().Value);
+        double creditSum = await GetCreditSum(account);
+        double debitSum = await GetDebitSum(account);
+        var transferSum = await GetTransferSum(account);
 
         double balance = creditSum + debitSum + transferSum;
         return balance;
     }
 
-    private async Task<List<ICredit>> GetCreditsFromAccount(IAccount account)
+    private async Task<double> GetCreditSum(IAccount account)
     {
-        return await _transactionsRepository.GetCreditsFromAccount(account.GetFields().AccountNumber);
+        var credits = await _transactionsRepository.GetCreditsFromAccount(account.GetFields().AccountNumber);
+        double creditSum = credits.Sum(credit => credit.GetFields().Value);
+        return creditSum;
     }
 
-    private async Task<List<IDebit>> GetDebitsFromAccount(IAccount account)
+    private async Task<double> GetDebitSum(IAccount account)
     {
-        return await _transactionsRepository.GetDebitsFromAccount(account.GetFields().AccountNumber);
+        var debits = await _transactionsRepository.GetDebitsFromAccount(account.GetFields().AccountNumber);
+        double debitSum = -1 * debits.Sum(debit => debit.GetFields().Value);
+        return debitSum;
     }
 
-    private async Task<List<ITransfer>> GetTransfersFromAccount(IAccount account)
+    private async Task<double> GetTransferSum(IAccount account)
     {
-        return await _transactionsRepository.GetTransfersFromAccount(account.GetFields().AccountNumber);
+        var transfers = await _transactionsRepository.GetTransfersFromAccount(account.GetFields().AccountNumber);
+        double transferSum = transfers.Sum(transfer =>
+        {
+            var value = transfer.GetFields().Value;
+            return transfer.Sender != null && transfer.Sender.Equals(account) ? (-1 * value) : value;
+        });
+        return transferSum;
     }
 }

@@ -74,8 +74,8 @@ public class PrepareStatementTest
     [Fact]
     public void GetOrderedTransactions()
     {
-        var statement = new PrepareStatement()
-            .SortTransactionsByDateTime(GetCreditsExample(), GetDebitsExample(), GetTransfersExample(), _account);
+        var statement = new PrepareStatement(GetCreditsExample(), GetDebitsExample(), GetTransfersExample(), _account)
+            .SortTransactionsByDateTime();
 
         var receivedCredit = statement.Transactions[0];
         Assert.Equal(TransactionType.Credit, receivedCredit.Type);

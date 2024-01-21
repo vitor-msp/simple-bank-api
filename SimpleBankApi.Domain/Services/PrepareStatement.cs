@@ -5,51 +5,86 @@ namespace SimpleBankApi.Domain.Services;
 
 public class PrepareStatement
 {
-    public PrepareStatement() { }
+    private readonly List<ICredit> _credits;
+    private readonly List<IDebit> _debits;
+    private readonly List<ITransfer> _transfers;
+    private readonly IAccount _account;
+    private List<TransactionDto> _sortedTransactions = new();
+    private List<long> _creditTimestamps = new(), _debitTimestamps = new(), _transferTimestamps = new();
+    private int _max, _creditIndex, _debitIndex, _transferIndex;
+    private long _creditTimestamp, _debitTimestamp, _transferTimestamp;
 
-    public StatementDto SortTransactionsByDateTime(
-        List<ICredit> credits, List<IDebit> debits, List<ITransfer> transfers, IAccount account)
+    public PrepareStatement(List<ICredit> credits, List<IDebit> debits, List<ITransfer> transfers, IAccount account)
     {
-        var sortedTransactions = new List<TransactionDto>();
-        int creditIndex = 0, debitIndex = 0, transferIndex = 0;
-        int max = credits.Count() + debits.Count() + transfers.Count();
-
-        List<long> creditTimestamps = credits
-            .Select(c => new DateTimeOffset(c.GetFields().CreatedAt).ToUnixTimeMilliseconds()).ToList();
-        List<long> debitTimestamps = debits
-            .Select(d => new DateTimeOffset(d.GetFields().CreatedAt).ToUnixTimeMilliseconds()).ToList();
-        List<long> transferTimestamps = transfers
-            .Select(t => new DateTimeOffset(t.GetFields().CreatedAt).ToUnixTimeMilliseconds()).ToList();
-
-        creditTimestamps.Add(long.MaxValue);
-        debitTimestamps.Add(long.MaxValue);
-        transferTimestamps.Add(long.MaxValue);
-
-        for (int index = 0; index < max; index++)
-        {
-            var creditTimestamp = creditTimestamps.ElementAt(creditIndex);
-            var debitTimestamp = debitTimestamps.ElementAt(debitIndex);
-            var transferTimestamp = transferTimestamps.ElementAt(transferIndex);
-
-            if (creditTimestamp <= debitTimestamp && creditTimestamp <= transferTimestamp)
-            {
-                var credit = credits.ElementAt(creditIndex);
-                sortedTransactions.Add(TransactionDto.BuildFromCredit(credit));
-                creditIndex++;
-            }
-            else if (debitTimestamp <= transferTimestamp)
-            {
-                var debit = debits.ElementAt(debitIndex);
-                sortedTransactions.Add(TransactionDto.BuildFromDebit(debit));
-                debitIndex++;
-            }
-            else
-            {
-                var transfer = transfers.ElementAt(transferIndex);
-                sortedTransactions.Add(TransactionDto.BuildFromTransfer(transfer, account));
-                transferIndex++;
-            }
-        }
-        return new StatementDto() { Transactions = sortedTransactions };
+        _credits = credits;
+        _debits = debits;
+        _transfers = transfers;
+        _account = account;
     }
+
+    public StatementDto SortTransactionsByDateTime()
+    {
+        _creditIndex = 0;
+        _debitIndex = 0;
+        _transferIndex = 0;
+        _max = _credits.Count() + _debits.Count() + _transfers.Count();
+
+        _creditTimestamps = GetCreditTimestamps();
+        _debitTimestamps = GetDebitTimestamps();
+        _transferTimestamps = GetTransferTimestamps();
+
+        _creditTimestamps.Add(long.MaxValue);
+        _debitTimestamps.Add(long.MaxValue);
+        _transferTimestamps.Add(long.MaxValue);
+
+        for (int index = 0; index < _max; index++)
+            ProcessStep();
+
+        return new StatementDto() { Transactions = _sortedTransactions };
+    }
+
+    private List<long> GetCreditTimestamps()
+    {
+        return _credits.Select(credit => new DateTimeOffset(credit.GetFields().CreatedAt).ToUnixTimeMilliseconds()).ToList();
+    }
+
+    private List<long> GetDebitTimestamps()
+    {
+        return _debits.Select(debit => new DateTimeOffset(debit.GetFields().CreatedAt).ToUnixTimeMilliseconds()).ToList();
+    }
+
+    private List<long> GetTransferTimestamps()
+    {
+        return _transfers.Select(transfer => new DateTimeOffset(transfer.GetFields().CreatedAt).ToUnixTimeMilliseconds()).ToList();
+    }
+
+    private void ProcessStep()
+    {
+        _creditTimestamp = _creditTimestamps.ElementAt(_creditIndex);
+        _debitTimestamp = _debitTimestamps.ElementAt(_debitIndex);
+        _transferTimestamp = _transferTimestamps.ElementAt(_transferIndex);
+
+        if (CreditIsOldest())
+        {
+            var credit = _credits.ElementAt(_creditIndex);
+            _sortedTransactions.Add(TransactionDto.BuildFromCredit(credit));
+            _creditIndex++;
+        }
+        else if (DebitIsOlderThanTransfer())
+        {
+            var debit = _debits.ElementAt(_debitIndex);
+            _sortedTransactions.Add(TransactionDto.BuildFromDebit(debit));
+            _debitIndex++;
+        }
+        else
+        {
+            var transfer = _transfers.ElementAt(_transferIndex);
+            _sortedTransactions.Add(TransactionDto.BuildFromTransfer(transfer, _account));
+            _transferIndex++;
+        }
+    }
+
+    private bool CreditIsOldest() => _creditTimestamp <= _debitTimestamp && _creditTimestamp <= _transferTimestamp;
+
+    private bool DebitIsOlderThanTransfer() => _debitTimestamp <= _transferTimestamp;
 }

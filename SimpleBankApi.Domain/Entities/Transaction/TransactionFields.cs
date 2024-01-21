@@ -1,10 +1,7 @@
-using System.Text.Json.Serialization;
-
 namespace SimpleBankApi.Domain.Entities;
 
 public abstract class TransactionFields
 {
-    [JsonIgnore]
     public int Id { get; private set; }
     public double Value { get; set; }
     public DateTime CreatedAt { get; private set; }

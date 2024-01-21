@@ -1,10 +1,7 @@
-using System.Text.Json.Serialization;
-
 namespace SimpleBankApi.Domain.Entities;
 
 public class CustomerFields
 {
-    [JsonIgnore]
     public int Id { get; private set; }
     public string? Cpf { get; set; }
     public string? Name { get; set; }
