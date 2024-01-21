@@ -1,7 +1,7 @@
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.Output;
 using SimpleBankApi.Domain.Contract;
-using SimpleBankApi.Domain.Helpers;
+using SimpleBankApi.Domain.Extensions;
 using SimpleBankApi.Domain.Services;
 
 namespace SimpleBankApi.Application.UseCases;
@@ -25,6 +25,6 @@ public class GetBalanceUseCase : IGetBalanceUseCase
         var calculateBalance = new CalculateBalance(_transactionsRepository);
         double balance = await calculateBalance.FromAccount(account);
 
-        return new GetBalanceOutput { Balance = CurrencyHelper.GetBrazilianCurrency(balance) };
+        return new GetBalanceOutput { Balance = balance.GetBrazilianCurrency() };
     }
 }

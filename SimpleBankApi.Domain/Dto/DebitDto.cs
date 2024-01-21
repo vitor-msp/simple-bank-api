@@ -1,5 +1,5 @@
 using SimpleBankApi.Domain.Entities;
-using SimpleBankApi.Domain.Helpers;
+using SimpleBankApi.Domain.Extensions;
 
 namespace SimpleBankApi.Domain.Dto;
 
@@ -12,7 +12,7 @@ public class DebitDto
     {
         return new DebitDto()
         {
-            Value = CurrencyHelper.GetBrazilianCurrency(-1 * debit.GetFields().Value),
+            Value = (-1 * debit.GetFields().Value).GetBrazilianCurrency(),
             CreatedAt = debit.GetFields().CreatedAt,
         };
     }

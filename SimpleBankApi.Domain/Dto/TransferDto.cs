@@ -1,6 +1,6 @@
 using SimpleBankApi.Domain.Entities;
 using SimpleBankApi.Domain.Exceptions;
-using SimpleBankApi.Domain.Helpers;
+using SimpleBankApi.Domain.Extensions;
 
 namespace SimpleBankApi.Domain.Dto;
 
@@ -37,6 +37,6 @@ public class TransferDto
         {
             throw new DomainException("Transfer does not belong to the account.");
         }
-        return CurrencyHelper.GetBrazilianCurrency(value);
+        return value.GetBrazilianCurrency();
     }
 }

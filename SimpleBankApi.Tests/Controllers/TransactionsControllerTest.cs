@@ -12,7 +12,7 @@ using SimpleBankApi.Application.Output;
 using SimpleBankApi.Application.UseCases;
 using SimpleBankApi.Domain;
 using SimpleBankApi.Domain.Dto;
-using SimpleBankApi.Domain.Helpers;
+using SimpleBankApi.Domain.Extensions;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Database.Schema;
 using SimpleBankApi.Repository.Implementations;
@@ -298,7 +298,7 @@ public class TransactionsControllerTest : IDisposable
             Type = TransactionType.Debit,
             DebitDto = new DebitDto()
             {
-                Value = debit.Value.ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
+                Value = (-1 * debit.Value).ToString("c", CultureInfo.GetCultureInfo("pt-BR")),
                 CreatedAt = DateTime.SpecifyKind(debit.CreatedAt, DateTimeKind.Unspecified)
             }
         };
@@ -315,7 +315,7 @@ public class TransactionsControllerTest : IDisposable
             Type = TransactionType.Transfer,
             TransferDto = new TransferDto()
             {
-                Value = CurrencyHelper.GetBrazilianCurrency(value),
+                Value = value.GetBrazilianCurrency(),
                 CreatedAt = transfer.CreatedAt,
                 Sender = new AccountDto()
                 {

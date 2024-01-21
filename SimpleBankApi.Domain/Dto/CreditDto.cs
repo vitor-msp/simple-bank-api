@@ -1,5 +1,5 @@
 using SimpleBankApi.Domain.Entities;
-using SimpleBankApi.Domain.Helpers;
+using SimpleBankApi.Domain.Extensions;
 
 namespace SimpleBankApi.Domain.Dto;
 
@@ -12,7 +12,7 @@ public class CreditDto
     {
         return new CreditDto()
         {
-            Value = CurrencyHelper.GetBrazilianCurrency(credit.GetFields().Value),
+            Value = credit.GetFields().Value.GetBrazilianCurrency(),
             CreatedAt = credit.GetFields().CreatedAt,
         };
     }
