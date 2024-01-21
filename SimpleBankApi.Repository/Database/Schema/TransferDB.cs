@@ -14,17 +14,17 @@ public class TransferDB
 
     public TransferDB() { }
 
-    public TransferDB(Transfer transfer)
+    public TransferDB(ITransfer transfer)
     {
         Hydrate(transfer);
     }
 
-    public Transfer GetEntity()
+    public ITransfer GetEntity()
     {
         return new Transfer(TransferFields.Rebuild(Id, CreatedAt, Value));
     }
 
-    public void Hydrate(Transfer transfer)
+    public void Hydrate(ITransfer transfer)
     {
         var fields = transfer.GetFields();
         Id = fields.Id;

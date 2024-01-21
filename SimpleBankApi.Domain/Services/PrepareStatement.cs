@@ -8,7 +8,7 @@ public class PrepareStatement
     public PrepareStatement() { }
 
     public ArrayList SortTransactionsByDateTime(
-        List<Credit> credits, List<Debit> debits, List<Transfer> transfers, Account account)
+        List<ICredit> credits, List<IDebit> debits, List<ITransfer> transfers, IAccount account)
     {
         var sortedTransactions = new ArrayList();
         int creditIndex = 0, debitIndex = 0, transferIndex = 0;

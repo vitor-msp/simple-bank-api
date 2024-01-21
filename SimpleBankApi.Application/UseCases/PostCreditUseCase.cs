@@ -20,7 +20,7 @@ public class PostCreditUseCase : IPostCreditUseCase
 
     public async Task Execute(int accountNumber, CreditInput input)
     {
-        Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
+        var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
 
         var credit = new Credit(input.GetFields()) { Account = account };

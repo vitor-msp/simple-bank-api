@@ -1,7 +1,6 @@
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.Output;
 using SimpleBankApi.Domain.Contract;
-using SimpleBankApi.Domain.Entities;
 using SimpleBankApi.Domain.Helpers;
 using SimpleBankApi.Domain.Services;
 
@@ -20,7 +19,7 @@ public class GetBalanceUseCase : IGetBalanceUseCase
 
     public async Task<GetBalanceOutput> Execute(int accountNumber)
     {
-        Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
+        var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
 
         var calculateBalance = new CalculateBalance(_transactionsRepository);

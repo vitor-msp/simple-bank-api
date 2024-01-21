@@ -2,6 +2,8 @@ namespace SimpleBankApi.Domain.Entities;
 
 public interface IAccount
 {
+    public ICustomer? Owner { get; set; }
+
     public AccountFields GetFields();
 
     public void Update(CustomerUpdateableFields fields);
@@ -11,4 +13,6 @@ public interface IAccount
     public bool Equals(object? obj);
 
     public int GetHashCode();
+
+    public (int, string) GetPublicData();
 }

@@ -19,7 +19,7 @@ public class GetTransactionsUseCase : IGetTransactionsUseCase
 
     public async Task<GetTransactionsOutput> Execute(int accountNumber)
     {
-        Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
+        var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
 
         var credits = await GetCreditsFromAccount(account);
@@ -31,17 +31,17 @@ public class GetTransactionsUseCase : IGetTransactionsUseCase
         return new GetTransactionsOutput() { Transactions = sortedTransactions };
     }
 
-    private async Task<List<Credit>> GetCreditsFromAccount(Account account)
+    private async Task<List<ICredit>> GetCreditsFromAccount(IAccount account)
     {
         return await _transactionsRepository.GetCreditsFromAccount(account.GetFields().AccountNumber);
     }
 
-    private async Task<List<Debit>> GetDebitsFromAccount(Account account)
+    private async Task<List<IDebit>> GetDebitsFromAccount(IAccount account)
     {
         return await _transactionsRepository.GetDebitsFromAccount(account.GetFields().AccountNumber);
     }
 
-    private async Task<List<Transfer>> GetTransfersFromAccount(Account account)
+    private async Task<List<ITransfer>> GetTransfersFromAccount(IAccount account)
     {
         return await _transactionsRepository.GetTransfersFromAccount(account.GetFields().AccountNumber);
     }

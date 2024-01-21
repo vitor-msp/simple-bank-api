@@ -13,17 +13,17 @@ public class DebitDB
 
     public DebitDB() { }
 
-    public DebitDB(Debit debit)
+    public DebitDB(IDebit debit)
     {
         Hydrate(debit);
     }
 
-    public Debit GetEntity()
+    public IDebit GetEntity()
     {
         return new Debit(DebitFields.Rebuild(Id, CreatedAt, Value));
     }
 
-    public void Hydrate(Debit debit)
+    public void Hydrate(IDebit debit)
     {
         var fields = debit.GetFields();
         Id = fields.Id;

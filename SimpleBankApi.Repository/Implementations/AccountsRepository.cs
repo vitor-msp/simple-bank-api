@@ -15,7 +15,7 @@ public class AccountsRepository : IAccountsRepository
         _context = context;
     }
 
-    public async Task<List<Account>> GetAll()
+    public async Task<List<IAccount>> GetAll()
     {
         var accountsDB = await _context.Accounts.AsNoTracking().Include("Owner")
             .Where(accountDB => accountDB.Active).ToListAsync();
@@ -28,7 +28,7 @@ public class AccountsRepository : IAccountsRepository
         }).ToList();
     }
 
-    public async Task<Account?> GetByAccountNumber(int accountNumber)
+    public async Task<IAccount?> GetByAccountNumber(int accountNumber)
     {
         var accountDB = await _context.Accounts.AsNoTracking().Include("Owner")
             .FirstOrDefaultAsync(accountDB => accountDB.Active && accountDB.AccountNumber == accountNumber);
@@ -39,7 +39,7 @@ public class AccountsRepository : IAccountsRepository
         return account;
     }
 
-    public async Task<Account?> GetByCpf(string cpf)
+    public async Task<IAccount?> GetByCpf(string cpf)
     {
         var accountDB = await _context.Accounts.AsNoTracking().Include("Owner")
             .FirstOrDefaultAsync(accountDB =>
@@ -51,7 +51,7 @@ public class AccountsRepository : IAccountsRepository
         return account;
     }
 
-    public async Task Save(Account account)
+    public async Task Save(IAccount account)
     {
         var accountDB = await _context.Accounts.Include("Owner")
             .FirstOrDefaultAsync(accountDB => 
@@ -60,7 +60,7 @@ public class AccountsRepository : IAccountsRepository
         else await Update(accountDB, account);
     }
 
-    private async Task Add(Account account)
+    private async Task Add(IAccount account)
     {
         var accountDB = new AccountDB(account);
         if (account.Owner == null) throw new Exception();
@@ -70,7 +70,7 @@ public class AccountsRepository : IAccountsRepository
         await _context.SaveChangesAsync();
     }
 
-    private async Task Update(AccountDB accountDB, Account account)
+    private async Task Update(AccountDB accountDB, IAccount account)
     {
         if (account.Owner == null || accountDB.Owner == null) throw new Exception();
         accountDB.Hydrate(account);

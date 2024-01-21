@@ -1,7 +1,6 @@
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.Input;
 using SimpleBankApi.Domain.Contract;
-using SimpleBankApi.Domain.Entities;
 
 namespace SimpleBankApi.Application.UseCases;
 

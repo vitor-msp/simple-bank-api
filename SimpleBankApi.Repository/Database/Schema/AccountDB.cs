@@ -14,17 +14,17 @@ public class AccountDB
 
     public AccountDB() { }
 
-    public AccountDB(Account account)
+    public AccountDB(IAccount account)
     {
         Hydrate(account);
     }
 
-    public Account GetEntity()
+    public IAccount GetEntity()
     {
         return new Account(AccountFields.Rebuild(Id, AccountNumber, CreatedAt, Active));
     }
 
-    public void Hydrate(Account account)
+    public void Hydrate(IAccount account)
     {
         var fields = account.GetFields();
         Id = fields.Id;

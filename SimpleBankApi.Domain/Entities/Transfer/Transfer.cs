@@ -4,13 +4,13 @@ namespace SimpleBankApi.Domain.Entities;
 
 public class Transfer : Transaction, ITransfer
 {
-    public Account? Sender { get; set; }
-    public Account? Recipient { get; set; }
+    public IAccount? Sender { get; set; }
+    public IAccount? Recipient { get; set; }
 
     public Transfer(TransferFields fields) : base(fields) { }
 
     /// to check
-    public TransactionTransferDto GetData(Account account)
+    public TransactionTransferDto GetData(IAccount account)
     {
         double value;
         if (Sender != null && account.GetFields().AccountNumber == Sender.GetFields().AccountNumber)

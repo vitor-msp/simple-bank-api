@@ -13,14 +13,14 @@ public class GetAccountUseCase : IGetAccountUseCase
         _accountsRepository = accountsRepository;
     }
 
-    public async Task<Account> ByAccountNumber(int accountNumber)
+    public async Task<IAccount> ByAccountNumber(int accountNumber)
     {
         var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
         return account;
     }
 
-    public async Task<Account> ByCpf(string cpf)
+    public async Task<IAccount> ByCpf(string cpf)
     {
         var account = await _accountsRepository.GetByCpf(cpf);
         if (account == null) throw new EntityNotFoundException("Account not found.");

@@ -19,7 +19,7 @@ public class PostDebitUseCase : IPostDebitUseCase
 
     public async Task Execute(int accountNumber, DebitInput input)
     {
-        Account? account = await _accountsRepository.GetByAccountNumber(accountNumber);
+        var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
 
         var calculateBalance = new CalculateBalance(_transactionsRepository);

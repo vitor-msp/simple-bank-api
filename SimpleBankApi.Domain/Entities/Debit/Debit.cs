@@ -2,7 +2,7 @@ namespace SimpleBankApi.Domain.Entities;
 
 public class Debit : Transaction, IDebit
 {
-    public Account? Account { get; set; }
+    public IAccount? Account { get; set; }
 
     public Debit(DebitFields fields) : base(fields) { }
 

@@ -4,6 +4,6 @@ namespace SimpleBankApi.Application.Exceptions;
 
 public interface IGetAccountUseCase
 {
-    Task<Account> ByAccountNumber(int accountNumber);
-    Task<Account> ByCpf(string cpf);
+    Task<IAccount> ByAccountNumber(int accountNumber);
+    Task<IAccount> ByCpf(string cpf);
 }

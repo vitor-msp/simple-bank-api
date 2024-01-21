@@ -15,7 +15,7 @@ public class TransactionsRepository : ITransactionsRepository
         _context = context;
     }
 
-    public async Task SaveCredit(Credit credit)
+    public async Task SaveCredit(ICredit credit)
     {
         if (credit.Account == null) throw new Exception();
         var accountDB = await _context.Accounts.FindAsync(credit.Account.GetFields().Id);
@@ -25,7 +25,7 @@ public class TransactionsRepository : ITransactionsRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task SaveDebit(Debit debit)
+    public async Task SaveDebit(IDebit debit)
     {
         if (debit.Account == null) throw new Exception();
         var accountDB = await _context.Accounts.FindAsync(debit.Account.GetFields().Id);
@@ -35,7 +35,7 @@ public class TransactionsRepository : ITransactionsRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task SaveTransfer(Transfer transfer)
+    public async Task SaveTransfer(ITransfer transfer)
     {
         if (transfer.Sender == null || transfer.Recipient == null) throw new Exception();
         var senderDB = await _context.Accounts.FindAsync(transfer.Sender.GetFields().Id);
@@ -46,7 +46,7 @@ public class TransactionsRepository : ITransactionsRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<Credit>> GetCreditsFromAccount(int accountNumber)
+    public async Task<List<ICredit>> GetCreditsFromAccount(int accountNumber)
     {
         var creditsDB = await _context.Credits.AsNoTracking().Include("Account.Owner")
             .Where(creditDB => creditDB.Account != null && creditDB.Account.AccountNumber == accountNumber).ToListAsync();
@@ -62,7 +62,7 @@ public class TransactionsRepository : ITransactionsRepository
         }).ToList();
     }
 
-    public async Task<List<Debit>> GetDebitsFromAccount(int accountNumber)
+    public async Task<List<IDebit>> GetDebitsFromAccount(int accountNumber)
     {
         var debitsDB = await _context.Debits.AsNoTracking().Include("Account.Owner")
             .Where(debitDB => debitDB.Account != null && debitDB.Account.AccountNumber == accountNumber).ToListAsync();
@@ -78,7 +78,7 @@ public class TransactionsRepository : ITransactionsRepository
         }).ToList();
     }
 
-    public async Task<List<Transfer>> GetTransfersFromAccount(int accountNumber)
+    public async Task<List<ITransfer>> GetTransfersFromAccount(int accountNumber)
     {
         var transfersDB = await _context.Transfers.AsNoTracking().Include("Sender.Owner").Include("Recipient.Owner")
             .Where(transferDB => (transferDB.Sender != null && transferDB.Sender.AccountNumber == accountNumber)

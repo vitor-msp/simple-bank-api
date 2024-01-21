@@ -12,7 +12,7 @@ public class CalculateBalance
         _transactionsRepository = transactionsRepository;
     }
 
-    public async Task<double> FromAccount(Account account)
+    public async Task<double> FromAccount(IAccount account)
     {
         double creditSum = (await GetCreditsFromAccount(account)).Sum(c => c.GetFields().Value);
         double debitSum = -1 * (await GetDebitsFromAccount(account)).Sum(d => d.GetFields().Value);
@@ -27,17 +27,17 @@ public class CalculateBalance
         return balance;
     }
 
-    private async Task<List<Credit>> GetCreditsFromAccount(Account account)
+    private async Task<List<ICredit>> GetCreditsFromAccount(IAccount account)
     {
         return await _transactionsRepository.GetCreditsFromAccount(account.GetFields().AccountNumber);
     }
 
-    private async Task<List<Debit>> GetDebitsFromAccount(Account account)
+    private async Task<List<IDebit>> GetDebitsFromAccount(IAccount account)
     {
         return await _transactionsRepository.GetDebitsFromAccount(account.GetFields().AccountNumber);
     }
 
-    private async Task<List<Transfer>> GetTransfersFromAccount(Account account)
+    private async Task<List<ITransfer>> GetTransfersFromAccount(IAccount account)
     {
         return await _transactionsRepository.GetTransfersFromAccount(account.GetFields().AccountNumber);
     }

@@ -21,10 +21,10 @@ public class PostTransferUseCase : IPostTransferUseCase
 
     public async Task Execute(int accountNumber, TransferInput input)
     {
-        Account? sender = await _accountsRepository.GetByAccountNumber(accountNumber);
+        var sender = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (sender == null) throw new EntityNotFoundException("Sender account not found.");
 
-        Account? recipient = await _accountsRepository.GetByAccountNumber(input.RecipientAccountNumber);
+        var recipient = await _accountsRepository.GetByAccountNumber(input.RecipientAccountNumber);
         if (recipient == null) throw new EntityNotFoundException("Recipient account not found.");
 
         if (sender.Equals(recipient))

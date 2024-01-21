@@ -13,17 +13,17 @@ public class CreditDB
 
     public CreditDB() { }
 
-    public CreditDB(Credit credit)
+    public CreditDB(ICredit credit)
     {
         Hydrate(credit);
     }
 
-    public Credit GetEntity()
+    public ICredit GetEntity()
     {
         return new Credit(CreditFields.Rebuild(Id, CreatedAt, Value));
     }
 
-    public void Hydrate(Credit credit)
+    public void Hydrate(ICredit credit)
     {
         var fields = credit.GetFields();
         Id = fields.Id;
