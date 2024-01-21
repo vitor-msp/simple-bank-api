@@ -12,7 +12,7 @@ public class DebitDto
     {
         return new DebitDto()
         {
-            Value = CurrencyHelper.GetBrazilianCurrency(debit.GetFields().Value),
+            Value = CurrencyHelper.GetBrazilianCurrency(-1 * debit.GetFields().Value),
             CreatedAt = debit.GetFields().CreatedAt,
         };
     }
