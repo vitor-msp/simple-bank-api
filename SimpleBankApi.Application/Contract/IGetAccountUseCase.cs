@@ -1,9 +1,9 @@
-using SimpleBankApi.Domain.Entities;
+using SimpleBankApi.Application.Output;
 
 namespace SimpleBankApi.Application.Exceptions;
 
 public interface IGetAccountUseCase
 {
-    Task<IAccount> ByAccountNumber(int accountNumber);
-    Task<IAccount> ByCpf(string cpf);
+    Task<GetAccountOutput> ByAccountNumber(int accountNumber);
+    Task<GetAccountOutput> ByCpf(string cpf);
 }

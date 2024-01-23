@@ -1,6 +1,6 @@
 using SimpleBankApi.Application.Exceptions;
+using SimpleBankApi.Application.Output;
 using SimpleBankApi.Domain.Contract;
-using SimpleBankApi.Domain.Entities;
 
 namespace SimpleBankApi.Application.UseCases;
 
@@ -13,17 +13,17 @@ public class GetAccountUseCase : IGetAccountUseCase
         _accountsRepository = accountsRepository;
     }
 
-    public async Task<IAccount> ByAccountNumber(int accountNumber)
+    public async Task<GetAccountOutput> ByAccountNumber(int accountNumber)
     {
         var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
-        return account;
+        return GetAccountOutput.Build(account);
     }
 
-    public async Task<IAccount> ByCpf(string cpf)
+    public async Task<GetAccountOutput> ByCpf(string cpf)
     {
         var account = await _accountsRepository.GetByCpf(cpf);
         if (account == null) throw new EntityNotFoundException("Account not found.");
-        return account;
+        return GetAccountOutput.Build(account);
     }
 }

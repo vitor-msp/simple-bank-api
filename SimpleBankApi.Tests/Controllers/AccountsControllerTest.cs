@@ -9,7 +9,6 @@ using SimpleBankApi.Api.Controllers;
 using SimpleBankApi.Application.Input;
 using SimpleBankApi.Application.Output;
 using SimpleBankApi.Application.UseCases;
-using SimpleBankApi.Domain.Entities;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Database.Schema;
 using SimpleBankApi.Repository.Implementations;
@@ -114,12 +113,11 @@ public class AccountsControllerTest : IDisposable
             : await sut.GetById(account.AccountNumber);
 
         var okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-        var accountResult = Assert.IsType<Account>(okObjectResult.Value);
-        Assert.Equal(account.AccountNumber, accountResult.GetFields().AccountNumber);
-        Assert.Equal(account.Active, accountResult.GetFields().Active);
-        Assert.Equal(account.CreatedAt, accountResult.GetFields().CreatedAt);
-        Assert.Equal(account.Owner?.Cpf, accountResult.Owner?.GetFields().Cpf);
-        Assert.Equal(account.Owner?.Name, accountResult.Owner?.GetFields().Name);
+        var accountResult = Assert.IsType<GetAccountOutput>(okObjectResult.Value);
+        Assert.Equal(account.AccountNumber, accountResult.AccountNumber);
+        Assert.Equal(account.CreatedAt, accountResult.CreatedAt);
+        Assert.Equal(account.Owner?.Cpf, accountResult.Owner?.Cpf);
+        Assert.Equal(account.Owner?.Name, accountResult.Owner?.Name);
     }
 
     [Theory]
