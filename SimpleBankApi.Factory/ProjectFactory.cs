@@ -20,6 +20,8 @@ public static class ProjectFactory
         services.AddScoped<ITransactionsRepository, TransactionsRepository>();
 
         services.AddScoped<ICreateAccountUseCase, CreateAccountUseCase>();
+        services.AddScoped<IUpdateAccountUseCase, UpdateAccountUseCase>();
+        services.AddScoped<IDeleteAccountUseCase, DeleteAccountUseCase>();
         services.AddScoped<IGetAllAccountsUseCase, GetAllAccountsUseCase>();
         services.AddScoped<IGetAccountUseCase, GetAccountUseCase>();
 
