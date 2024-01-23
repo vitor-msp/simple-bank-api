@@ -15,7 +15,7 @@ git clone https://github.com/vitor-msp/simple-bank-api.git
 
 2. Access the downloaded folder
 ```
-cd simple-bank-api/simple-bank-api
+cd simple-bank-api
 ```
 
 3. Restore the .NET dependencies
@@ -25,12 +25,12 @@ dotnet restore
 
 4. Run migrations
 ```
-dotnet ef database update
+dotnet ef database update --project SimpleBankApi.Repository --connection "DataSource=../bank.db"
 ```
 
 5. Run API
 ```
-dotnet run
+dotnet run --project SimpleBankApi.Api
 ```
 
 6. Access [Swager URL](http://localhost:5000/swagger)
