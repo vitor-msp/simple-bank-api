@@ -428,3 +428,4 @@ obj/
 !**/Migrations/BankContextModelSnapshot.cs
 
 coverage
+.sonarqube
