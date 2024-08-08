@@ -30,5 +30,7 @@ public static class ProjectFactory
         services.AddScoped<IPostTransferUseCase, PostTransferUseCase>();
         services.AddScoped<IGetBalanceUseCase, GetBalanceUseCase>();
         services.AddScoped<IGetTransactionsUseCase, GetTransactionsUseCase>();
+
+        services.AddAllElasticApm();
     }
 }
