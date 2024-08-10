@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.UseCases;
 using SimpleBankApi.Domain.Contract;
+using SimpleBankApi.Repository.Cache;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Implementations;
 
@@ -16,8 +17,11 @@ public static class ProjectFactory
         services.AddDbContext<BankContext>(options =>
             options.UseSqlite(configuration.GetConnectionString("SqliteConnection")));
 
+        services.Configure<RedisConfiguration>(configuration.GetSection("Redis"));
+
         services.AddScoped<IAccountsRepository, AccountsRepository>();
         services.AddScoped<ITransactionsRepository, TransactionsRepository>();
+        services.AddScoped<IBankCache, BankCacheRedis>();
 
         services.AddScoped<ICreateAccountUseCase, CreateAccountUseCase>();
         services.AddScoped<IUpdateAccountUseCase, UpdateAccountUseCase>();

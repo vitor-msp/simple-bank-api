@@ -5,14 +5,32 @@ namespace SimpleBankApi.Domain.Services;
 
 public class CalculateBalance
 {
+    private readonly int _cacheTtl = 60 * 60 * 24;
     private readonly ITransactionsRepository _transactionsRepository;
+    private readonly IBankCache _bankCache;
 
-    public CalculateBalance(ITransactionsRepository transactionsRepository)
+    public CalculateBalance(ITransactionsRepository transactionsRepository,
+        IBankCache bankCache)
     {
         _transactionsRepository = transactionsRepository;
+        _bankCache = bankCache;
     }
 
+    private static string GetCacheKey(IAccount account)
+        => $"balance-{account.GetFields().AccountNumber}";
+
     public async Task<double> FromAccount(IAccount account)
+    {
+        var cacheKey = GetCacheKey(account);
+        var balanceCacheValue = await _bankCache.Get(cacheKey);
+        if (balanceCacheValue != null && double.TryParse(balanceCacheValue, out double balance))
+            return balance;
+        balance = await ProcessBalance(account);
+        await _bankCache.Set(cacheKey, balance.ToString(), _cacheTtl);
+        return balance;
+    }
+
+    private async Task<double> ProcessBalance(IAccount account)
     {
         double creditSum = await GetCreditSum(account);
         double debitSum = await GetDebitSum(account);
