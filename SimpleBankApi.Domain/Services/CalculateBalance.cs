@@ -1,5 +1,6 @@
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Entities;
+using SimpleBankApi.Domain.Utils;
 
 namespace SimpleBankApi.Domain.Services;
 
@@ -16,12 +17,9 @@ public class CalculateBalance
         _bankCache = bankCache;
     }
 
-    private static string GetCacheKey(IAccount account)
-        => $"balance-{account.GetFields().AccountNumber}";
-
     public async Task<double> FromAccount(IAccount account)
     {
-        var cacheKey = GetCacheKey(account);
+        var cacheKey = CacheKeys.Balance(account);
         var balanceCacheValue = await _bankCache.Get(cacheKey);
         if (balanceCacheValue != null && double.TryParse(balanceCacheValue, out double balance))
             return balance;

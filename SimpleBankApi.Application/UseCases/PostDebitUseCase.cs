@@ -3,6 +3,7 @@ using SimpleBankApi.Application.Input;
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Entities;
 using SimpleBankApi.Domain.Services;
+using SimpleBankApi.Domain.Utils;
 
 namespace SimpleBankApi.Application.UseCases;
 
@@ -33,5 +34,7 @@ public class PostDebitUseCase : IPostDebitUseCase
 
         var debit = new Debit(input.GetFiels()) { Account = account };
         await _transactionsRepository.SaveDebit(debit);
+
+        await _bankCache.Delete(CacheKeys.Balance(account));
     }
 }

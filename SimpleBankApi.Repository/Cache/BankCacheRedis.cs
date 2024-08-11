@@ -28,4 +28,6 @@ public class BankCacheRedis : IBankCache
 
     public async Task Set(string key, string value, int ttlInSeconds)
         => await _redis.StringSetAsync(key, value, TimeSpan.FromSeconds(ttlInSeconds));
+
+    public async Task Delete(string key) => await _redis.KeyDeleteAsync(key);
 }

@@ -3,6 +3,7 @@ using SimpleBankApi.Application.Input;
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Entities;
 using SimpleBankApi.Domain.Services;
+using SimpleBankApi.Domain.Utils;
 
 namespace SimpleBankApi.Application.UseCases;
 
@@ -39,5 +40,8 @@ public class PostTransferUseCase : IPostTransferUseCase
 
         var transfer = new Transfer(input.GetFields()) { Sender = sender, Recipient = recipient };
         await _transactionsRepository.SaveTransfer(transfer);
+
+        await _bankCache.Delete(CacheKeys.Balance(sender));
+        await _bankCache.Delete(CacheKeys.Balance(recipient));
     }
 }
