@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using SimpleBankApi.Api.Controllers;
 using SimpleBankApi.Application.Input;
 using SimpleBankApi.Application.Output;
 using SimpleBankApi.Application.UseCases;
 using SimpleBankApi.Domain;
+using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Dto;
 using SimpleBankApi.Domain.Extensions;
 using SimpleBankApi.Repository.Database.Context;
@@ -25,6 +27,7 @@ public class TransactionsControllerTest : IDisposable
     private readonly DbConnection _connection;
     private readonly DbContextOptions<BankContext> _contextOptions;
     private readonly AccountDB _account;
+    private readonly IBankCache _bankCacheMock = new Mock<IBankCache>().Object;
 
     private const int _accountNumberNotUsed = 1000;
 
@@ -50,10 +53,10 @@ public class TransactionsControllerTest : IDisposable
         var accountsRepository = new AccountsRepository(context);
 
         var controller = new TransactionsController(
-            new PostCreditUseCase(transactionsRepository, accountsRepository),
-            new PostDebitUseCase(transactionsRepository, accountsRepository),
-            new PostTransferUseCase(transactionsRepository, accountsRepository),
-            new GetBalanceUseCase(transactionsRepository, accountsRepository),
+            new PostCreditUseCase(transactionsRepository, accountsRepository, _bankCacheMock),
+            new PostDebitUseCase(transactionsRepository, accountsRepository, _bankCacheMock),
+            new PostTransferUseCase(transactionsRepository, accountsRepository, _bankCacheMock),
+            new GetBalanceUseCase(transactionsRepository, accountsRepository, _bankCacheMock),
             new GetTransactionsUseCase(transactionsRepository, accountsRepository));
 
         context.Accounts.Add(_account);
