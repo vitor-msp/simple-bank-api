@@ -15,6 +15,7 @@ using SimpleBankApi.Domain;
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Dto;
 using SimpleBankApi.Domain.Extensions;
+using SimpleBankApi.Domain.Services;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Database.Schema;
 using SimpleBankApi.Repository.Implementations;
@@ -51,12 +52,13 @@ public class TransactionsControllerTest : IDisposable
         var context = CreateContext();
         var transactionsRepository = new TransactionsRepository(context);
         var accountsRepository = new AccountsRepository(context);
+        var calculateBalance = new CalculateBalance(transactionsRepository, _bankCacheMock);
 
         var controller = new TransactionsController(
             new PostCreditUseCase(transactionsRepository, accountsRepository, _bankCacheMock),
-            new PostDebitUseCase(transactionsRepository, accountsRepository, _bankCacheMock),
-            new PostTransferUseCase(transactionsRepository, accountsRepository, _bankCacheMock),
-            new GetBalanceUseCase(transactionsRepository, accountsRepository, _bankCacheMock),
+            new PostDebitUseCase(transactionsRepository, accountsRepository, calculateBalance, _bankCacheMock),
+            new PostTransferUseCase(transactionsRepository, accountsRepository, calculateBalance, _bankCacheMock),
+            new GetBalanceUseCase(accountsRepository, calculateBalance),
             new GetTransactionsUseCase(transactionsRepository, accountsRepository));
 
         context.Accounts.Add(_account);

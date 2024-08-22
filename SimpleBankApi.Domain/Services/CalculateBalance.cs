@@ -4,7 +4,7 @@ using SimpleBankApi.Domain.Utils;
 
 namespace SimpleBankApi.Domain.Services;
 
-public class CalculateBalance
+public class CalculateBalance: ICalculateBalance
 {
     private readonly int _cacheTtl = 60 * 60 * 24;
     private readonly ITransactionsRepository _transactionsRepository;

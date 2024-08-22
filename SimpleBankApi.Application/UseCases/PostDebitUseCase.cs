@@ -11,15 +11,18 @@ public class PostDebitUseCase : IPostDebitUseCase
 {
     private readonly ITransactionsRepository _transactionsRepository;
     private readonly IAccountsRepository _accountsRepository;
+    private readonly ICalculateBalance _calculateBalance;
     private readonly IBankCache _bankCache;
 
     public PostDebitUseCase(
         ITransactionsRepository transactionsRepository,
         IAccountsRepository accountsRepository,
+        ICalculateBalance calculateBalance,
         IBankCache bankCache)
     {
         _transactionsRepository = transactionsRepository;
         _accountsRepository = accountsRepository;
+        _calculateBalance = calculateBalance;
         _bankCache = bankCache;
     }
 
@@ -28,8 +31,7 @@ public class PostDebitUseCase : IPostDebitUseCase
         var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
 
-        var calculateBalance = new CalculateBalance(_transactionsRepository, _bankCache);
-        double balance = await calculateBalance.FromAccount(account);
+        double balance = await _calculateBalance.FromAccount(account);
         if (balance < input.Value) throw new InvalidInputException("Insufficient balance.");
 
         var debit = new Debit(input.GetFiels()) { Account = account };

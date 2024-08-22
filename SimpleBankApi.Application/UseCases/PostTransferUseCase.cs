@@ -11,15 +11,18 @@ public class PostTransferUseCase : IPostTransferUseCase
 {
     private readonly ITransactionsRepository _transactionsRepository;
     private readonly IAccountsRepository _accountsRepository;
+    private readonly ICalculateBalance _calculateBalance;
     private readonly IBankCache _bankCache;
 
     public PostTransferUseCase(
         ITransactionsRepository transactionsRepository,
         IAccountsRepository accountsRepository,
+        ICalculateBalance calculateBalance,
         IBankCache bankCache)
     {
         _accountsRepository = accountsRepository;
         _transactionsRepository = transactionsRepository;
+        _calculateBalance = calculateBalance;
         _bankCache = bankCache;
     }
 
@@ -34,8 +37,7 @@ public class PostTransferUseCase : IPostTransferUseCase
         if (sender.Equals(recipient))
             throw new InvalidInputException("Transfer to the same account is not allowed.");
 
-        var calculateBalance = new CalculateBalance(_transactionsRepository, _bankCache);
-        double balance = await calculateBalance.FromAccount(sender);
+        double balance = await _calculateBalance.FromAccount(sender);
         if (balance < input.Value) throw new InvalidInputException("Insufficient balance.");
 
         var transfer = new Transfer(input.GetFields()) { Sender = sender, Recipient = recipient };

@@ -8,18 +8,15 @@ namespace SimpleBankApi.Application.UseCases;
 
 public class GetBalanceUseCase : IGetBalanceUseCase
 {
-    private readonly ITransactionsRepository _transactionsRepository;
     private readonly IAccountsRepository _accountsRepository;
-    private readonly IBankCache _bankCache;
+    private readonly ICalculateBalance _calculateBalance;
 
     public GetBalanceUseCase(
-        ITransactionsRepository transactionsRepository,
         IAccountsRepository accountsRepository,
-        IBankCache bankCache)
+        ICalculateBalance calculateBalance)
     {
-        _transactionsRepository = transactionsRepository;
         _accountsRepository = accountsRepository;
-        _bankCache = bankCache;
+        _calculateBalance = calculateBalance;
     }
 
     public async Task<GetBalanceOutput> Execute(int accountNumber)
@@ -27,8 +24,7 @@ public class GetBalanceUseCase : IGetBalanceUseCase
         var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
 
-        var calculateBalance = new CalculateBalance(_transactionsRepository, _bankCache);
-        double balance = await calculateBalance.FromAccount(account);
+        double balance = await _calculateBalance.FromAccount(account);
 
         return new GetBalanceOutput { Balance = balance.GetBrazilianCurrency() };
     }
