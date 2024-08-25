@@ -23,11 +23,12 @@ public class AccountFields
         CreatedAt = createdAt;
     }
 
-    public static AccountFields Rebuild(int id, int accountNumber, DateTime createdAt, bool active, string? passwordHash)
+    public static AccountFields Rebuild(int id, int accountNumber, DateTime createdAt, bool active, string? passwordHash, string? refreshToken)
     {
         return new AccountFields(id, accountNumber, createdAt)
         {
             PasswordHash = passwordHash,
+            RefreshToken = refreshToken,
             Active = active
         };
     }

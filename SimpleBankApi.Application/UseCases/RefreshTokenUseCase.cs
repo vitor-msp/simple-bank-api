@@ -21,6 +21,10 @@ public class RefreshTokenUseCase : IRefreshTokenUseCase
         var account = await _accountsRepository.GetByAccountNumber(input.AccountNumber);
         if (account == null) throw new EntityNotFoundException("Account number and/or password invalid.");
 
+        var refreshToken = account.GetFields().RefreshToken;
+        if (refreshToken == null || !refreshToken.Equals(input.RefreshToken))
+            throw new EntityNotFoundException("Account number and/or password invalid.");
+
         return new RefreshTokenOutput()
         {
             AccessToken = _tokenProvider.Generate(account)

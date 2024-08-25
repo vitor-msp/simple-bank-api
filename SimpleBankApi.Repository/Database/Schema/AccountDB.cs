@@ -23,7 +23,7 @@ public class AccountDB
 
     public IAccount GetEntity()
     {
-        return new Account(AccountFields.Rebuild(Id, AccountNumber, CreatedAt, Active, PasswordHash));
+        return new Account(AccountFields.Rebuild(Id, AccountNumber, CreatedAt, Active, PasswordHash, RefreshToken));
     }
 
     public void Hydrate(IAccount account)

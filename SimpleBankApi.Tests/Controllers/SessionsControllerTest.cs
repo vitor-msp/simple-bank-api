@@ -201,6 +201,18 @@ public class SessionsControllerTest
     [Fact]
     public async void RefreshToken_ReturnUnauthorized_InvalidToken()
     {
+        var (sut, context) = MakeSut();
+        context.Accounts.Add(AccountExample());
+        await context.SaveChangesAsync();
+        var input = new RefreshTokenInput()
+        {
+            AccountNumber = 1,
+            RefreshToken = Guid.NewGuid().ToString()
+        };
+
+        var actionResult = await sut.RefreshToken(input);
+
+        Assert.IsType<UnauthorizedObjectResult>(actionResult.Result);
     }
 
     [Fact]
