@@ -9,6 +9,7 @@ public class AccountDB
     public int Id { get; set; }
     public int AccountNumber { get; set; }
     public string? PasswordHash { get; set; } = "";
+    public string? RefreshToken { get; set; } = "";
     public DateTime CreatedAt { get; set; }
     public bool Active { get; set; }
     public CustomerDB? Owner { get; set; }

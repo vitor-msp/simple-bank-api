@@ -53,8 +53,7 @@ public class AccountsControllerTest : IDisposable
     public void Dispose() => _connection.Dispose();
 
     private AccountDB AccountExample(string cpf = "0123")
-    {
-        return new AccountDB()
+        => new()
         {
             AccountNumber = 1,
             CreatedAt = DateTime.Now,
@@ -66,7 +65,6 @@ public class AccountsControllerTest : IDisposable
                 Name = "fulano",
             }
         };
-    }
 
     [Fact]
     public async Task GetAll_ReturnNotEmpty()
