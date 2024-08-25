@@ -18,7 +18,9 @@ public class TokenProvider : ITokenProvider
     public TokenProvider(IOptions<TokenConfiguration> options)
     {
         _configuration = options.Value;
-        _key = Encoding.UTF8.GetBytes(_configuration.Key ?? "");
+        if (_configuration.Key == null)
+            throw new Exception("Missing configure token key.");
+        _key = Encoding.UTF8.GetBytes(_configuration.Key);
     }
 
     public string Generate(IAccount account)

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SimpleBankApi.Api.Presenters;
 using SimpleBankApi.Application.Exceptions;
@@ -8,6 +9,7 @@ namespace SimpleBankApi.Api.Controllers;
 
 [ApiController]
 [Route("accounts")]
+[Authorize]
 public class AccountsController : ControllerBase
 {
     private readonly ICreateAccountUseCase _createAccountUseCase;
@@ -79,6 +81,7 @@ public class AccountsController : ControllerBase
     }
 
     [HttpPost]
+    [AllowAnonymous]
     public async Task<ActionResult<PostAccountOutput>> Post([FromBody] CreateAccountInput newAccountDto)
     {
         try

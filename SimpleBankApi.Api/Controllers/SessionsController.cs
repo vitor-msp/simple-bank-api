@@ -7,7 +7,6 @@ using SimpleBankApi.Application.Output;
 namespace SimpleBankApi.Api.Controllers;
 
 [ApiController]
-[Route("sessions")]
 public class SessionsController : ControllerBase
 {
     private readonly ILoginUseCase _loginUseCase;
@@ -22,7 +21,7 @@ public class SessionsController : ControllerBase
         _logoutUseCase = logoutUseCase;
     }
 
-    [HttpPost]
+    [HttpPost("login")]
     public async Task<ActionResult<LoginOutput>> Login([FromBody] LoginInput input)
     {
         try
@@ -40,7 +39,7 @@ public class SessionsController : ControllerBase
         }
     }
 
-    [HttpPost]
+    [HttpPost("refresh-token")]
     public async Task<ActionResult<RefreshTokenOutput>> RefreshToken([FromBody] RefreshTokenInput input)
     {
         try
@@ -58,7 +57,7 @@ public class SessionsController : ControllerBase
         }
     }
 
-    [HttpPost]
+    [HttpPost("logout")]
     public async Task<ActionResult<RefreshTokenOutput>> Logout([FromBody] LogoutInput input)
     {
         try

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SimpleBankApi.Api.Presenters;
 using SimpleBankApi.Application.Exceptions;
@@ -9,6 +10,7 @@ namespace SimpleBankApi.Api.Controllers;
 
 [ApiController]
 [Route("transactions")]
+[Authorize]
 public class TransactionsController : ControllerBase
 {
     private readonly IPostCreditUseCase _postCreditUseCase;
