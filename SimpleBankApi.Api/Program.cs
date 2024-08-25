@@ -1,10 +1,11 @@
+using SimpleBankApi.Api;
 using SimpleBankApi.Factory;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.SetupSwagger();
 
 builder.Services.BuildProject(builder.Configuration);
 
