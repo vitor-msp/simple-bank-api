@@ -8,6 +8,7 @@ public class AccountDB
     [Key]
     public int Id { get; set; }
     public int AccountNumber { get; set; }
+    public string? PasswordHash { get; set; } = "";
     public DateTime CreatedAt { get; set; }
     public bool Active { get; set; }
     public CustomerDB? Owner { get; set; }
@@ -21,7 +22,7 @@ public class AccountDB
 
     public IAccount GetEntity()
     {
-        return new Account(AccountFields.Rebuild(Id, AccountNumber, CreatedAt, Active));
+        return new Account(AccountFields.Rebuild(Id, AccountNumber, CreatedAt, Active, PasswordHash));
     }
 
     public void Hydrate(IAccount account)
@@ -30,5 +31,6 @@ public class AccountDB
         Id = fields.Id;
         AccountNumber = fields.AccountNumber;
         Active = fields.Active;
+        PasswordHash = fields.PasswordHash;
     }
 }

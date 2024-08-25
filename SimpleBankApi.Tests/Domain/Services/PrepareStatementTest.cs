@@ -10,7 +10,7 @@ namespace SimpleBankApi.Tests;
 
 public class PrepareStatementTest
 {
-    private readonly IAccount _account = new Account(AccountFields.Rebuild(1, 1, DateTime.Now, true))
+    private readonly IAccount _account = new Account(AccountFields.Rebuild(1, 1, DateTime.Now, true, "hash"))
     {
         Owner = new Customer(CustomerFields.Rebuild(1, "0123", "fulano de tal"))
     };
@@ -66,7 +66,7 @@ public class PrepareStatementTest
         return transfers;
     }
 
-    private Account GetAccountExample() => new Account(AccountFields.Rebuild(2, 2, DateTime.Now, true))
+    private Account GetAccountExample() => new Account(AccountFields.Rebuild(2, 2, DateTime.Now, true, "hash"))
     {
         Owner = new Customer(CustomerFields.Rebuild(2, "9876", "ciclano ferreira"))
     };

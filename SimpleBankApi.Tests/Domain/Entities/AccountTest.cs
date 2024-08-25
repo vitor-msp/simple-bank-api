@@ -9,6 +9,7 @@ public class AccountTest
 {
     private readonly int _accountId = 1;
     private readonly int _accountAccountNumber = 116565;
+    private readonly string _accountPasswordHash = "hash";
     private readonly DateTime _accountCreatedAt = DateTime.Now;
     private readonly bool _accountActive = true;
 
@@ -17,7 +18,7 @@ public class AccountTest
     private Account GetAccountExample()
     {
         return new Account(
-            AccountFields.Rebuild(_accountId, _accountAccountNumber, _accountCreatedAt, _accountActive));
+            AccountFields.Rebuild(_accountId, _accountAccountNumber, _accountCreatedAt, _accountActive, _accountPasswordHash));
     }
 
     [Fact]
@@ -25,13 +26,15 @@ public class AccountTest
     {
         int id = 2536;
         int accountNumber = 296161351;
+        string passwordHash = "hash";
         DateTime createdAt = DateTime.Now;
         bool active = true;
 
-        var account = new Account(AccountFields.Rebuild(id, accountNumber, createdAt, active));
+        var account = new Account(AccountFields.Rebuild(id, accountNumber, createdAt, active, passwordHash));
 
         Assert.Equal(id, account.GetFields().Id);
         Assert.Equal(accountNumber, account.GetFields().AccountNumber);
+        Assert.Equal(passwordHash, account.GetFields().PasswordHash);
         Assert.Equal(createdAt, account.GetFields().CreatedAt);
         Assert.Equal(active, account.GetFields().Active);
     }
@@ -68,7 +71,7 @@ public class AccountTest
     {
         var account = GetAccountExample();
         var anotherAccount = new Account(
-           AccountFields.Rebuild(3642, 2668651, _accountCreatedAt, _accountActive));
+           AccountFields.Rebuild(3642, 2668651, _accountCreatedAt, _accountActive, _accountPasswordHash));
 
         bool nullResult = account.Equals(null);
         bool objResult = account?.Equals(new object() { }) ?? false;

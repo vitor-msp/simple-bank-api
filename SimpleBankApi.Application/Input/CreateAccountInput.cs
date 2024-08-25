@@ -12,6 +12,13 @@ public class CreateAccountInput
     [StringLength(11)]
     public string Cpf { get; set; } = "";
 
+    [Required]
+    public string Password { get; set; } = "";
+
+    [Required]
+    [Compare("Password")]
+    public string PasswordConfirmation { get; set; } = "";
+
     public CustomerFields GetFields()
     {
         return new CustomerFields()

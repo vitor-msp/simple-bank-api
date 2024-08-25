@@ -17,7 +17,7 @@ public class CalculateBalanceTest
 
     public CalculateBalanceTest()
     {
-        _account = new Account(AccountFields.Rebuild(1, _accountNumber, DateTime.Now, true));
+        _account = new Account(AccountFields.Rebuild(1, _accountNumber, DateTime.Now, true, "hash"));
     }
 
     private List<ICredit> GetCreditsExample()
@@ -60,7 +60,7 @@ public class CalculateBalanceTest
         return transfers;
     }
 
-    private Account GetAccountExample() => new Account(AccountFields.Rebuild(2, 2, DateTime.Now, true));
+    private Account GetAccountExample() => new Account(AccountFields.Rebuild(2, 2, DateTime.Now, true, "hash"));
 
     [Fact]
     public async Task NoBalance()

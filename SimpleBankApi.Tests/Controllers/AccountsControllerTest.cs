@@ -9,6 +9,8 @@ using SimpleBankApi.Api.Controllers;
 using SimpleBankApi.Application.Input;
 using SimpleBankApi.Application.Output;
 using SimpleBankApi.Application.UseCases;
+using SimpleBankApi.Domain.Contract;
+using SimpleBankApi.Infra;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Database.Schema;
 using SimpleBankApi.Repository.Implementations;
@@ -20,6 +22,7 @@ public class AccountsControllerTest : IDisposable
 {
     private readonly DbConnection _connection;
     private readonly DbContextOptions<BankContext> _contextOptions;
+    private readonly IPasswordHasher _passwordHasher = new PasswordHasher();
 
     public AccountsControllerTest()
     {
@@ -39,8 +42,9 @@ public class AccountsControllerTest : IDisposable
     {
         var context = CreateContext();
         var accountsRepository = new AccountsRepository(context);
+        var passwordHasher = new PasswordHasher();
         var controller = new AccountsController(
-            new CreateAccountUseCase(accountsRepository), new UpdateAccountUseCase(accountsRepository),
+            new CreateAccountUseCase(accountsRepository, passwordHasher), new UpdateAccountUseCase(accountsRepository),
             new DeleteAccountUseCase(accountsRepository), new GetAllAccountsUseCase(accountsRepository),
             new GetAccountUseCase(accountsRepository));
         return (controller, context);
@@ -55,6 +59,7 @@ public class AccountsControllerTest : IDisposable
             AccountNumber = 1,
             CreatedAt = DateTime.Now,
             Active = true,
+            PasswordHash = _passwordHasher.Hash("pass123"),
             Owner = new CustomerDB()
             {
                 Cpf = cpf,
@@ -140,6 +145,8 @@ public class AccountsControllerTest : IDisposable
         {
             Name = "fulano de tal",
             Cpf = "01234567890",
+            Password = "pass123",
+            PasswordConfirmation = "pass123",
         };
 
         var actionResult = await sut.Post(input);
@@ -152,6 +159,8 @@ public class AccountsControllerTest : IDisposable
         Assert.Equal(accountNumber, savedAccount.AccountNumber);
         Assert.True(savedAccount.Active);
         Assert.IsType<DateTime>(savedAccount.CreatedAt);
+        Assert.IsType<string>(savedAccount.PasswordHash);
+        Assert.True(_passwordHasher.Verify(savedAccount.PasswordHash!, "pass123"));
     }
 
     [Fact]
@@ -165,6 +174,28 @@ public class AccountsControllerTest : IDisposable
         {
             Name = "fulano de tal",
             Cpf = account.Owner?.Cpf ?? "",
+            Password = "pass123",
+            PasswordConfirmation = "pass123",
+        };
+
+        var actionResult = await sut.Post(input);
+
+        Assert.IsType<BadRequestObjectResult>(actionResult.Result);
+    }
+
+    [Fact]
+    public async Task Post_ReturnBadRequest_PasswordAndConfirmationNotEqual()
+    {
+        var (sut, context) = MakeSut();
+        var account = AccountExample();
+        context.Accounts.Add(account);
+        await context.SaveChangesAsync();
+        var input = new CreateAccountInput()
+        {
+            Name = "fulano de tal",
+            Cpf = account.Owner?.Cpf ?? "",
+            Password = "pass123",
+            PasswordConfirmation = "pass1234",
         };
 
         var actionResult = await sut.Post(input);
