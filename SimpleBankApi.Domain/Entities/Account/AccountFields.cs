@@ -5,6 +5,7 @@ public class AccountFields
     public int Id { get; private set; }
     public int AccountNumber { get; private set; }
     public string? PasswordHash { get; set; }
+    public string? RefreshToken { get; set; }
     public DateTime CreatedAt { get; private set; }
     public bool Active { get; set; }
 

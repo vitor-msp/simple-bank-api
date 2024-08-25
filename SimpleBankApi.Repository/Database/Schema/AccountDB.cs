@@ -33,5 +33,6 @@ public class AccountDB
         AccountNumber = fields.AccountNumber;
         Active = fields.Active;
         PasswordHash = fields.PasswordHash;
+        RefreshToken = fields.RefreshToken;
     }
 }

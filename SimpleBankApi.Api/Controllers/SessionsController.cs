@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SimpleBankApi.Api.Presenters;
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.Input;
 using SimpleBankApi.Application.Output;
@@ -16,8 +17,18 @@ public class SessionsController : ControllerBase
         _loginUseCase = loginUseCase;
     }
 
-    public Task<ActionResult<LoginOutput>> Login(LoginInput input)
+    [HttpPost]
+    public async Task<ActionResult<LoginOutput>> Login([FromBody] LoginInput input)
     {
-        return default;
+        try
+        {
+            var output = await _loginUseCase.Execute(input);
+            return Ok(output);
+        }
+        catch (Exception e)
+        {
+            System.Console.WriteLine(e);
+            return StatusCode(500, new ErrorPresenter("Error to login."));
+        }
     }
 }

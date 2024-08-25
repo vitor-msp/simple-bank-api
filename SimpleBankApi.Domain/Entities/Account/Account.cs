@@ -37,4 +37,9 @@ public class Account : IAccount
     {
         return _fields.AccountNumber;
     }
+
+    public void UpdateRefreshToken(string token)
+    {
+        _fields.RefreshToken = token;
+    }
 }

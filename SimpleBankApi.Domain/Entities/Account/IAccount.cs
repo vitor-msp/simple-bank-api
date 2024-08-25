@@ -13,4 +13,6 @@ public interface IAccount
     public bool Equals(object? obj);
 
     public int GetHashCode();
+
+    public void UpdateRefreshToken(string token);
 }

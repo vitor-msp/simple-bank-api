@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SimpleBankApi.Api.Controllers;
 using SimpleBankApi.Application.Input;
@@ -53,7 +54,14 @@ public class SessionsControllerTest
     private (SessionsController, BankContext) MakeSut()
     {
         var context = CreateContext();
-        var controller = new SessionsController(new LoginUseCase(new AccountsRepository(context)));
+        var accountsRepository = new AccountsRepository(context);
+        var passwordHasher = new PasswordHasher();
+        var configuration = new TokenConfiguration();
+        _configuration.GetSection("Token").Bind(configuration);
+        var options = Options.Create(configuration);
+        var tokenProvider = new TokenProvider(options);
+        var controller = new SessionsController(
+            new LoginUseCase(accountsRepository, passwordHasher, tokenProvider));
         return (controller, context);
     }
 
@@ -105,7 +113,7 @@ public class SessionsControllerTest
         var okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         var output = Assert.IsType<LoginOutput>(okObjectResult.Value);
 
-        Assert.IsType<Guid>(output.RefreshToken);
+        Assert.IsType<string>(output.RefreshToken);
         var savedAccount = context.Accounts.ToList()[0];
         Assert.Equal(savedAccount.RefreshToken, output.RefreshToken);
 
