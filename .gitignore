@@ -423,9 +423,6 @@ obj/
 
 # End of https://www.toptal.com/developers/gitignore/api/dotnetcore,csharp,visualstudiocode
 
-**/Migrations/**
-!**/Migrations/*FinalMigration*
-!**/Migrations/BankContextModelSnapshot.cs
-
 coverage
 .sonarqube
+.vscode
