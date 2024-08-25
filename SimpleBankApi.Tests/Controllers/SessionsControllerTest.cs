@@ -63,7 +63,8 @@ public class SessionsControllerTest
         var tokenProvider = new TokenProvider(options);
         var controller = new SessionsController(
             new LoginUseCase(accountsRepository, passwordHasher, tokenProvider),
-            new RefreshTokenUseCase(accountsRepository, tokenProvider));
+            new RefreshTokenUseCase(accountsRepository, tokenProvider),
+            new LogoutUseCase(accountsRepository, passwordHasher));
         return (controller, context);
     }
 
@@ -207,7 +208,7 @@ public class SessionsControllerTest
     }
 
     [Fact]
-    public async void RefreshToken_ReturnUnauthorized_InvalidToken()
+    public async void RefreshToken_ReturnUnauthorized_TokenNotMatch()
     {
         var (sut, context) = MakeSut();
         context.Accounts.Add(AccountExample());
@@ -237,6 +238,75 @@ public class SessionsControllerTest
         };
 
         var actionResult = await sut.RefreshToken(input);
+
+        Assert.IsType<UnauthorizedObjectResult>(actionResult.Result);
+    }
+
+    [Fact]
+    public async void Logout_ReturnNoContent()
+    {
+        var (sut, context) = MakeSut();
+        context.Accounts.Add(AccountExample());
+        await context.SaveChangesAsync();
+        var input = new LogoutInput()
+        {
+            AccountNumber = 1,
+            RefreshToken = _refreshToken
+        };
+
+        var actionResult = await sut.Logout(input);
+
+        Assert.IsType<NoContentResult>(actionResult.Result);
+        var savedAccount = context.Accounts.ToList()[0];
+        Assert.NotEqual(_refreshToken, savedAccount.RefreshToken);
+    }
+
+    [Fact]
+    public async void Logout_ReturnUnauthorized_AccountNotFound()
+    {
+        var (sut, _) = MakeSut();
+        var input = new LogoutInput()
+        {
+            AccountNumber = 1,
+            RefreshToken = _refreshToken
+        };
+
+        var actionResult = await sut.Logout(input);
+
+        Assert.IsType<UnauthorizedObjectResult>(actionResult.Result);
+    }
+
+    [Fact]
+    public async void Logout_ReturnUnauthorized_TokenNotMatch()
+    {
+        var (sut, context) = MakeSut();
+        context.Accounts.Add(AccountExample());
+        await context.SaveChangesAsync();
+        var input = new LogoutInput()
+        {
+            AccountNumber = 1,
+            RefreshToken = Guid.NewGuid().ToString()
+        };
+
+        var actionResult = await sut.Logout(input);
+
+        Assert.IsType<UnauthorizedObjectResult>(actionResult.Result);
+    }
+
+    [Fact]
+    public async void Logout_ReturnUnauthorized_TokenExpired()
+    {
+        var (sut, context) = MakeSut();
+        var refreshTokenExpiration = DateTime.Now.AddSeconds(-1);
+        context.Accounts.Add(AccountExample(refreshTokenExpiration));
+        await context.SaveChangesAsync();
+        var input = new LogoutInput()
+        {
+            AccountNumber = 1,
+            RefreshToken = _refreshToken
+        };
+
+        var actionResult = await sut.Logout(input);
 
         Assert.IsType<UnauthorizedObjectResult>(actionResult.Result);
     }

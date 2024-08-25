@@ -12,11 +12,14 @@ public class SessionsController : ControllerBase
 {
     private readonly ILoginUseCase _loginUseCase;
     private readonly IRefreshTokenUseCase _refreshTokenUseCase;
+    private readonly ILogoutUseCase _logoutUseCase;
 
-    public SessionsController(ILoginUseCase loginUseCase, IRefreshTokenUseCase refreshTokenUseCase)
+    public SessionsController(ILoginUseCase loginUseCase,
+        IRefreshTokenUseCase refreshTokenUseCase, ILogoutUseCase logoutUseCase)
     {
         _loginUseCase = loginUseCase;
         _refreshTokenUseCase = refreshTokenUseCase;
+        _logoutUseCase = logoutUseCase;
     }
 
     [HttpPost]
@@ -44,6 +47,24 @@ public class SessionsController : ControllerBase
         {
             var output = await _refreshTokenUseCase.Execute(input);
             return Ok(output);
+        }
+        catch (EntityNotFoundException error)
+        {
+            return Unauthorized(new ErrorPresenter(error.Message));
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new ErrorPresenter("Error to generate access token."));
+        }
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<RefreshTokenOutput>> Logout([FromBody] LogoutInput input)
+    {
+        try
+        {
+            await _logoutUseCase.Execute(input);
+            return NoContent();
         }
         catch (EntityNotFoundException error)
         {
