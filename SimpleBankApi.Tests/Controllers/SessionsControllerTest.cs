@@ -69,7 +69,7 @@ public class SessionsControllerTest
 
     public void Dispose() => _connection.Dispose();
 
-    private AccountDB AccountExample()
+    private AccountDB AccountExample(DateTime? refreshTokenExpiration = null)
         => new()
         {
             AccountNumber = 1,
@@ -77,12 +77,20 @@ public class SessionsControllerTest
             Active = true,
             PasswordHash = _passwordHasher.Hash("pass123"),
             RefreshToken = _refreshToken,
+            RefreshTokenExpiration = refreshTokenExpiration ?? GetRefreshTokenExpiration(),
             Owner = new CustomerDB()
             {
                 Cpf = "0123",
                 Name = "fulano",
             }
         };
+
+    private DateTime GetRefreshTokenExpiration()
+    {
+        var config = _configuration.GetSection("Token")["RefreshTokenExpiresInSeconds"];
+        var refreshTokenExpiresInSeconds = config == null ? 15 * 60 : long.Parse(config);
+        return DateTime.Now.AddSeconds(refreshTokenExpiresInSeconds);
+    }
 
     private ClaimsPrincipal ValidateToken(string token)
     {
@@ -218,5 +226,18 @@ public class SessionsControllerTest
     [Fact]
     public async void RefreshToken_ReturnUnauthorized_TokenExpired()
     {
+        var (sut, context) = MakeSut();
+        var refreshTokenExpiration = DateTime.Now.AddSeconds(-1);
+        context.Accounts.Add(AccountExample(refreshTokenExpiration));
+        await context.SaveChangesAsync();
+        var input = new RefreshTokenInput()
+        {
+            AccountNumber = 1,
+            RefreshToken = _refreshToken
+        };
+
+        var actionResult = await sut.RefreshToken(input);
+
+        Assert.IsType<UnauthorizedObjectResult>(actionResult.Result);
     }
 }

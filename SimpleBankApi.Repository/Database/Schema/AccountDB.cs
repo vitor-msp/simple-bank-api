@@ -10,6 +10,7 @@ public class AccountDB
     public int AccountNumber { get; set; }
     public string? PasswordHash { get; set; } = "";
     public string? RefreshToken { get; set; } = "";
+    public DateTime? RefreshTokenExpiration { get; set; }
     public DateTime CreatedAt { get; set; }
     public bool Active { get; set; }
     public CustomerDB? Owner { get; set; }
@@ -23,7 +24,8 @@ public class AccountDB
 
     public IAccount GetEntity()
     {
-        return new Account(AccountFields.Rebuild(Id, AccountNumber, CreatedAt, Active, PasswordHash, RefreshToken));
+        return new Account(AccountFields.Rebuild(
+            Id, AccountNumber, CreatedAt, Active, PasswordHash, RefreshToken, RefreshTokenExpiration));
     }
 
     public void Hydrate(IAccount account)
@@ -34,5 +36,6 @@ public class AccountDB
         Active = fields.Active;
         PasswordHash = fields.PasswordHash;
         RefreshToken = fields.RefreshToken;
+        RefreshTokenExpiration = fields.RefreshTokenExpiration;
     }
 }

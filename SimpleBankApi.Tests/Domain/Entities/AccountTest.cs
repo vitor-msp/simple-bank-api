@@ -11,6 +11,7 @@ public class AccountTest
     private readonly int _accountAccountNumber = 116565;
     private readonly string _accountPasswordHash = "hash";
     private readonly string _accountRefreshToken = "";
+    private readonly DateTime _accountRefreshTokenExpiration = DateTime.Now;
     private readonly DateTime _accountCreatedAt = DateTime.Now;
     private readonly bool _accountActive = true;
 
@@ -19,7 +20,8 @@ public class AccountTest
     private Account GetAccountExample()
     {
         return new Account(
-            AccountFields.Rebuild(_accountId, _accountAccountNumber, _accountCreatedAt, _accountActive, _accountPasswordHash, _accountRefreshToken));
+            AccountFields.Rebuild(_accountId, _accountAccountNumber, _accountCreatedAt,
+                _accountActive, _accountPasswordHash, _accountRefreshToken, _accountRefreshTokenExpiration));
     }
 
     [Fact]
@@ -29,10 +31,12 @@ public class AccountTest
         int accountNumber = 296161351;
         string passwordHash = "hash";
         string refreshToken = "";
+        DateTime refreshTokenExpiration = DateTime.Now;
         DateTime createdAt = DateTime.Now;
         bool active = true;
 
-        var account = new Account(AccountFields.Rebuild(id, accountNumber, createdAt, active, passwordHash, refreshToken));
+        var account = new Account(
+            AccountFields.Rebuild(id, accountNumber, createdAt, active, passwordHash, refreshToken, refreshTokenExpiration));
 
         Assert.Equal(id, account.GetFields().Id);
         Assert.Equal(accountNumber, account.GetFields().AccountNumber);
@@ -73,7 +77,8 @@ public class AccountTest
     {
         var account = GetAccountExample();
         var anotherAccount = new Account(
-           AccountFields.Rebuild(3642, 2668651, _accountCreatedAt, _accountActive, _accountPasswordHash, _accountRefreshToken));
+           AccountFields.Rebuild(3642, 2668651, _accountCreatedAt, _accountActive,
+            _accountPasswordHash, _accountRefreshToken, _accountRefreshTokenExpiration));
 
         bool nullResult = account.Equals(null);
         bool objResult = account?.Equals(new object() { }) ?? false;

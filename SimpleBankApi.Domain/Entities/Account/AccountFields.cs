@@ -6,6 +6,7 @@ public class AccountFields
     public int AccountNumber { get; private set; }
     public string? PasswordHash { get; set; }
     public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiration { get; set; }
     public DateTime CreatedAt { get; private set; }
     public bool Active { get; set; }
 
@@ -23,12 +24,14 @@ public class AccountFields
         CreatedAt = createdAt;
     }
 
-    public static AccountFields Rebuild(int id, int accountNumber, DateTime createdAt, bool active, string? passwordHash, string? refreshToken)
+    public static AccountFields Rebuild(int id, int accountNumber, DateTime createdAt,
+        bool active, string? passwordHash, string? refreshToken, DateTime? refreshTokenExpiration)
     {
         return new AccountFields(id, accountNumber, createdAt)
         {
             PasswordHash = passwordHash,
             RefreshToken = refreshToken,
+            RefreshTokenExpiration = refreshTokenExpiration,
             Active = active
         };
     }
