@@ -29,6 +29,7 @@ public class SessionsControllerTest
     private readonly DbContextOptions<BankContext> _contextOptions;
     private readonly IPasswordHasher _passwordHasher = new PasswordHasher();
     private readonly IConfiguration _configuration;
+    private readonly string _refreshToken = Guid.NewGuid().ToString();
 
     public SessionsControllerTest()
     {
@@ -61,7 +62,8 @@ public class SessionsControllerTest
         var options = Options.Create(configuration);
         var tokenProvider = new TokenProvider(options);
         var controller = new SessionsController(
-            new LoginUseCase(accountsRepository, passwordHasher, tokenProvider));
+            new LoginUseCase(accountsRepository, passwordHasher, tokenProvider),
+            new RefreshTokenUseCase(accountsRepository, tokenProvider));
         return (controller, context);
     }
 
@@ -74,6 +76,7 @@ public class SessionsControllerTest
             CreatedAt = DateTime.Now,
             Active = true,
             PasswordHash = _passwordHasher.Hash("pass123"),
+            RefreshToken = _refreshToken,
             Owner = new CustomerDB()
             {
                 Cpf = "0123",
@@ -97,7 +100,7 @@ public class SessionsControllerTest
     }
 
     [Fact]
-    public async void Post_ReturnAccessAndRefreshToken()
+    public async void Login_ReturnAccessAndRefreshToken()
     {
         var (sut, context) = MakeSut();
         context.Accounts.Add(AccountExample());
@@ -124,7 +127,7 @@ public class SessionsControllerTest
     }
 
     [Fact]
-    public async void Post_ReturnUnauthorized_EmailNotFound()
+    public async void Login_ReturnUnauthorized_AccountNotFound()
     {
         var (sut, _) = MakeSut();
         var input = new LoginInput()
@@ -139,7 +142,7 @@ public class SessionsControllerTest
     }
 
     [Fact]
-    public async void Post_ReturnUnauthorized_IncorrectPassword()
+    public async void Login_ReturnUnauthorized_IncorrectPassword()
     {
         {
             var (sut, context) = MakeSut();
@@ -155,5 +158,43 @@ public class SessionsControllerTest
 
             Assert.IsType<UnauthorizedObjectResult>(actionResult.Result);
         }
+    }
+
+    [Fact]
+    public async void RefreshToken_ReturnAccessToken()
+    {
+        var (sut, context) = MakeSut();
+        context.Accounts.Add(AccountExample());
+        await context.SaveChangesAsync();
+        var input = new RefreshTokenInput()
+        {
+            AccountNumber = 1,
+            RefreshToken = _refreshToken
+        };
+
+        var actionResult = await sut.RefreshToken(input);
+
+        var okObjectResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+        var output = Assert.IsType<RefreshTokenOutput>(okObjectResult.Value);
+
+        Assert.IsType<string>(output.AccessToken);
+        var claims = ValidateToken(output.AccessToken);
+        var accountNumber = claims.FindFirstValue(ClaimTypes.Name);
+        Assert.Equal("1", accountNumber);
+    }
+
+    [Fact]
+    public async void RefreshToken_ReturnUnauthorized_AccountNotFound()
+    {
+    }
+
+    [Fact]
+    public async void RefreshToken_ReturnUnauthorized_InvalidToken()
+    {
+    }
+
+    [Fact]
+    public async void RefreshToken_ReturnUnauthorized_TokenExpired()
+    {
     }
 }

@@ -11,10 +11,12 @@ namespace SimpleBankApi.Api.Controllers;
 public class SessionsController : ControllerBase
 {
     private readonly ILoginUseCase _loginUseCase;
+    private readonly IRefreshTokenUseCase _refreshTokenUseCase;
 
-    public SessionsController(ILoginUseCase loginUseCase)
+    public SessionsController(ILoginUseCase loginUseCase, IRefreshTokenUseCase refreshTokenUseCase)
     {
         _loginUseCase = loginUseCase;
+        _refreshTokenUseCase = refreshTokenUseCase;
     }
 
     [HttpPost]
@@ -32,6 +34,24 @@ public class SessionsController : ControllerBase
         catch (Exception)
         {
             return StatusCode(500, new ErrorPresenter("Error to login."));
+        }
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<RefreshTokenOutput>> RefreshToken([FromBody] RefreshTokenInput input)
+    {
+        try
+        {
+            var output = await _refreshTokenUseCase.Execute(input);
+            return Ok(output);
+        }
+        catch (EntityNotFoundException error)
+        {
+            return Unauthorized(new ErrorPresenter(error.Message));
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new ErrorPresenter("Error to generate access token."));
         }
     }
 }
