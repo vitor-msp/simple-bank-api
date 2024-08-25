@@ -5,6 +5,7 @@ using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.UseCases;
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Services;
+using SimpleBankApi.Infra;
 using SimpleBankApi.Repository.Cache;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Implementations;
@@ -24,7 +25,9 @@ public static class ProjectFactory
 
         services.AddScoped<IAccountsRepository, AccountsRepository>();
         services.AddScoped<ITransactionsRepository, TransactionsRepository>();
+
         services.AddScoped<IBankCache, BankCacheRedis>();
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
 
         services.AddScoped<ICreateAccountUseCase, CreateAccountUseCase>();
         services.AddScoped<IUpdateAccountUseCase, UpdateAccountUseCase>();
