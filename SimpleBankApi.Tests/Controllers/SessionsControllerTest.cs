@@ -186,6 +186,16 @@ public class SessionsControllerTest
     [Fact]
     public async void RefreshToken_ReturnUnauthorized_AccountNotFound()
     {
+        var (sut, _) = MakeSut();
+        var input = new RefreshTokenInput()
+        {
+            AccountNumber = 1,
+            RefreshToken = _refreshToken
+        };
+
+        var actionResult = await sut.RefreshToken(input);
+
+        Assert.IsType<UnauthorizedObjectResult>(actionResult.Result);
     }
 
     [Fact]
