@@ -14,5 +14,5 @@ public interface IAccount
 
     public int GetHashCode();
 
-    public void UpdateRefreshToken(string token);
+    public void UpdateRefreshToken(string? token, DateTime? expiration);
 }

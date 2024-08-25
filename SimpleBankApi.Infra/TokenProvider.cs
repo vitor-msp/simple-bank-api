@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using SimpleBankApi.Domain.Configuration;
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Entities;
 

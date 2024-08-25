@@ -38,8 +38,9 @@ public class Account : IAccount
         return _fields.AccountNumber;
     }
 
-    public void UpdateRefreshToken(string token)
+    public void UpdateRefreshToken(string? token, DateTime? expiration)
     {
         _fields.RefreshToken = token;
+        _fields.RefreshTokenExpiration = expiration;
     }
 }

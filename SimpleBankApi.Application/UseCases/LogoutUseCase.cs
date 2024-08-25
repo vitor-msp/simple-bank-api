@@ -28,7 +28,7 @@ public class LogoutUseCase : ILogoutUseCase
         if (refreshTokenExpiration == null || DateTime.Now >= refreshTokenExpiration)
             throw new EntityNotFoundException("Account number and/or refresh token invalid.");
 
-        account.UpdateRefreshToken("");
+        account.UpdateRefreshToken(null, null);
         await _accountsRepository.Save(account);
     }
 }

@@ -14,6 +14,7 @@ using SimpleBankApi.Api.Controllers;
 using SimpleBankApi.Application.Input;
 using SimpleBankApi.Application.Output;
 using SimpleBankApi.Application.UseCases;
+using SimpleBankApi.Domain.Configuration;
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Infra;
 using SimpleBankApi.Repository.Database.Context;
@@ -55,14 +56,17 @@ public class SessionsControllerTest
     private (SessionsController, BankContext) MakeSut()
     {
         var context = CreateContext();
-        var accountsRepository = new AccountsRepository(context);
-        var passwordHasher = new PasswordHasher();
+
         var configuration = new TokenConfiguration();
         _configuration.GetSection("Token").Bind(configuration);
         var options = Options.Create(configuration);
+
+        var accountsRepository = new AccountsRepository(context);
+        var passwordHasher = new PasswordHasher();
         var tokenProvider = new TokenProvider(options);
+
         var controller = new SessionsController(
-            new LoginUseCase(accountsRepository, passwordHasher, tokenProvider),
+            new LoginUseCase(accountsRepository, passwordHasher, tokenProvider, options),
             new RefreshTokenUseCase(accountsRepository, tokenProvider),
             new LogoutUseCase(accountsRepository, passwordHasher));
         return (controller, context);
@@ -70,28 +74,21 @@ public class SessionsControllerTest
 
     public void Dispose() => _connection.Dispose();
 
-    private AccountDB AccountExample(DateTime? refreshTokenExpiration = null)
+    private AccountDB AccountExample(string? refreshToken = null, DateTime? refreshTokenExpiration = null)
         => new()
         {
             AccountNumber = 1,
             CreatedAt = DateTime.Now,
             Active = true,
             PasswordHash = _passwordHasher.Hash("pass123"),
-            RefreshToken = _refreshToken,
-            RefreshTokenExpiration = refreshTokenExpiration ?? GetRefreshTokenExpiration(),
+            RefreshToken = refreshToken,
+            RefreshTokenExpiration = refreshTokenExpiration,
             Owner = new CustomerDB()
             {
                 Cpf = "0123",
                 Name = "fulano",
             }
         };
-
-    private DateTime GetRefreshTokenExpiration()
-    {
-        var config = _configuration.GetSection("Token")["RefreshTokenExpiresInSeconds"];
-        var refreshTokenExpiresInSeconds = config == null ? 15 * 60 : long.Parse(config);
-        return DateTime.Now.AddSeconds(refreshTokenExpiresInSeconds);
-    }
 
     private ClaimsPrincipal ValidateToken(string token)
     {
@@ -128,6 +125,8 @@ public class SessionsControllerTest
         Assert.IsType<string>(output.RefreshToken);
         var savedAccount = context.Accounts.ToList()[0];
         Assert.Equal(savedAccount.RefreshToken, output.RefreshToken);
+        Assert.NotNull(savedAccount.RefreshTokenExpiration);
+        Assert.True(savedAccount.RefreshTokenExpiration > DateTime.UtcNow);
 
         Assert.IsType<string>(output.AccessToken);
         var claims = ValidateToken(output.AccessToken);
@@ -173,7 +172,7 @@ public class SessionsControllerTest
     public async void RefreshToken_ReturnAccessToken()
     {
         var (sut, context) = MakeSut();
-        context.Accounts.Add(AccountExample());
+        context.Accounts.Add(AccountExample(_refreshToken, DateTime.Now.AddMinutes(15)));
         await context.SaveChangesAsync();
         var input = new RefreshTokenInput()
         {
@@ -211,7 +210,7 @@ public class SessionsControllerTest
     public async void RefreshToken_ReturnUnauthorized_TokenNotMatch()
     {
         var (sut, context) = MakeSut();
-        context.Accounts.Add(AccountExample());
+        context.Accounts.Add(AccountExample(_refreshToken, DateTime.Now.AddMinutes(15)));
         await context.SaveChangesAsync();
         var input = new RefreshTokenInput()
         {
@@ -228,8 +227,7 @@ public class SessionsControllerTest
     public async void RefreshToken_ReturnUnauthorized_TokenExpired()
     {
         var (sut, context) = MakeSut();
-        var refreshTokenExpiration = DateTime.Now.AddSeconds(-1);
-        context.Accounts.Add(AccountExample(refreshTokenExpiration));
+        context.Accounts.Add(AccountExample(_refreshToken, DateTime.Now.AddMinutes(-1)));
         await context.SaveChangesAsync();
         var input = new RefreshTokenInput()
         {
@@ -246,7 +244,7 @@ public class SessionsControllerTest
     public async void Logout_ReturnNoContent()
     {
         var (sut, context) = MakeSut();
-        context.Accounts.Add(AccountExample());
+        context.Accounts.Add(AccountExample(_refreshToken, DateTime.Now.AddMinutes(15)));
         await context.SaveChangesAsync();
         var input = new LogoutInput()
         {
@@ -280,7 +278,7 @@ public class SessionsControllerTest
     public async void Logout_ReturnUnauthorized_TokenNotMatch()
     {
         var (sut, context) = MakeSut();
-        context.Accounts.Add(AccountExample());
+        context.Accounts.Add(AccountExample(_refreshToken, DateTime.Now.AddMinutes(15)));
         await context.SaveChangesAsync();
         var input = new LogoutInput()
         {
@@ -297,8 +295,7 @@ public class SessionsControllerTest
     public async void Logout_ReturnUnauthorized_TokenExpired()
     {
         var (sut, context) = MakeSut();
-        var refreshTokenExpiration = DateTime.Now.AddSeconds(-1);
-        context.Accounts.Add(AccountExample(refreshTokenExpiration));
+        context.Accounts.Add(AccountExample(_refreshToken, DateTime.Now.AddMinutes(-1)));
         await context.SaveChangesAsync();
         var input = new LogoutInput()
         {
