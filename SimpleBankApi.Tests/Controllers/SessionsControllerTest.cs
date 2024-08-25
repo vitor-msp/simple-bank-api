@@ -124,12 +124,36 @@ public class SessionsControllerTest
     }
 
     [Fact]
-    public void Post_ReturnUnauthorized_EmailNotFound()
+    public async void Post_ReturnUnauthorized_EmailNotFound()
     {
+        var (sut, _) = MakeSut();
+        var input = new LoginInput()
+        {
+            AccountNumber = 1,
+            Password = "pass123"
+        };
+
+        var actionResult = await sut.Login(input);
+
+        Assert.IsType<UnauthorizedObjectResult>(actionResult.Result);
     }
 
     [Fact]
-    public void Post_ReturnUnauthorized_IncorrectPassword()
+    public async void Post_ReturnUnauthorized_IncorrectPassword()
     {
+        {
+            var (sut, context) = MakeSut();
+            context.Accounts.Add(AccountExample());
+            await context.SaveChangesAsync();
+            var input = new LoginInput()
+            {
+                AccountNumber = 1,
+                Password = "pass1234"
+            };
+
+            var actionResult = await sut.Login(input);
+
+            Assert.IsType<UnauthorizedObjectResult>(actionResult.Result);
+        }
     }
 }

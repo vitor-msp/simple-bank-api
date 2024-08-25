@@ -22,8 +22,13 @@ public class LoginUseCase : ILoginUseCase
     public async Task<LoginOutput> Execute(LoginInput input)
     {
         var account = await _accountsRepository.GetByAccountNumber(input.AccountNumber);
-        var credentialsIsCorrect = _passwordHasher.Verify(account.GetFields().PasswordHash, input.Password);
-        if (!credentialsIsCorrect) return default;
+        if (account == null) throw new EntityNotFoundException("Account number and/or password invalid.");
+
+        var passwordHash = account.GetFields().PasswordHash;
+        if (passwordHash == null) throw new EntityNotFoundException("Account number and/or password invalid.");
+
+        var credentialsIsCorrect = _passwordHasher.Verify(passwordHash, input.Password);
+        if (!credentialsIsCorrect) throw new EntityNotFoundException("Account number and/or password invalid.");
 
         var refreshToken = Guid.NewGuid().ToString();
         account.UpdateRefreshToken(refreshToken);
@@ -32,7 +37,7 @@ public class LoginUseCase : ILoginUseCase
         return new LoginOutput()
         {
             AccessToken = _tokenProvider.Generate(account),
-            RefreshToken = refreshToken.ToString()
+            RefreshToken = refreshToken
         };
     }
 }

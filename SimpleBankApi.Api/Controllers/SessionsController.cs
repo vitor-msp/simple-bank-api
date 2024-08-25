@@ -25,9 +25,12 @@ public class SessionsController : ControllerBase
             var output = await _loginUseCase.Execute(input);
             return Ok(output);
         }
-        catch (Exception e)
+        catch (EntityNotFoundException error)
         {
-            System.Console.WriteLine(e);
+            return Unauthorized(new ErrorPresenter(error.Message));
+        }
+        catch (Exception)
+        {
             return StatusCode(500, new ErrorPresenter("Error to login."));
         }
     }
