@@ -10,6 +10,7 @@ using SimpleBankApi.Application.Input;
 using SimpleBankApi.Application.Output;
 using SimpleBankApi.Application.UseCases;
 using SimpleBankApi.Domain.Contract;
+using SimpleBankApi.Domain.ValueObjects;
 using SimpleBankApi.Infra;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Database.Schema;
@@ -58,6 +59,7 @@ public class AccountsControllerTest : IDisposable
             AccountNumber = 1,
             CreatedAt = DateTime.Now,
             Active = true,
+            Role = Role.Customer.ToString(),
             PasswordHash = _passwordHasher.Hash("pass123"),
             Owner = new CustomerDB()
             {

@@ -1,3 +1,5 @@
+using SimpleBankApi.Domain.ValueObjects;
+
 namespace SimpleBankApi.Domain.Entities;
 
 public class AccountFields
@@ -9,12 +11,14 @@ public class AccountFields
     public DateTime? RefreshTokenExpiration { get; set; }
     public DateTime CreatedAt { get; private set; }
     public bool Active { get; set; }
+    public Role Role { get; set; }
 
     public AccountFields()
     {
         AccountNumber = Convert.ToInt32(DateTimeOffset.Now.ToUnixTimeSeconds());
         CreatedAt = DateTime.Now;
         Active = true;
+        Role = Role.Customer;
     }
 
     private AccountFields(int id, int accountNumber, DateTime createdAt)
@@ -24,15 +28,14 @@ public class AccountFields
         CreatedAt = createdAt;
     }
 
-    public static AccountFields Rebuild(int id, int accountNumber, DateTime createdAt,
-        bool active, string? passwordHash, string? refreshToken, DateTime? refreshTokenExpiration)
-    {
-        return new AccountFields(id, accountNumber, createdAt)
+    public static AccountFields Rebuild(int id, int accountNumber, DateTime createdAt, bool active,
+        Role role, string? passwordHash, string? refreshToken, DateTime? refreshTokenExpiration)
+        => new(id, accountNumber, createdAt)
         {
             PasswordHash = passwordHash,
             RefreshToken = refreshToken,
             RefreshTokenExpiration = refreshTokenExpiration,
-            Active = active
+            Active = active,
+            Role = role,
         };
-    }
 }

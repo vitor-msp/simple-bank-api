@@ -16,6 +16,7 @@ using SimpleBankApi.Application.Output;
 using SimpleBankApi.Application.UseCases;
 using SimpleBankApi.Domain.Configuration;
 using SimpleBankApi.Domain.Contract;
+using SimpleBankApi.Domain.ValueObjects;
 using SimpleBankApi.Infra;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Database.Schema;
@@ -24,7 +25,7 @@ using Xunit;
 
 namespace SimpleBankApi.Tests;
 
-public class SessionsControllerTest
+public class SessionsControllerTest : IDisposable
 {
     private readonly DbConnection _connection;
     private readonly DbContextOptions<BankContext> _contextOptions;
@@ -80,6 +81,7 @@ public class SessionsControllerTest
             AccountNumber = 1,
             CreatedAt = DateTime.Now,
             Active = true,
+            Role = Role.Customer.ToString(),
             PasswordHash = _passwordHasher.Hash("pass123"),
             RefreshToken = refreshToken,
             RefreshTokenExpiration = refreshTokenExpiration,

@@ -2,6 +2,7 @@ using System;
 using SimpleBankApi.Domain.Entities;
 using Xunit;
 using Moq;
+using SimpleBankApi.Domain.ValueObjects;
 
 namespace SimpleBankApi.Tests;
 
@@ -14,6 +15,7 @@ public class AccountTest
     private readonly DateTime _accountRefreshTokenExpiration = DateTime.Now;
     private readonly DateTime _accountCreatedAt = DateTime.Now;
     private readonly bool _accountActive = true;
+    private readonly Role _role = Role.Customer;
 
     public AccountTest() { }
 
@@ -21,7 +23,7 @@ public class AccountTest
     {
         return new Account(
             AccountFields.Rebuild(_accountId, _accountAccountNumber, _accountCreatedAt,
-                _accountActive, _accountPasswordHash, _accountRefreshToken, _accountRefreshTokenExpiration));
+                _accountActive, _role, _accountPasswordHash, _accountRefreshToken, _accountRefreshTokenExpiration));
     }
 
     [Fact]
@@ -34,15 +36,17 @@ public class AccountTest
         DateTime refreshTokenExpiration = DateTime.Now;
         DateTime createdAt = DateTime.Now;
         bool active = true;
+        Role role = Role.Admin;
 
         var account = new Account(
-            AccountFields.Rebuild(id, accountNumber, createdAt, active, passwordHash, refreshToken, refreshTokenExpiration));
+            AccountFields.Rebuild(id, accountNumber, createdAt, active, role, passwordHash, refreshToken, refreshTokenExpiration));
 
         Assert.Equal(id, account.GetFields().Id);
         Assert.Equal(accountNumber, account.GetFields().AccountNumber);
         Assert.Equal(passwordHash, account.GetFields().PasswordHash);
         Assert.Equal(createdAt, account.GetFields().CreatedAt);
         Assert.Equal(active, account.GetFields().Active);
+        Assert.Equal(role, account.GetFields().Role);
     }
 
     [Fact]
@@ -70,6 +74,7 @@ public class AccountTest
         Assert.Equal(_accountAccountNumber, account.GetFields().AccountNumber);
         Assert.Equal(_accountCreatedAt, account.GetFields().CreatedAt);
         Assert.False(account.GetFields().Active);
+        Assert.Equal(_role, account.GetFields().Role);
     }
 
     [Fact]
@@ -77,7 +82,7 @@ public class AccountTest
     {
         var account = GetAccountExample();
         var anotherAccount = new Account(
-           AccountFields.Rebuild(3642, 2668651, _accountCreatedAt, _accountActive,
+           AccountFields.Rebuild(3642, 2668651, _accountCreatedAt, _accountActive, _role,
             _accountPasswordHash, _accountRefreshToken, _accountRefreshTokenExpiration));
 
         bool nullResult = account.Equals(null);

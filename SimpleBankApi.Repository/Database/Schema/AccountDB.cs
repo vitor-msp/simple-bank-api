@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using SimpleBankApi.Domain.Entities;
+using SimpleBankApi.Domain.ValueObjects;
 
 namespace SimpleBankApi.Repository.Database.Schema;
 
@@ -13,6 +14,7 @@ public class AccountDB
     public DateTime? RefreshTokenExpiration { get; set; }
     public DateTime CreatedAt { get; set; }
     public bool Active { get; set; }
+    public string Role { get; set; }
     public CustomerDB? Owner { get; set; }
 
     public AccountDB() { }
@@ -24,8 +26,9 @@ public class AccountDB
 
     public IAccount GetEntity()
     {
+        Enum.TryParse(Role, ignoreCase: true, out Role role);
         return new Account(AccountFields.Rebuild(
-            Id, AccountNumber, CreatedAt, Active, PasswordHash, RefreshToken, RefreshTokenExpiration));
+            Id, AccountNumber, CreatedAt, Active, role, PasswordHash, RefreshToken, RefreshTokenExpiration));
     }
 
     public void Hydrate(IAccount account)
@@ -37,5 +40,6 @@ public class AccountDB
         PasswordHash = fields.PasswordHash;
         RefreshToken = fields.RefreshToken;
         RefreshTokenExpiration = fields.RefreshTokenExpiration;
+        Role = fields.Role.ToString();
     }
 }

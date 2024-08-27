@@ -6,6 +6,7 @@ using SimpleBankApi.Domain.Contract;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
+using SimpleBankApi.Domain.ValueObjects;
 
 namespace SimpleBankApi.Tests;
 
@@ -17,7 +18,7 @@ public class CalculateBalanceTest
 
     public CalculateBalanceTest()
     {
-        _account = new Account(AccountFields.Rebuild(1, _accountNumber, DateTime.Now, true, "hash", "", DateTime.Now));
+        _account = new Account(AccountFields.Rebuild(1, _accountNumber, DateTime.Now, true, Role.Customer, "hash", "", DateTime.Now));
     }
 
     private List<ICredit> GetCreditsExample()
@@ -60,7 +61,7 @@ public class CalculateBalanceTest
         return transfers;
     }
 
-    private Account GetAccountExample() => new Account(AccountFields.Rebuild(2, 2, DateTime.Now, true, "hash", "", DateTime.Now));
+    private Account GetAccountExample() => new Account(AccountFields.Rebuild(2, 2, DateTime.Now, true, Role.Customer, "hash", "", DateTime.Now));
 
     [Fact]
     public async Task NoBalance()

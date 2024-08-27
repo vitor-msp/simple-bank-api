@@ -16,6 +16,7 @@ using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Dto;
 using SimpleBankApi.Domain.Extensions;
 using SimpleBankApi.Domain.Services;
+using SimpleBankApi.Domain.ValueObjects;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Database.Schema;
 using SimpleBankApi.Repository.Implementations;
@@ -69,15 +70,14 @@ public class TransactionsControllerTest : IDisposable
     public void Dispose() => _connection.Dispose();
 
     private AccountDB AccountExample(int accountNumber = 1, string cpf = "123")
-    {
-        return new AccountDB()
+        => new()
         {
             AccountNumber = accountNumber,
             CreatedAt = DateTime.Now,
             Active = true,
+            Role = Role.Customer.ToString(),
             Owner = new CustomerDB() { Cpf = cpf, Name = "fulano" }
         };
-    }
 
     private CreditDB CreditExample()
     {
