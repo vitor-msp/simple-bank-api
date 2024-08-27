@@ -4,6 +4,8 @@ using SimpleBankApi.Api.Presenters;
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.Input;
 using SimpleBankApi.Application.Output;
+using SimpleBankApi.Domain.Exceptions;
+using SimpleBankApi.Domain.Services;
 
 namespace SimpleBankApi.Api.Controllers;
 
@@ -89,7 +91,7 @@ public class AccountsController : ControllerBase
             var output = await _createAccountUseCase.Execute(newAccountDto);
             return new CreatedAtRouteResult("GetAccount", output, output);
         }
-        catch (InvalidInputException error)
+        catch (DomainException error)
         {
             return BadRequest(new ErrorPresenter(error.Message));
         }

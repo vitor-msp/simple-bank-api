@@ -28,6 +28,7 @@ public static class ProjectFactoryExtension
         ConfigureToken(services, configuration);
 
         services.AddScoped<ICalculateBalance, CalculateBalance>();
+        services.AddScoped<ICreateAccount, CreateAccount>();
 
         services.AddScoped<IAccountsRepository, AccountsRepository>();
         services.AddScoped<ITransactionsRepository, TransactionsRepository>();

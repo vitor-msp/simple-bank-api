@@ -1,5 +1,4 @@
-using SimpleBankApi.Application.Input;
-using SimpleBankApi.Application.Output;
+using SimpleBankApi.Domain.Services;
 
 namespace SimpleBankApi.Application.Exceptions;
 

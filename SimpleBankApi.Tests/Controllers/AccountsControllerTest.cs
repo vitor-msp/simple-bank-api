@@ -10,6 +10,7 @@ using SimpleBankApi.Application.Input;
 using SimpleBankApi.Application.Output;
 using SimpleBankApi.Application.UseCases;
 using SimpleBankApi.Domain.Contract;
+using SimpleBankApi.Domain.Services;
 using SimpleBankApi.Domain.ValueObjects;
 using SimpleBankApi.Infra;
 using SimpleBankApi.Repository.Database.Context;
@@ -45,8 +46,10 @@ public class AccountsControllerTest : IDisposable
         var accountsRepository = new AccountsRepository(context);
         var passwordHasher = new PasswordHasher();
         var controller = new AccountsController(
-            new CreateAccountUseCase(accountsRepository, passwordHasher), new UpdateAccountUseCase(accountsRepository),
-            new DeleteAccountUseCase(accountsRepository), new GetAllAccountsUseCase(accountsRepository),
+            new CreateAccountUseCase(new CreateAccount(accountsRepository, passwordHasher)),
+            new UpdateAccountUseCase(accountsRepository),
+            new DeleteAccountUseCase(accountsRepository),
+            new GetAllAccountsUseCase(accountsRepository),
             new GetAccountUseCase(accountsRepository));
         return (controller, context);
     }

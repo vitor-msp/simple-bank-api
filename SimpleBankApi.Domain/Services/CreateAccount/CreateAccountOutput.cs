@@ -1,4 +1,4 @@
-namespace SimpleBankApi.Application.Output;
+namespace SimpleBankApi.Domain.Services;
 
 public class CreateAccountOutput
 {
