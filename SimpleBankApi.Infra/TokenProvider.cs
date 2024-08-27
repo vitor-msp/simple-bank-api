@@ -40,6 +40,7 @@ public class TokenProvider : ITokenProvider
     {
         var ci = new ClaimsIdentity();
         ci.AddClaim(new Claim(ClaimTypes.Name, account.GetFields().AccountNumber.ToString()));
+        ci.AddClaim(new Claim(ClaimTypes.Role, account.GetFields().Role.ToString()));
         return ci;
     }
 }

@@ -134,6 +134,8 @@ public class SessionsControllerTest : IDisposable
         var claims = ValidateToken(output.AccessToken);
         var accountNumber = claims.FindFirstValue(ClaimTypes.Name);
         Assert.Equal("1", accountNumber);
+        var role = claims.FindFirstValue(ClaimTypes.Role);
+        Assert.Equal(Role.Customer.ToString(), role);
     }
 
     [Fact]
@@ -191,6 +193,8 @@ public class SessionsControllerTest : IDisposable
         var claims = ValidateToken(output.AccessToken);
         var accountNumber = claims.FindFirstValue(ClaimTypes.Name);
         Assert.Equal("1", accountNumber);
+        var role = claims.FindFirstValue(ClaimTypes.Role);
+        Assert.Equal(Role.Customer.ToString(), role);
     }
 
     [Fact]
