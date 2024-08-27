@@ -190,14 +190,11 @@ public class AccountsControllerTest : IDisposable
     [Fact]
     public async Task Post_ReturnBadRequest_PasswordAndConfirmationNotEqual()
     {
-        var (sut, context) = MakeSut();
-        var account = AccountExample();
-        context.Accounts.Add(account);
-        await context.SaveChangesAsync();
+        var (sut, _) = MakeSut();
         var input = new CreateAccountInput()
         {
             Name = "fulano de tal",
-            Cpf = account.Owner?.Cpf ?? "",
+            Cpf = "01234567890",
             Password = "pass123",
             PasswordConfirmation = "pass1234",
         };

@@ -84,11 +84,11 @@ public class AccountsController : ControllerBase
 
     [HttpPost]
     [AllowAnonymous]
-    public async Task<ActionResult<CreateAccountOutput>> Post([FromBody] CreateAccountInput newAccountDto)
+    public async Task<ActionResult<CreateAccountOutput>> Post([FromBody] CreateAccountInput input)
     {
         try
         {
-            var output = await _createAccountUseCase.Execute(newAccountDto);
+            var output = await _createAccountUseCase.Execute(input);
             return new CreatedAtRouteResult("GetAccount", output, output);
         }
         catch (DomainException error)

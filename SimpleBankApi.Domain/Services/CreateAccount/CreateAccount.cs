@@ -23,11 +23,9 @@ public class CreateAccount : ICreateAccount
         if (!input.Password.Equals(input.PasswordConfirmation))
             throw new DomainException("Password and confirmation must be equal.");
 
-        var customer = new Customer(input.GetFields());
-        var accountFields = new AccountFields()
-        {
-            PasswordHash = _passwordHasher.Hash(input.Password)
-        };
+        var customer = new Customer(input.GetCustomerFields());
+        var accountFields = input.GetAccountFields();
+        accountFields.PasswordHash = _passwordHasher.Hash(input.Password);
         var newAccount = new Account(accountFields) { Owner = customer };
 
         await _accountsRepository.Save(newAccount);

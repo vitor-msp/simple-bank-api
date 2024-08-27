@@ -37,6 +37,8 @@ public static class ProjectFactoryExtension
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenProvider, TokenProvider>();
 
+        services.AddScoped<ICreateAdminAccountUseCase, CreateAdminAccountUseCase>();
+
         services.AddScoped<ICreateAccountUseCase, CreateAccountUseCase>();
         services.AddScoped<IUpdateAccountUseCase, UpdateAccountUseCase>();
         services.AddScoped<IDeleteAccountUseCase, DeleteAccountUseCase>();

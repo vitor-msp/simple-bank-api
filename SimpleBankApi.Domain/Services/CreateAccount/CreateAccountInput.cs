@@ -22,12 +22,16 @@ public class CreateAccountInput
 
     public Role Role { get; set; } = Role.Customer;
 
-    public CustomerFields GetFields()
-    {
-        return new CustomerFields()
+    public CustomerFields GetCustomerFields()
+        => new()
         {
             Name = Name,
             Cpf = Cpf,
         };
-    }
+
+    public AccountFields GetAccountFields()
+        => new()
+        {
+            Role = Role,
+        };
 }
