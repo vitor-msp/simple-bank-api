@@ -45,12 +45,14 @@ public class AccountsControllerTest : IDisposable
         var context = CreateContext();
         var accountsRepository = new AccountsRepository(context);
         var passwordHasher = new PasswordHasher();
+        var createAccount = new CreateAccount(accountsRepository, passwordHasher);
         var controller = new AccountsController(
-            new CreateAccountUseCase(new CreateAccount(accountsRepository, passwordHasher)),
+            new CreateAccountUseCase(createAccount),
             new UpdateAccountUseCase(accountsRepository),
             new DeleteAccountUseCase(accountsRepository),
             new GetAllAccountsUseCase(accountsRepository),
-            new GetAccountUseCase(accountsRepository));
+            new GetAccountUseCase(accountsRepository),
+            new CreateAdminAccountUseCase(createAccount));
         return (controller, context);
     }
 
@@ -255,5 +257,84 @@ public class AccountsControllerTest : IDisposable
         Assert.False(savedAccount.Active);
         Assert.Equal(account.CreatedAt, savedAccount.CreatedAt);
         Assert.Equal(account.Owner, savedAccount.Owner);
+    }
+
+    private AccountDB AdminAccountExample(string cpf = "0123")
+    => new()
+    {
+        AccountNumber = 1,
+        CreatedAt = DateTime.Now,
+        Active = true,
+        Role = Role.Admin.ToString(),
+        PasswordHash = _passwordHasher.Hash("pass123"),
+        Owner = new CustomerDB()
+        {
+            Cpf = cpf,
+            Name = "fulano",
+        }
+    };
+
+    [Fact]
+    public async Task Post_ReturnCreated_Admin()
+    {
+        var (sut, context) = MakeSut();
+        var input = new CreateAccountInput()
+        {
+            Name = "fulano de tal",
+            Cpf = "01234567890",
+            Password = "pass123",
+            PasswordConfirmation = "pass123",
+        };
+
+        var actionResult = await sut.PostAdmin(input);
+
+        var createdAtRouteResult = Assert.IsType<CreatedAtRouteResult>(actionResult.Result);
+        Assert.Equal("GetAccount", createdAtRouteResult.RouteName);
+        var postOutput = Assert.IsType<CreateAccountOutput>(createdAtRouteResult.Value);
+        var accountNumber = Assert.IsType<int>(postOutput.AccountNumber);
+        var savedAccount = context.Accounts.Single(account => account.AccountNumber == accountNumber);
+        Assert.Equal(accountNumber, savedAccount.AccountNumber);
+        Assert.True(savedAccount.Active);
+        Assert.IsType<DateTime>(savedAccount.CreatedAt);
+        Assert.IsType<string>(savedAccount.PasswordHash);
+        Assert.True(_passwordHasher.Verify(savedAccount.PasswordHash!, "pass123"));
+        Assert.Equal(Role.Admin.ToString(), savedAccount.Role);
+    }
+
+    [Fact]
+    public async Task Post_ReturnBadRequest_Admin()
+    {
+        var (sut, context) = MakeSut();
+        var account = AdminAccountExample();
+        context.Accounts.Add(account);
+        await context.SaveChangesAsync();
+        var input = new CreateAccountInput()
+        {
+            Name = "fulano de tal",
+            Cpf = account.Owner?.Cpf ?? "",
+            Password = "pass123",
+            PasswordConfirmation = "pass123",
+        };
+
+        var actionResult = await sut.PostAdmin(input);
+
+        Assert.IsType<BadRequestObjectResult>(actionResult.Result);
+    }
+
+    [Fact]
+    public async Task Post_ReturnBadRequest_PasswordAndConfirmationNotEqual_Admin()
+    {
+        var (sut, _) = MakeSut();
+        var input = new CreateAccountInput()
+        {
+            Name = "fulano de tal",
+            Cpf = "01234567890",
+            Password = "pass123",
+            PasswordConfirmation = "pass1234",
+        };
+
+        var actionResult = await sut.PostAdmin(input);
+
+        Assert.IsType<BadRequestObjectResult>(actionResult.Result);
     }
 }

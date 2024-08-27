@@ -11,7 +11,6 @@ namespace SimpleBankApi.Api.Controllers;
 
 [ApiController]
 [Route("accounts")]
-[Authorize]
 public class AccountsController : ControllerBase
 {
     private readonly ICreateAccountUseCase _createAccountUseCase;
@@ -19,20 +18,23 @@ public class AccountsController : ControllerBase
     private readonly IDeleteAccountUseCase _deleteAccountUseCase;
     private readonly IGetAllAccountsUseCase _getAllAccountsUseCase;
     private readonly IGetAccountUseCase _getAccountUseCase;
+    private readonly ICreateAdminAccountUseCase _createAdminAccountUseCase;
 
     public AccountsController(
         ICreateAccountUseCase createAccountUseCase, IUpdateAccountUseCase updateAccountUseCase,
         IDeleteAccountUseCase deleteAccountUseCase, IGetAllAccountsUseCase getAllAccountsUseCase,
-        IGetAccountUseCase getAccountUseCase)
+        IGetAccountUseCase getAccountUseCase, ICreateAdminAccountUseCase createAdminAccountUseCase)
     {
         _createAccountUseCase = createAccountUseCase;
         _updateAccountUseCase = updateAccountUseCase;
         _deleteAccountUseCase = deleteAccountUseCase;
         _getAllAccountsUseCase = getAllAccountsUseCase;
         _getAccountUseCase = getAccountUseCase;
+        _createAdminAccountUseCase = createAdminAccountUseCase;
     }
 
     [HttpGet]
+    [Authorize(Roles = "Customer,Admin")]
     public async Task<ActionResult<GetAllAccountsOutput>> GetAll()
     {
         try
@@ -47,6 +49,7 @@ public class AccountsController : ControllerBase
     }
 
     [HttpGet("{accountNumber}", Name = "GetAccount")]
+    [Authorize(Roles = "Customer,Admin")]
     public async Task<ActionResult<object>> GetById(int accountNumber)
     {
         try
@@ -65,6 +68,7 @@ public class AccountsController : ControllerBase
     }
 
     [HttpGet("bycpf/{cpf}")]
+    [Authorize(Roles = "Customer,Admin")]
     public async Task<ActionResult<object>> GetByCpf(string cpf)
     {
         try
@@ -102,6 +106,7 @@ public class AccountsController : ControllerBase
     }
 
     [HttpPut("{accountNumber}")]
+    [Authorize(Roles = "Customer")]
     public async Task<ActionResult> Put(int accountNumber, [FromBody] UpdateAccountInput updatedAccountDto)
     {
         try
@@ -120,6 +125,7 @@ public class AccountsController : ControllerBase
     }
 
     [HttpDelete("{accountNumber}")]
+    [Authorize(Roles = "Customer")]
     public async Task<ActionResult> Delete(int accountNumber)
     {
         try
@@ -134,6 +140,25 @@ public class AccountsController : ControllerBase
         catch (Exception)
         {
             return StatusCode(500, new ErrorPresenter("Error to inactivate account."));
+        }
+    }
+
+    [HttpPost("admin")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<CreateAccountOutput>> PostAdmin([FromBody] CreateAccountInput input)
+    {
+        try
+        {
+            var output = await _createAdminAccountUseCase.Execute(input);
+            return new CreatedAtRouteResult("GetAccount", output, output);
+        }
+        catch (DomainException error)
+        {
+            return BadRequest(new ErrorPresenter(error.Message));
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new ErrorPresenter("Error to create account."));
         }
     }
 }

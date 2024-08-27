@@ -10,7 +10,7 @@ namespace SimpleBankApi.Api.Controllers;
 
 [ApiController]
 [Route("transactions")]
-[Authorize]
+[Authorize(Roles = "Customer")]
 public class TransactionsController : ControllerBase
 {
     private readonly IPostCreditUseCase _postCreditUseCase;
