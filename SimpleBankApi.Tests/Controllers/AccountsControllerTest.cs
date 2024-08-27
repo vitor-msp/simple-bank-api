@@ -130,7 +130,7 @@ public class AccountsControllerTest : IDisposable
     [InlineData("cpf")]
     public async Task GetById_And_GetByCpf_ReturnNotFound(string getType)
     {
-        var (sut, context) = MakeSut();
+        var (sut, _) = MakeSut();
 
         var actionResult = getType == "cpf" ? await sut.GetByCpf("123") : await sut.GetById(1);
 
@@ -161,6 +161,7 @@ public class AccountsControllerTest : IDisposable
         Assert.IsType<DateTime>(savedAccount.CreatedAt);
         Assert.IsType<string>(savedAccount.PasswordHash);
         Assert.True(_passwordHasher.Verify(savedAccount.PasswordHash!, "pass123"));
+        Assert.Equal(Role.Customer.ToString(), savedAccount.Role);
     }
 
     [Fact]
@@ -222,6 +223,7 @@ public class AccountsControllerTest : IDisposable
         Assert.Equal(account.Owner?.Id, savedAccount.Owner?.Id);
         Assert.Equal(account.Owner?.Cpf, savedAccount.Owner?.Cpf);
         Assert.Equal(input.Name, savedAccount.Owner?.Name);
+        Assert.Equal(Role.Customer.ToString(), savedAccount.Role);
     }
 
     [Theory]
@@ -229,7 +231,7 @@ public class AccountsControllerTest : IDisposable
     [InlineData("delete")]
     public async Task Put_And_Delete_ReturnNotFound(string type)
     {
-        var (sut, context) = MakeSut();
+        var (sut, _) = MakeSut();
         var input = new UpdateAccountInput() { Name = "ciclano" };
 
         var actionResult = type == "put" ? await sut.Put(1, input) : await sut.Delete(1);
