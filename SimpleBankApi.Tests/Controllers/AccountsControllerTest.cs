@@ -153,7 +153,7 @@ public class AccountsControllerTest : IDisposable
 
         var createdAtRouteResult = Assert.IsType<CreatedAtRouteResult>(actionResult.Result);
         Assert.Equal("GetAccount", createdAtRouteResult.RouteName);
-        var postOutput = Assert.IsType<PostAccountOutput>(createdAtRouteResult.Value);
+        var postOutput = Assert.IsType<CreateAccountOutput>(createdAtRouteResult.Value);
         var accountNumber = Assert.IsType<int>(postOutput.AccountNumber);
         var savedAccount = context.Accounts.Single(account => account.AccountNumber == accountNumber);
         Assert.Equal(accountNumber, savedAccount.AccountNumber);

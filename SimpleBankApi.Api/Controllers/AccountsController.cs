@@ -82,13 +82,12 @@ public class AccountsController : ControllerBase
 
     [HttpPost]
     [AllowAnonymous]
-    public async Task<ActionResult<PostAccountOutput>> Post([FromBody] CreateAccountInput newAccountDto)
+    public async Task<ActionResult<CreateAccountOutput>> Post([FromBody] CreateAccountInput newAccountDto)
     {
         try
         {
-            var accountNumber = await _createAccountUseCase.Execute(newAccountDto);
-            var postAccountOutput = new PostAccountOutput() { AccountNumber = accountNumber };
-            return new CreatedAtRouteResult("GetAccount", postAccountOutput, postAccountOutput);
+            var output = await _createAccountUseCase.Execute(newAccountDto);
+            return new CreatedAtRouteResult("GetAccount", output, output);
         }
         catch (InvalidInputException error)
         {

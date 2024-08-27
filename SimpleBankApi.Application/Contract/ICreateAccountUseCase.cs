@@ -1,8 +1,9 @@
 using SimpleBankApi.Application.Input;
+using SimpleBankApi.Application.Output;
 
 namespace SimpleBankApi.Application.Exceptions;
 
 public interface ICreateAccountUseCase
 {
-    Task<int> Execute(CreateAccountInput input);
+    Task<CreateAccountOutput> Execute(CreateAccountInput input);
 }

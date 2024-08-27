@@ -1,5 +1,6 @@
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.Input;
+using SimpleBankApi.Application.Output;
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Entities;
 
@@ -16,7 +17,7 @@ public class CreateAccountUseCase : ICreateAccountUseCase
         _passwordHasher = passwordHasher;
     }
 
-    public async Task<int> Execute(CreateAccountInput input)
+    public async Task<CreateAccountOutput> Execute(CreateAccountInput input)
     {
         var existingAccount = await _accountsRepository.GetByCpf(input.Cpf);
         if (existingAccount != null) throw new InvalidInputException("Cpf already registered.");
@@ -32,6 +33,10 @@ public class CreateAccountUseCase : ICreateAccountUseCase
         var newAccount = new Account(accountFields) { Owner = customer };
 
         await _accountsRepository.Save(newAccount);
-        return newAccount.GetFields().AccountNumber;
+
+        return new CreateAccountOutput()
+        {
+            AccountNumber = newAccount.GetFields().AccountNumber,
+        };
     }
 }
