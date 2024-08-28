@@ -1,10 +1,9 @@
 using System;
 using SimpleBankApi.Domain.Entities;
 using Xunit;
-using Moq;
 using SimpleBankApi.Domain.ValueObjects;
 
-namespace SimpleBankApi.Tests;
+namespace SimpleBankApi.Tests.Domain;
 
 public class AccountTest
 {
@@ -17,50 +16,36 @@ public class AccountTest
     private readonly bool _accountActive = true;
     private readonly Role _role = Role.Customer;
 
-    public AccountTest() { }
-
     private Account GetAccountExample()
     {
-        return new Account(
-            AccountFields.Rebuild(_accountId, _accountAccountNumber, _accountCreatedAt,
-                _accountActive, _role, _accountPasswordHash, _accountRefreshToken, _accountRefreshTokenExpiration));
+        var owner = new Customer() { Cpf = "1", Name = "fulano" };
+        return Account.Rebuild(_accountId, _accountAccountNumber, _accountCreatedAt, _accountActive,
+            _role, owner, _accountPasswordHash, _accountRefreshToken, _accountRefreshTokenExpiration);
     }
 
     [Fact]
     public void RebuildAccount()
     {
-        int id = 2536;
-        int accountNumber = 296161351;
-        string passwordHash = "hash";
-        string refreshToken = "";
-        DateTime refreshTokenExpiration = DateTime.Now;
-        DateTime createdAt = DateTime.Now;
-        bool active = true;
-        Role role = Role.Admin;
+        var id = 2536;
+        var accountNumber = 296161351;
+        var passwordHash = "hash";
+        var refreshToken = "";
+        var refreshTokenExpiration = DateTime.Now;
+        var createdAt = DateTime.Now;
+        var active = true;
+        var role = Role.Admin;
+        var owner = new Customer() { Cpf = "1", Name = "fulano" };
 
-        var account = new Account(
-            AccountFields.Rebuild(id, accountNumber, createdAt, active, role, passwordHash, refreshToken, refreshTokenExpiration));
+        var account = Account
+            .Rebuild(id, accountNumber, createdAt, active, role, owner,
+                passwordHash, refreshToken, refreshTokenExpiration);
 
-        Assert.Equal(id, account.GetFields().Id);
-        Assert.Equal(accountNumber, account.GetFields().AccountNumber);
-        Assert.Equal(passwordHash, account.GetFields().PasswordHash);
-        Assert.Equal(createdAt, account.GetFields().CreatedAt);
-        Assert.Equal(active, account.GetFields().Active);
-        Assert.Equal(role, account.GetFields().Role);
-    }
-
-    [Fact]
-    public void UpdateAccount()
-    {
-        var account = GetAccountExample();
-        var ownerMock = new Mock<ICustomer>();
-        account.Owner = ownerMock.Object;
-        string newName = "joao da silva";
-        var input = new CustomerUpdateableFields() { Name = newName };
-
-        account.Update(input);
-
-        ownerMock.Verify(mock => mock.Update(input), Times.Once);
+        Assert.Equal(id, account.Id);
+        Assert.Equal(accountNumber, account.AccountNumber);
+        Assert.Equal(passwordHash, account.PasswordHash);
+        Assert.Equal(createdAt, account.CreatedAt);
+        Assert.Equal(active, account.Active);
+        Assert.Equal(role, account.Role);
     }
 
     [Fact]
@@ -70,20 +55,20 @@ public class AccountTest
 
         account.Inactivate();
 
-        Assert.Equal(_accountId, account.GetFields().Id);
-        Assert.Equal(_accountAccountNumber, account.GetFields().AccountNumber);
-        Assert.Equal(_accountCreatedAt, account.GetFields().CreatedAt);
-        Assert.False(account.GetFields().Active);
-        Assert.Equal(_role, account.GetFields().Role);
+        Assert.Equal(_accountId, account.Id);
+        Assert.Equal(_accountAccountNumber, account.AccountNumber);
+        Assert.Equal(_accountCreatedAt, account.CreatedAt);
+        Assert.False(account.Active);
+        Assert.Equal(_role, account.Role);
     }
 
     [Fact]
     public void EqualsAccount()
     {
         var account = GetAccountExample();
-        var anotherAccount = new Account(
-           AccountFields.Rebuild(3642, 2668651, _accountCreatedAt, _accountActive, _role,
-            _accountPasswordHash, _accountRefreshToken, _accountRefreshTokenExpiration));
+        var owner = new Customer() { Cpf = "1", Name = "fulano" };
+        var anotherAccount = Account.Rebuild(3642, 2668651, _accountCreatedAt, _accountActive, _role,
+            owner, _accountPasswordHash, _accountRefreshToken, _accountRefreshTokenExpiration);
 
         bool nullResult = account.Equals(null);
         bool objResult = account?.Equals(new object() { }) ?? false;

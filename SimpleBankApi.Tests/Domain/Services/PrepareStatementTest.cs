@@ -7,15 +7,12 @@ using SimpleBankApi.Domain;
 using System.Globalization;
 using SimpleBankApi.Domain.ValueObjects;
 
-namespace SimpleBankApi.Tests;
+namespace SimpleBankApi.Tests.Domain;
 
 public class PrepareStatementTest
 {
-    private readonly IAccount _account = new Account(AccountFields.Rebuild(1, 1, DateTime.Now, true, Role.Customer, "hash", "", DateTime.Now))
-    {
-        Owner = new Customer(CustomerFields.Rebuild(1, "0123", "fulano de tal"))
-    };
-
+    private readonly IAccount _account = Account.Rebuild(1, 1, DateTime.Now, true, Role.Customer,
+        Customer.Rebuild(1, "0123", "fulano de tal"), "hash", "", DateTime.Now);
     private readonly double _creditValue = 50;
     private readonly DateTime _creditCreatedAt = DateTime.Now;
     private readonly double _debitValue = 15;
@@ -67,10 +64,8 @@ public class PrepareStatementTest
         return transfers;
     }
 
-    private Account GetAccountExample() => new Account(AccountFields.Rebuild(2, 2, DateTime.Now, true, Role.Customer, "hash", "", DateTime.Now))
-    {
-        Owner = new Customer(CustomerFields.Rebuild(2, "9876", "ciclano ferreira"))
-    };
+    private static Account GetAccountExample() => Account.Rebuild(2, 2, DateTime.Now, true, Role.Customer,
+        Customer.Rebuild(2, "9876", "ciclano ferreira"), "hash", "", DateTime.Now);
 
     [Fact]
     public void GetOrderedTransactions()
@@ -92,18 +87,18 @@ public class PrepareStatementTest
         Assert.Equal(TransactionType.Transfer, receivedTransferAsSender.Type);
         Assert.Equal((-1 * _transferAsSenderValue).ToString("c", CultureInfo.GetCultureInfo("pt-BR")), receivedTransferAsSender.TransferDto?.Value);
         Assert.Equal(_transferAsSenderCreatedAt, receivedTransferAsSender.TransferDto?.CreatedAt);
-        Assert.Equal(_account.GetFields().AccountNumber, receivedTransferAsSender.TransferDto?.Sender?.AccountNumber);
-        Assert.Equal(_account.Owner!.GetFields().Name, receivedTransferAsSender.TransferDto?.Sender?.Name);
-        Assert.Equal(GetAccountExample().GetFields().AccountNumber, receivedTransferAsSender.TransferDto?.Recipient?.AccountNumber);
-        Assert.Equal(GetAccountExample().Owner!.GetFields().Name, receivedTransferAsSender.TransferDto?.Recipient?.Name);
+        Assert.Equal(_account.AccountNumber, receivedTransferAsSender.TransferDto?.Sender?.AccountNumber);
+        Assert.Equal(_account.Owner.Name, receivedTransferAsSender.TransferDto?.Sender?.Name);
+        Assert.Equal(GetAccountExample().AccountNumber, receivedTransferAsSender.TransferDto?.Recipient?.AccountNumber);
+        Assert.Equal(GetAccountExample().Owner.Name, receivedTransferAsSender.TransferDto?.Recipient?.Name);
 
         var receivedTransferAsRecipient = statement.Transactions[3];
         Assert.Equal(TransactionType.Transfer, receivedTransferAsRecipient.Type);
         Assert.Equal(_transferAsRecipientValue.ToString("c", CultureInfo.GetCultureInfo("pt-BR")), receivedTransferAsRecipient.TransferDto?.Value);
         Assert.Equal(_transferAsRecipientCreatedAt, receivedTransferAsRecipient.TransferDto?.CreatedAt);
-        Assert.Equal(GetAccountExample().GetFields().AccountNumber, receivedTransferAsRecipient.TransferDto?.Sender?.AccountNumber);
-        Assert.Equal(GetAccountExample().Owner!.GetFields().Name, receivedTransferAsRecipient.TransferDto?.Sender?.Name);
-        Assert.Equal(_account.GetFields().AccountNumber, receivedTransferAsRecipient.TransferDto?.Recipient?.AccountNumber);
-        Assert.Equal(_account.Owner!.GetFields().Name, receivedTransferAsRecipient.TransferDto?.Recipient?.Name);
+        Assert.Equal(GetAccountExample().AccountNumber, receivedTransferAsRecipient.TransferDto?.Sender?.AccountNumber);
+        Assert.Equal(GetAccountExample().Owner.Name, receivedTransferAsRecipient.TransferDto?.Sender?.Name);
+        Assert.Equal(_account.AccountNumber, receivedTransferAsRecipient.TransferDto?.Recipient?.AccountNumber);
+        Assert.Equal(_account.Owner.Name, receivedTransferAsRecipient.TransferDto?.Recipient?.Name);
     }
 }

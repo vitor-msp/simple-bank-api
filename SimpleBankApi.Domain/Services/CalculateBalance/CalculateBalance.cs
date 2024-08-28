@@ -4,7 +4,7 @@ using SimpleBankApi.Domain.Utils;
 
 namespace SimpleBankApi.Domain.Services;
 
-public class CalculateBalance: ICalculateBalance
+public class CalculateBalance : ICalculateBalance
 {
     private readonly int _cacheTtl = 60 * 60 * 24;
     private readonly ITransactionsRepository _transactionsRepository;
@@ -40,21 +40,21 @@ public class CalculateBalance: ICalculateBalance
 
     private async Task<double> GetCreditSum(IAccount account)
     {
-        var credits = await _transactionsRepository.GetCreditsFromAccount(account.GetFields().AccountNumber);
+        var credits = await _transactionsRepository.GetCreditsFromAccount(account.AccountNumber);
         double creditSum = credits.Sum(credit => credit.GetFields().Value);
         return creditSum;
     }
 
     private async Task<double> GetDebitSum(IAccount account)
     {
-        var debits = await _transactionsRepository.GetDebitsFromAccount(account.GetFields().AccountNumber);
+        var debits = await _transactionsRepository.GetDebitsFromAccount(account.AccountNumber);
         double debitSum = -1 * debits.Sum(debit => debit.GetFields().Value);
         return debitSum;
     }
 
     private async Task<double> GetTransferSum(IAccount account)
     {
-        var transfers = await _transactionsRepository.GetTransfersFromAccount(account.GetFields().AccountNumber);
+        var transfers = await _transactionsRepository.GetTransfersFromAccount(account.AccountNumber);
         double transferSum = transfers.Sum(transfer =>
         {
             var value = transfer.GetFields().Value;

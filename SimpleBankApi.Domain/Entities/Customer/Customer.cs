@@ -2,17 +2,21 @@ namespace SimpleBankApi.Domain.Entities;
 
 public class Customer : ICustomer
 {
-    private readonly CustomerFields _fields;
+    public int Id { get; }
+    public required string Cpf { get; set; }
+    public required string Name { get; set; }
 
-    public Customer(CustomerFields fields)
+    public Customer() { }
+
+    private Customer(int id)
     {
-        _fields = fields;
+        Id = id;
     }
 
-    public CustomerFields GetFields() => _fields;
-
-    public void Update(CustomerUpdateableFields fields)
-    {
-        if (fields.Name != null) _fields.Name = fields.Name;
-    }
+    public static Customer Rebuild(int id, string cpf, string name)
+        => new(id)
+        {
+            Cpf = cpf,
+            Name = name,
+        };
 }

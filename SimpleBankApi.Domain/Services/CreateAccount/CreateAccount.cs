@@ -1,5 +1,4 @@
 using SimpleBankApi.Domain.Contract;
-using SimpleBankApi.Domain.Entities;
 using SimpleBankApi.Domain.Exceptions;
 
 namespace SimpleBankApi.Domain.Services;
@@ -23,16 +22,13 @@ public class CreateAccount : ICreateAccount
         if (!input.Password.Equals(input.PasswordConfirmation))
             throw new DomainException("Password and confirmation must be equal.");
 
-        var customer = new Customer(input.GetCustomerFields());
-        var accountFields = input.GetAccountFields();
-        accountFields.PasswordHash = _passwordHasher.Hash(input.Password);
-        var newAccount = new Account(accountFields) { Owner = customer };
-
+        input.PasswordHash = _passwordHasher.Hash(input.Password);
+        var newAccount = input.GetAccount();
         await _accountsRepository.Save(newAccount);
 
         return new CreateAccountOutput()
         {
-            AccountNumber = newAccount.GetFields().AccountNumber,
+            AccountNumber = newAccount.AccountNumber,
         };
     }
 }

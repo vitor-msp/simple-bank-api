@@ -3,7 +3,7 @@ using SimpleBankApi.Domain.Entities;
 using Xunit;
 using SimpleBankApi.Domain.Exceptions;
 
-namespace SimpleBankApi.Tests;
+namespace SimpleBankApi.Tests.Domain;
 
 public class TransactionTest
 {

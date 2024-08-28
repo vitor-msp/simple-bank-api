@@ -29,7 +29,7 @@ public class LoginUseCase : ILoginUseCase
         var account = await _accountsRepository.GetByAccountNumber(input.AccountNumber);
         if (account == null) throw new EntityNotFoundException("Account number and/or password invalid.");
 
-        var passwordHash = account.GetFields().PasswordHash;
+        var passwordHash = account.PasswordHash;
         if (passwordHash == null) throw new EntityNotFoundException("Account number and/or password invalid.");
 
         var credentialsIsCorrect = _passwordHasher.Verify(passwordHash, input.Password);

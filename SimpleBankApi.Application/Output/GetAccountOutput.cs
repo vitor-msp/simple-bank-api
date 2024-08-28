@@ -19,12 +19,12 @@ public class GetAccountOutput
     {
         return new GetAccountOutput()
         {
-            AccountNumber = account.GetFields().AccountNumber,
-            CreatedAt = account.GetFields().CreatedAt,
+            AccountNumber = account.AccountNumber,
+            CreatedAt = account.CreatedAt,
             Owner = new Customer()
             {
-                Cpf = account.Owner?.GetFields().Cpf ?? "",
-                Name = account.Owner?.GetFields().Name ?? "",
+                Cpf = account.Owner.Cpf,
+                Name = account.Owner.Name,
             }
         };
     }

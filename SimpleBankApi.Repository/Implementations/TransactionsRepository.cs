@@ -19,7 +19,7 @@ public class TransactionsRepository : ITransactionsRepository
     {
         if (credit.Account == null) throw new Exception();
 
-        var accountDB = await _context.Accounts.FindAsync(credit.Account.GetFields().Id);
+        var accountDB = await _context.Accounts.FindAsync(credit.Account.Id);
         if (accountDB == null) throw new Exception();
 
         var creditDB = new CreditDB(credit) { Account = accountDB };
@@ -32,7 +32,7 @@ public class TransactionsRepository : ITransactionsRepository
     {
         if (debit.Account == null) throw new Exception();
 
-        var accountDB = await _context.Accounts.FindAsync(debit.Account.GetFields().Id);
+        var accountDB = await _context.Accounts.FindAsync(debit.Account.Id);
         if (accountDB == null) throw new Exception();
 
         var debitDB = new DebitDB(debit) { Account = accountDB };
@@ -45,8 +45,8 @@ public class TransactionsRepository : ITransactionsRepository
     {
         if (transfer.Sender == null || transfer.Recipient == null) throw new Exception();
 
-        var senderDB = await _context.Accounts.FindAsync(transfer.Sender.GetFields().Id);
-        var recipientDB = await _context.Accounts.FindAsync(transfer.Recipient.GetFields().Id);
+        var senderDB = await _context.Accounts.FindAsync(transfer.Sender.Id);
+        var recipientDB = await _context.Accounts.FindAsync(transfer.Recipient.Id);
         if (senderDB == null || recipientDB == null) throw new Exception();
 
         var transferDB = new TransferDB(transfer) { Sender = senderDB, Recipient = recipientDB };
@@ -66,10 +66,9 @@ public class TransactionsRepository : ITransactionsRepository
             if (creditDB.Account == null || creditDB.Account.Owner == null) throw new Exception();
 
             var credit = creditDB.GetEntity();
-            var account = creditDB.Account.GetEntity();
             var owner = creditDB.Account.Owner.GetEntity();
+            var account = creditDB.Account.GetEntity(owner);
 
-            account.Owner = owner;
             credit.Account = account;
             return credit;
         }).ToList();
@@ -86,10 +85,9 @@ public class TransactionsRepository : ITransactionsRepository
             if (debitDB.Account == null || debitDB.Account.Owner == null) throw new Exception();
 
             var debit = debitDB.GetEntity();
-            var account = debitDB.Account.GetEntity();
             var owner = debitDB.Account.Owner.GetEntity();
+            var account = debitDB.Account.GetEntity(owner);
 
-            account.Owner = owner;
             debit.Account = account;
             return debit;
         }).ToList();
@@ -108,14 +106,12 @@ public class TransactionsRepository : ITransactionsRepository
             if (transferDB.Recipient == null || transferDB.Recipient.Owner == null) throw new Exception();
 
             var transfer = transferDB.GetEntity();
-            var sender = transferDB.Sender.GetEntity();
             var senderOwner = transferDB.Sender.Owner.GetEntity();
-            var recipient = transferDB.Recipient.GetEntity();
+            var sender = transferDB.Sender.GetEntity(senderOwner);
             var recipientOwner = transferDB.Recipient.Owner.GetEntity();
+            var recipient = transferDB.Recipient.GetEntity(recipientOwner);
 
-            sender.Owner = senderOwner;
             transfer.Sender = sender;
-            recipient.Owner = recipientOwner;
             transfer.Recipient = recipient;
             return transfer;
         }).ToList();

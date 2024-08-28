@@ -11,8 +11,8 @@ public class AccountDto
     {
         return new AccountDto()
         {
-            AccountNumber = account.GetFields().AccountNumber,
-            Name = account.Owner?.GetFields().Name ?? ""
+            AccountNumber = account.AccountNumber,
+            Name = account.Owner?.Name ?? ""
         };
     }
 }

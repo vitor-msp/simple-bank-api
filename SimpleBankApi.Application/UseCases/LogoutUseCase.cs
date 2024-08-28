@@ -20,11 +20,11 @@ public class LogoutUseCase : ILogoutUseCase
         var account = await _accountsRepository.GetByAccountNumber(input.AccountNumber);
         if (account == null) throw new EntityNotFoundException("Account number and/or refresh token invalid.");
 
-        var refreshToken = account.GetFields().RefreshToken;
+        var refreshToken = account.RefreshToken;
         if (refreshToken == null || !refreshToken.Equals(input.RefreshToken))
             throw new EntityNotFoundException("Account number and/or refresh token invalid.");
 
-        var refreshTokenExpiration = account.GetFields().RefreshTokenExpiration;
+        var refreshTokenExpiration = account.RefreshTokenExpiration;
         if (refreshTokenExpiration == null || DateTime.Now >= refreshTokenExpiration)
             throw new EntityNotFoundException("Account number and/or refresh token invalid.");
 

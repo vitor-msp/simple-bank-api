@@ -22,9 +22,9 @@ public class AccountsRepository : IAccountsRepository
 
         return accountsDB.Select(accountDB =>
         {
-            var account = accountDB.GetEntity();
             if (accountDB.Owner == null) throw new Exception();
-            account.Owner = accountDB.Owner.GetEntity();
+            var owner = accountDB.Owner.GetEntity();
+            var account = accountDB.GetEntity(owner);
             return account;
         }).ToList();
     }
@@ -37,8 +37,8 @@ public class AccountsRepository : IAccountsRepository
         if (accountDB == null) return null;
         if (accountDB.Owner == null) throw new Exception();
 
-        var account = accountDB.GetEntity();
-        account.Owner = accountDB.Owner.GetEntity();
+        var owner = accountDB.Owner.GetEntity();
+        var account = accountDB.GetEntity(owner);
         return account;
     }
 
@@ -51,8 +51,8 @@ public class AccountsRepository : IAccountsRepository
         if (accountDB == null) return null;
         if (accountDB.Owner == null) throw new Exception();
 
-        var account = accountDB.GetEntity();
-        account.Owner = accountDB.Owner.GetEntity();
+        var owner = accountDB.Owner.GetEntity();
+        var account = accountDB.GetEntity(owner);
         return account;
     }
 
@@ -60,7 +60,7 @@ public class AccountsRepository : IAccountsRepository
     {
         var accountDB = await _context.Accounts.Include("Owner")
             .FirstOrDefaultAsync(accountDB =>
-                accountDB.Active && accountDB.AccountNumber == account.GetFields().AccountNumber);
+                accountDB.Active && accountDB.AccountNumber == account.AccountNumber);
 
         if (accountDB == null) await Add(account);
         else await Update(accountDB, account);

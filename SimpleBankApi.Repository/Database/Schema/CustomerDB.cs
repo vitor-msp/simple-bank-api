@@ -19,16 +19,12 @@ public class CustomerDB
         Hydrate(customer);
     }
 
-    public ICustomer GetEntity()
-    {
-        return new Customer(CustomerFields.Rebuild(Id, Cpf, Name));
-    }
+    public ICustomer GetEntity() => Customer.Rebuild(Id, Cpf, Name);
 
     public void Hydrate(ICustomer customer)
     {
-        var fields = customer.GetFields();
-        Id = fields.Id;
-        Cpf = fields.Cpf ?? "";
-        Name = fields.Name ?? "";
+        Id = customer.Id;
+        Cpf = customer.Cpf;
+        Name = customer.Name;
     }
 }

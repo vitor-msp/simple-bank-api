@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using SimpleBankApi.Domain.Entities;
+using SimpleBankApi.Domain.Exceptions;
 using SimpleBankApi.Domain.ValueObjects;
 
 namespace SimpleBankApi.Domain.Services;
@@ -22,16 +23,20 @@ public class CreateAccountInput
 
     public Role Role { get; set; } = Role.Customer;
 
-    public CustomerFields GetCustomerFields()
+    internal string? PasswordHash { get; set; }
+
+    private Customer GetCustomer()
         => new()
         {
             Name = Name,
             Cpf = Cpf,
         };
 
-    public AccountFields GetAccountFields()
+    internal Account GetAccount()
         => new()
         {
             Role = Role,
+            Owner = GetCustomer(),
+            PasswordHash = PasswordHash ?? throw new DomainException("Missing password hash."),
         };
 }

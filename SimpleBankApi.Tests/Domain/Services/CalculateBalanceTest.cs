@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System;
 using SimpleBankApi.Domain.ValueObjects;
 
-namespace SimpleBankApi.Tests;
+namespace SimpleBankApi.Tests.Domain;
 
 public class CalculateBalanceTest
 {
@@ -18,7 +18,8 @@ public class CalculateBalanceTest
 
     public CalculateBalanceTest()
     {
-        _account = new Account(AccountFields.Rebuild(1, _accountNumber, DateTime.Now, true, Role.Customer, "hash", "", DateTime.Now));
+        var owner = new Customer() { Cpf = "1", Name = "fulano" };
+        _account = Account.Rebuild(1, _accountNumber, DateTime.Now, true, Role.Customer, owner, "hash", "", DateTime.Now);
     }
 
     private List<ICredit> GetCreditsExample()
@@ -61,7 +62,11 @@ public class CalculateBalanceTest
         return transfers;
     }
 
-    private Account GetAccountExample() => new Account(AccountFields.Rebuild(2, 2, DateTime.Now, true, Role.Customer, "hash", "", DateTime.Now));
+    private static Account GetAccountExample()
+    {
+        var owner = new Customer() { Cpf = "1", Name = "fulano" };
+        return Account.Rebuild(2, 2, DateTime.Now, true, Role.Customer, owner, "hash", "", DateTime.Now);
+    }
 
     [Fact]
     public async Task NoBalance()

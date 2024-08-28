@@ -8,8 +8,8 @@ public class UpdateAccountInput
     [Required]
     public string Name { get; set; } = "";
 
-    public CustomerUpdateableFields GetFields()
+    internal void Update(IAccount account)
     {
-        return new CustomerUpdateableFields() { Name = Name };
+        account.Owner.Name = Name;
     }
 }

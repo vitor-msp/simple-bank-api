@@ -25,11 +25,11 @@ public class TransferDto
     private static string GetTransferValue(ITransfer transfer, IAccount account)
     {
         double value;
-        if (transfer.Sender != null && transfer.Sender.GetFields().AccountNumber == account.GetFields().AccountNumber)
+        if (transfer.Sender != null && transfer.Sender.AccountNumber == account.AccountNumber)
         {
             value = -1 * transfer.GetFields().Value;
         }
-        else if (transfer.Recipient != null && transfer.Recipient.GetFields().AccountNumber== account.GetFields().AccountNumber)
+        else if (transfer.Recipient != null && transfer.Recipient.AccountNumber == account.AccountNumber)
         {
             value = transfer.GetFields().Value;
         }

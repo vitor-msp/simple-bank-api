@@ -32,17 +32,11 @@ public class GetTransactionsUseCase : IGetTransactionsUseCase
     }
 
     private async Task<List<ICredit>> GetCreditsFromAccount(IAccount account)
-    {
-        return await _transactionsRepository.GetCreditsFromAccount(account.GetFields().AccountNumber);
-    }
+        => await _transactionsRepository.GetCreditsFromAccount(account.AccountNumber);
 
     private async Task<List<IDebit>> GetDebitsFromAccount(IAccount account)
-    {
-        return await _transactionsRepository.GetDebitsFromAccount(account.GetFields().AccountNumber);
-    }
+        => await _transactionsRepository.GetDebitsFromAccount(account.AccountNumber);
 
     private async Task<List<ITransfer>> GetTransfersFromAccount(IAccount account)
-    {
-        return await _transactionsRepository.GetTransfersFromAccount(account.GetFields().AccountNumber);
-    }
+        => await _transactionsRepository.GetTransfersFromAccount(account.AccountNumber);
 }

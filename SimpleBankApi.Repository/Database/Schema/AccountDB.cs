@@ -9,12 +9,12 @@ public class AccountDB
     [Key]
     public int Id { get; set; }
     public int AccountNumber { get; set; }
-    public string? PasswordHash { get; set; } = "";
+    public string PasswordHash { get; set; } = "";
     public string? RefreshToken { get; set; } = "";
     public DateTime? RefreshTokenExpiration { get; set; }
     public DateTime CreatedAt { get; set; }
     public bool Active { get; set; }
-    public string Role { get; set; }
+    public string Role { get; set; } = "Customer";
     public CustomerDB? Owner { get; set; }
 
     public AccountDB() { }
@@ -24,22 +24,21 @@ public class AccountDB
         Hydrate(account);
     }
 
-    public IAccount GetEntity()
+    public IAccount GetEntity(ICustomer owner)
     {
         Enum.TryParse(Role, ignoreCase: true, out Role role);
-        return new Account(AccountFields.Rebuild(
-            Id, AccountNumber, CreatedAt, Active, role, PasswordHash, RefreshToken, RefreshTokenExpiration));
+        return Account.Rebuild(
+            Id, AccountNumber, CreatedAt, Active, role, owner, PasswordHash, RefreshToken, RefreshTokenExpiration);
     }
 
     public void Hydrate(IAccount account)
     {
-        var fields = account.GetFields();
-        Id = fields.Id;
-        AccountNumber = fields.AccountNumber;
-        Active = fields.Active;
-        PasswordHash = fields.PasswordHash;
-        RefreshToken = fields.RefreshToken;
-        RefreshTokenExpiration = fields.RefreshTokenExpiration;
-        Role = fields.Role.ToString();
+        Id = account.Id;
+        AccountNumber = account.AccountNumber;
+        Active = account.Active;
+        PasswordHash = account.PasswordHash;
+        RefreshToken = account.RefreshToken;
+        RefreshTokenExpiration = account.RefreshTokenExpiration;
+        Role = account.Role.ToString();
     }
 }

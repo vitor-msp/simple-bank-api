@@ -18,7 +18,7 @@ public class UpdateAccountUseCase : IUpdateAccountUseCase
         var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
 
-        account.Update(input.GetFields());
+        input.Update(account);
         await _accountsRepository.Save(account);
     }
 }

@@ -1,46 +1,67 @@
-using SimpleBankApi.Domain.Exceptions;
+using SimpleBankApi.Domain.ValueObjects;
 
 namespace SimpleBankApi.Domain.Entities;
 
 public class Account : IAccount
 {
-    private readonly AccountFields _fields;
+    public int Id { get; }
+    public int AccountNumber { get; }
+    public DateTime CreatedAt { get; }
+    public bool Active { get; private set; }
+    public Role Role { get; set; }
+    public required ICustomer Owner { get; set; }
+    public required string PasswordHash { get; set; }
+    public string? RefreshToken { get; private set; }
+    public DateTime? RefreshTokenExpiration { get; private set; }
 
-    public ICustomer? Owner { get; set; }
-
-    public Account(AccountFields fields)
+    public Account()
     {
-        _fields = fields;
+        AccountNumber = Convert.ToInt32(DateTimeOffset.Now.ToUnixTimeSeconds());
+        CreatedAt = DateTime.Now;
+        Active = true;
+        Role = Role.Customer;
     }
 
-    public AccountFields GetFields() => _fields;
-
-    public void Update(CustomerUpdateableFields fields)
+    private Account(int id, int accountNumber, DateTime createdAt)
     {
-        if (Owner == null) throw new DomainException("owner not setted");
-        Owner.Update(fields);
+        Id = id;
+        AccountNumber = accountNumber;
+        CreatedAt = createdAt;
     }
 
     public void Inactivate()
     {
-        _fields.Active = false;
+        Active = false;
     }
+
     public override bool Equals(object? obj)
     {
         if (obj == null) return false;
         if (!obj.GetType().Equals(this.GetType())) return false;
         Account accountToCompare = (Account)obj;
-        return accountToCompare._fields.AccountNumber == _fields.AccountNumber;
+        return accountToCompare.AccountNumber == this.AccountNumber;
     }
 
     public override int GetHashCode()
     {
-        return _fields.AccountNumber;
+        return AccountNumber;
     }
 
     public void UpdateRefreshToken(string? token, DateTime? expiration)
     {
-        _fields.RefreshToken = token;
-        _fields.RefreshTokenExpiration = expiration;
+        RefreshToken = token;
+        RefreshTokenExpiration = expiration;
     }
+
+    public static Account Rebuild(int id, int accountNumber, DateTime createdAt, bool active,
+        Role role, ICustomer owner, string passwordHash, string? refreshToken, DateTime? refreshTokenExpiration)
+        => new(id, accountNumber, createdAt)
+        {
+            Active = active,
+            Role = role,
+            Owner = owner,
+            PasswordHash = passwordHash,
+            RefreshToken = refreshToken,
+            RefreshTokenExpiration = refreshTokenExpiration,
+        };
 }

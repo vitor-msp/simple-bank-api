@@ -39,8 +39,8 @@ public class TokenProvider : ITokenProvider
     private static ClaimsIdentity GenerateClaims(IAccount account)
     {
         var ci = new ClaimsIdentity();
-        ci.AddClaim(new Claim(ClaimTypes.Name, account.GetFields().AccountNumber.ToString()));
-        ci.AddClaim(new Claim(ClaimTypes.Role, account.GetFields().Role.ToString()));
+        ci.AddClaim(new Claim(ClaimTypes.Name, account.AccountNumber.ToString()));
+        ci.AddClaim(new Claim(ClaimTypes.Role, account.Role.ToString()));
         return ci;
     }
 }
