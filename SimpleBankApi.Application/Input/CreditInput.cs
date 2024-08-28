@@ -3,7 +3,7 @@ using SimpleBankApi.Domain.Entities;
 
 namespace SimpleBankApi.Application.Input;
 
-public class CreditInput
+public class CreditInput : Input
 {
     [Required]
     [Range(0.0, double.MaxValue)]

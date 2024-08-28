@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SimpleBankApi.Api.Presenters;
+using SimpleBankApi.Api.Validators;
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.Input;
 using SimpleBankApi.Application.Output;
@@ -39,8 +40,13 @@ public class TransactionsController : ControllerBase
     {
         try
         {
+            AccountNumberAccessValidator.UserCanAccess(User, accountNumber);
             await _postCreditUseCase.Execute(accountNumber, creditDto);
             return Ok();
+        }
+        catch (UnauthorizedAccessException error)
+        {
+            return Unauthorized(new ErrorPresenter(error.Message));
         }
         catch (EntityNotFoundException error)
         {
@@ -61,8 +67,13 @@ public class TransactionsController : ControllerBase
     {
         try
         {
+            AccountNumberAccessValidator.UserCanAccess(User, accountNumber);
             await _postDebitUseCase.Execute(accountNumber, debitDto);
             return Ok();
+        }
+        catch (UnauthorizedAccessException error)
+        {
+            return Unauthorized(new ErrorPresenter(error.Message));
         }
         catch (EntityNotFoundException error)
         {
@@ -87,8 +98,13 @@ public class TransactionsController : ControllerBase
     {
         try
         {
+            AccountNumberAccessValidator.UserCanAccess(User, accountNumber);
             await _postTransferUseCase.Execute(accountNumber, transferDto);
             return Ok();
+        }
+        catch (UnauthorizedAccessException error)
+        {
+            return Unauthorized(new ErrorPresenter(error.Message));
         }
         catch (EntityNotFoundException error)
         {
@@ -113,8 +129,13 @@ public class TransactionsController : ControllerBase
     {
         try
         {
+            AccountNumberAccessValidator.UserCanAccess(User, accountNumber);
             var output = await _getBalanceUseCase.Execute(accountNumber);
             return Ok(output);
+        }
+        catch (UnauthorizedAccessException error)
+        {
+            return Unauthorized(new ErrorPresenter(error.Message));
         }
         catch (EntityNotFoundException error)
         {
@@ -132,8 +153,13 @@ public class TransactionsController : ControllerBase
     {
         try
         {
+            AccountNumberAccessValidator.UserCanAccess(User, accountNumber);
             var output = await _getTransactionsUseCase.Execute(accountNumber);
             return Ok(output);
+        }
+        catch (UnauthorizedAccessException error)
+        {
+            return Unauthorized(new ErrorPresenter(error.Message));
         }
         catch (EntityNotFoundException error)
         {

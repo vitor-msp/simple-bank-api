@@ -48,7 +48,7 @@ public class TransactionsControllerTest : IDisposable
         return context;
     }
 
-    private async Task<(TransactionsController, BankContext)> MakeSut()
+    private async Task<(TransactionsController, BankContext)> MakeSut(int? accountNumberToAuthenticate = null)
     {
         var context = CreateContext();
         var transactionsRepository = new TransactionsRepository(context);
@@ -62,6 +62,8 @@ public class TransactionsControllerTest : IDisposable
             new GetBalanceUseCase(accountsRepository, calculateBalance),
             new GetTransactionsUseCase(transactionsRepository, accountsRepository));
 
+        AuthenticationMock.AuthenticateUser(accountNumberToAuthenticate ?? _account.AccountNumber, controller);
+
         context.Accounts.Add(_account);
         await context.SaveChangesAsync();
         return (controller, context);
@@ -69,7 +71,7 @@ public class TransactionsControllerTest : IDisposable
 
     public void Dispose() => _connection.Dispose();
 
-    private AccountDB AccountExample(int accountNumber = 1, string cpf = "123")
+    private static AccountDB AccountExample(int accountNumber = 1, string cpf = "123")
         => new()
         {
             AccountNumber = accountNumber,
@@ -80,24 +82,16 @@ public class TransactionsControllerTest : IDisposable
         };
 
     private CreditDB CreditExample()
-    {
-        return new CreditDB() { CreatedAt = DateTime.Now, Value = 100, Account = _account };
-    }
+        => new() { CreatedAt = DateTime.Now, Value = 100, Account = _account };
 
     private DebitDB DebitExample()
-    {
-        return new DebitDB() { CreatedAt = DateTime.Now, Value = 10, Account = _account };
-    }
+        => new() { CreatedAt = DateTime.Now, Value = 10, Account = _account };
 
     private TransferDB TransferExampleAsSender(AccountDB recipient)
-    {
-        return new TransferDB() { CreatedAt = DateTime.Now, Value = 25, Sender = _account, Recipient = recipient };
-    }
+        => new() { CreatedAt = DateTime.Now, Value = 25, Sender = _account, Recipient = recipient };
 
     private TransferDB TransferExampleAsRecipient(AccountDB sender)
-    {
-        return new TransferDB() { CreatedAt = DateTime.Now, Value = 25, Sender = sender, Recipient = _account };
-    }
+        => new() { CreatedAt = DateTime.Now, Value = 25, Sender = sender, Recipient = _account };
 
     [Fact]
     public async Task PostCredit_ReturnOk()
@@ -166,7 +160,7 @@ public class TransactionsControllerTest : IDisposable
     [InlineData("get-transactions")]
     public async Task PostCredit_And_PostDebit_And_GetBalance_ReturnNotFound(string type)
     {
-        var (sut, context) = await MakeSut();
+        var (sut, _) = await MakeSut(accountNumberToAuthenticate: _accountNumberNotUsed);
         var creditInput = new CreditInput() { Value = 100.56 };
         var debitInput = new DebitInput() { Value = 100.56 };
 
@@ -228,7 +222,7 @@ public class TransactionsControllerTest : IDisposable
     [Fact]
     public async Task PostTransfer_SenderNotFound()
     {
-        var (sut, context) = await MakeSut();
+        var (sut, context) = await MakeSut(accountNumberToAuthenticate: _accountNumberNotUsed);
         var recipientAccount = AccountExample(2, "321");
         context.Accounts.Add(recipientAccount);
         await context.SaveChangesAsync();
@@ -283,7 +277,7 @@ public class TransactionsControllerTest : IDisposable
         Assert.Equal(expectedBalance, getBalanceOutput.Balance);
     }
 
-    private TransactionDto GenerateTransactionCreditDto(CreditDB credit)
+    private static TransactionDto GenerateTransactionCreditDto(CreditDB credit)
     {
         return new TransactionDto()
         {
@@ -296,7 +290,7 @@ public class TransactionsControllerTest : IDisposable
         };
     }
 
-    private TransactionDto GenerateTransactionDebitDto(DebitDB debit)
+    private static TransactionDto GenerateTransactionDebitDto(DebitDB debit)
     {
         return new TransactionDto()
         {
@@ -309,7 +303,7 @@ public class TransactionsControllerTest : IDisposable
         };
     }
 
-    private TransactionDto GenerateTransactionTransferDto(TransferDB transfer, bool AsSender = true)
+    private static TransactionDto GenerateTransactionTransferDto(TransferDB transfer, bool AsSender = true)
     {
         if (transfer.Sender?.Owner == null || transfer.Recipient?.Owner == null)
             throw new Exception();
@@ -389,5 +383,49 @@ public class TransactionsControllerTest : IDisposable
         Assert.Equal(expectedTransferAsRecipient.TransferDto?.Sender?.Name, receivedTransferAsRecipient.TransferDto?.Sender?.Name);
         Assert.Equal(expectedTransferAsRecipient.TransferDto?.Recipient?.AccountNumber, receivedTransferAsRecipient.TransferDto?.Recipient?.AccountNumber);
         Assert.Equal(expectedTransferAsRecipient.TransferDto?.Recipient?.Name, receivedTransferAsRecipient.TransferDto?.Recipient?.Name);
+    }
+
+    [Theory]
+    [InlineData("credit")]
+    [InlineData("debit")]
+    [InlineData("transfer")]
+    public async Task AnotherAccount_ReturnUnauthorized(string type)
+    {
+        var (sut, _) = await MakeSut(accountNumberToAuthenticate: 2);
+        Input input = type switch
+        {
+            "credit" => new CreditInput() { Value = 100.56 },
+            "debit" => new DebitInput() { Value = 50.56 },
+            "transfer" => new TransferInput() { Value = 50.56, RecipientAccountNumber = 2 },
+        };
+
+        var output = type switch
+        {
+            "credit" => await sut.PostCredit(_account.AccountNumber, (CreditInput)input),
+            "debit" => await sut.PostDebit(_account.AccountNumber, (DebitInput)input),
+            "transfer" => await sut.PostTransfer(_account.AccountNumber, (TransferInput)input),
+        };
+
+        Assert.IsType<UnauthorizedObjectResult>(output);
+    }
+
+    [Fact]
+    public async Task AnotherAccount_ReturnUnauthorized_GetBalance()
+    {
+        var (sut, _) = await MakeSut(accountNumberToAuthenticate: 2);
+
+        var output = await sut.GetBalance(_account.AccountNumber);
+
+        Assert.IsType<UnauthorizedObjectResult>(output.Result);
+    }
+
+    [Fact]
+    public async Task AnotherAccount_ReturnUnauthorized_GetTransactions()
+    {
+        var (sut, _) = await MakeSut(accountNumberToAuthenticate: 2);
+
+        var output = await sut.GetTransactions(_account.AccountNumber);
+
+        Assert.IsType<UnauthorizedObjectResult>(output.Result);
     }
 }

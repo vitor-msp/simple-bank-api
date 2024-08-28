@@ -40,7 +40,7 @@ public class AccountsControllerTest : IDisposable
         return context;
     }
 
-    private (AccountsController, BankContext) MakeSut()
+    private (AccountsController, BankContext) MakeSut(int? accountNumberToAuthenticate = null)
     {
         var context = CreateContext();
         var accountsRepository = new AccountsRepository(context);
@@ -53,6 +53,9 @@ public class AccountsControllerTest : IDisposable
             new GetAllAccountsUseCase(accountsRepository),
             new GetAccountUseCase(accountsRepository),
             new CreateAdminAccountUseCase(createAccount));
+
+        AuthenticationMock.AuthenticateUser(accountNumberToAuthenticate ?? AccountExample().AccountNumber, controller);
+
         return (controller, context);
     }
 
@@ -259,20 +262,40 @@ public class AccountsControllerTest : IDisposable
         Assert.Equal(account.Owner, savedAccount.Owner);
     }
 
-    private AccountDB AdminAccountExample(string cpf = "0123")
-    => new()
+    [Theory]
+    [InlineData("put")]
+    [InlineData("delete")]
+    public async Task AnotherAccount_ReturnUnauthorized(string type)
     {
-        AccountNumber = 1,
-        CreatedAt = DateTime.Now,
-        Active = true,
-        Role = Role.Admin.ToString(),
-        PasswordHash = _passwordHasher.Hash("pass123"),
-        Owner = new CustomerDB()
+        var (sut, context) = MakeSut(accountNumberToAuthenticate: 2);
+        var account = AccountExample();
+        context.Accounts.Add(account);
+        await context.SaveChangesAsync();
+        var input = new UpdateAccountInput() { Name = "ciclano" };
+
+        var output = type switch
         {
-            Cpf = cpf,
-            Name = "fulano",
-        }
-    };
+            "put" => await sut.Put(account.AccountNumber, input),
+            "delete" => await sut.Delete(account.AccountNumber),
+        };
+
+        Assert.IsType<UnauthorizedObjectResult>(output);
+    }
+
+    private AccountDB AdminAccountExample(string cpf = "0123")
+        => new()
+        {
+            AccountNumber = 1,
+            CreatedAt = DateTime.Now,
+            Active = true,
+            Role = Role.Admin.ToString(),
+            PasswordHash = _passwordHasher.Hash("pass123"),
+            Owner = new CustomerDB()
+            {
+                Cpf = cpf,
+                Name = "fulano",
+            }
+        };
 
     [Fact]
     public async Task Post_ReturnCreated_Admin()

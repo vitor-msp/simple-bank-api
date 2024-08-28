@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SimpleBankApi.Api.Presenters;
+using SimpleBankApi.Api.Validators;
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.Input;
 using SimpleBankApi.Application.Output;
@@ -111,8 +112,13 @@ public class AccountsController : ControllerBase
     {
         try
         {
+            AccountNumberAccessValidator.UserCanAccess(User, accountNumber);
             await _updateAccountUseCase.Execute(accountNumber, updatedAccountDto);
             return NoContent();
+        }
+        catch (UnauthorizedAccessException error)
+        {
+            return Unauthorized(new ErrorPresenter(error.Message));
         }
         catch (EntityNotFoundException error)
         {
@@ -130,8 +136,13 @@ public class AccountsController : ControllerBase
     {
         try
         {
+            AccountNumberAccessValidator.UserCanAccess(User, accountNumber);
             await _deleteAccountUseCase.Execute(accountNumber);
             return NoContent();
+        }
+        catch (UnauthorizedAccessException error)
+        {
+            return Unauthorized(new ErrorPresenter(error.Message));
         }
         catch (EntityNotFoundException error)
         {

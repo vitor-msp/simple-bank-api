@@ -3,7 +3,7 @@ using SimpleBankApi.Domain.Entities;
 
 namespace SimpleBankApi.Application.Input;
 
-public class TransferInput
+public class TransferInput: Input
 {
     [Required]
     [Range(0.0, double.MaxValue)]
