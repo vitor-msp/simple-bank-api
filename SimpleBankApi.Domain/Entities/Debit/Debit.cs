@@ -2,7 +2,16 @@ namespace SimpleBankApi.Domain.Entities;
 
 public class Debit : Transaction, IDebit
 {
-    public IAccount? Account { get; set; }
+    public required IAccount Account { get; init; }
 
-    public Debit(DebitFields fields) : base(fields) { }
+    public Debit() : base() { }
+
+    private Debit(int id, DateTime createdAt) : base(id, createdAt) { }
+
+    public static Debit Rebuild(int id, DateTime createdAt, double value, IAccount account)
+        => new(id, createdAt)
+        {
+            Value = value,
+            Account = account,
+        };
 }

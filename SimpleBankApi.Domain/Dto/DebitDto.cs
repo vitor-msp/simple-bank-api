@@ -12,8 +12,8 @@ public class DebitDto
     {
         return new DebitDto()
         {
-            Value = (-1 * debit.GetFields().Value).GetBrazilianCurrency(),
-            CreatedAt = debit.GetFields().CreatedAt,
+            Value = (-1 * debit.Value).GetBrazilianCurrency(),
+            CreatedAt = debit.CreatedAt,
         };
     }
 }

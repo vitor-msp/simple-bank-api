@@ -9,8 +9,6 @@ public class DebitInput : Input
     [Range(0.0, double.MaxValue)]
     public double Value { get; set; }
 
-    public DebitFields GetFiels()
-    {
-        return new DebitFields() { Value = Value };
-    }
+    internal IDebit GetDebit(IAccount account)
+        => new Debit() { Value = Value, Account = account };
 }

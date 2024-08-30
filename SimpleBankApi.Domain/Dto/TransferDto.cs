@@ -16,7 +16,7 @@ public class TransferDto
         return new TransferDto()
         {
             Value = GetTransferValue(transfer, account),
-            CreatedAt = transfer.GetFields().CreatedAt,
+            CreatedAt = transfer.CreatedAt,
             Sender = transfer.Sender == null ? null : AccountDto.Build(transfer.Sender),
             Recipient = transfer.Recipient == null ? null : AccountDto.Build(transfer.Recipient)
         };
@@ -27,11 +27,11 @@ public class TransferDto
         double value;
         if (transfer.Sender != null && transfer.Sender.AccountNumber == account.AccountNumber)
         {
-            value = -1 * transfer.GetFields().Value;
+            value = -1 * transfer.Value;
         }
         else if (transfer.Recipient != null && transfer.Recipient.AccountNumber == account.AccountNumber)
         {
-            value = transfer.GetFields().Value;
+            value = transfer.Value;
         }
         else
         {

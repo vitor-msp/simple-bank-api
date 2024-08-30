@@ -19,16 +19,13 @@ public class TransferDB
         Hydrate(transfer);
     }
 
-    public ITransfer GetEntity()
-    {
-        return new Transfer(TransferFields.Rebuild(Id, CreatedAt, Value));
-    }
+    public ITransfer GetEntity(IAccount sender, IAccount recipient)
+        => Transfer.Rebuild(Id, CreatedAt, Value, sender, recipient);
 
     public void Hydrate(ITransfer transfer)
     {
-        var fields = transfer.GetFields();
-        Id = fields.Id;
-        Value = fields.Value;
-        CreatedAt = fields.CreatedAt;
+        Id = transfer.Id;
+        Value = transfer.Value;
+        CreatedAt = transfer.CreatedAt;
     }
 }

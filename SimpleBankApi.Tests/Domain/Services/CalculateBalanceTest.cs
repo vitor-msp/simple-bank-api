@@ -25,9 +25,10 @@ public class CalculateBalanceTest
     private List<ICredit> GetCreditsExample()
     {
         var credits = new List<ICredit>();
-        var credit = new Credit(new CreditFields() { Value = 50 })
+        var credit = new Credit()
         {
-            Account = _account
+            Value = 50,
+            Account = _account,
         };
         credits.Add(credit);
         return credits;
@@ -36,9 +37,10 @@ public class CalculateBalanceTest
     private List<IDebit> GetDebitsExample()
     {
         var debits = new List<IDebit>();
-        var debit = new Debit(new DebitFields() { Value = 15 })
+        var debit = new Debit()
         {
-            Account = _account
+            Value = 15,
+            Account = _account,
         };
         debits.Add(debit);
         return debits;
@@ -47,15 +49,17 @@ public class CalculateBalanceTest
     private List<ITransfer> GetTransfersExample()
     {
         var transfers = new List<ITransfer>();
-        var transferAsSender = new Transfer(new TransferFields() { Value = 12.5 })
+        var transferAsSender = new Transfer()
         {
+            Value = 12.5,
             Sender = _account,
-            Recipient = GetAccountExample()
+            Recipient = GetAccountExample(),
         };
-        var transferAsRecipient = new Transfer(new TransferFields() { Value = 12.25 })
+        var transferAsRecipient = new Transfer()
         {
+            Value = 12.25,
             Sender = GetAccountExample(),
-            Recipient = _account
+            Recipient = _account,
         };
         transfers.Add(transferAsSender);
         transfers.Add(transferAsRecipient);

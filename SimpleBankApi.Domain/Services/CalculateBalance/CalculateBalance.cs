@@ -41,14 +41,14 @@ public class CalculateBalance : ICalculateBalance
     private async Task<double> GetCreditSum(IAccount account)
     {
         var credits = await _transactionsRepository.GetCreditsFromAccount(account.AccountNumber);
-        double creditSum = credits.Sum(credit => credit.GetFields().Value);
+        double creditSum = credits.Sum(credit => credit.Value);
         return creditSum;
     }
 
     private async Task<double> GetDebitSum(IAccount account)
     {
         var debits = await _transactionsRepository.GetDebitsFromAccount(account.AccountNumber);
-        double debitSum = -1 * debits.Sum(debit => debit.GetFields().Value);
+        double debitSum = -1 * debits.Sum(debit => debit.Value);
         return debitSum;
     }
 
@@ -57,7 +57,7 @@ public class CalculateBalance : ICalculateBalance
         var transfers = await _transactionsRepository.GetTransfersFromAccount(account.AccountNumber);
         double transferSum = transfers.Sum(transfer =>
         {
-            var value = transfer.GetFields().Value;
+            var value = transfer.Value;
             return transfer.Sender != null && transfer.Sender.Equals(account) ? (-1 * value) : value;
         });
         return transferSum;

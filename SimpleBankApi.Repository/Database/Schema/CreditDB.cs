@@ -18,16 +18,13 @@ public class CreditDB
         Hydrate(credit);
     }
 
-    public ICredit GetEntity()
-    {
-        return new Credit(CreditFields.Rebuild(Id, CreatedAt, Value));
-    }
+    public ICredit GetEntity(IAccount account)
+        => Credit.Rebuild(Id, CreatedAt, Value, account);
 
     public void Hydrate(ICredit credit)
     {
-        var fields = credit.GetFields();
-        Id = fields.Id;
-        Value = fields.Value;
-        CreatedAt = fields.CreatedAt;
+        Id = credit.Id;
+        Value = credit.Value;
+        CreatedAt = credit.CreatedAt;
     }
 }

@@ -3,7 +3,7 @@ using SimpleBankApi.Domain.Entities;
 
 namespace SimpleBankApi.Application.Input;
 
-public class TransferInput: Input
+public class TransferInput : Input
 {
     [Required]
     [Range(0.0, double.MaxValue)]
@@ -13,8 +13,6 @@ public class TransferInput: Input
     [Range(0.0, int.MaxValue)]
     public int RecipientAccountNumber { get; set; }
 
-    public TransferFields GetFields()
-    {
-        return new TransferFields() { Value = Value };
-    }
+    internal ITransfer GetTransfer(IAccount sender, IAccount recipient)
+            => new Transfer() { Value = Value, Sender = sender, Recipient = recipient };
 }

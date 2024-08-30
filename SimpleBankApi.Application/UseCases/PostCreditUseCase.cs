@@ -1,7 +1,6 @@
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.Input;
 using SimpleBankApi.Domain.Contract;
-using SimpleBankApi.Domain.Entities;
 using SimpleBankApi.Domain.Utils;
 
 namespace SimpleBankApi.Application.UseCases;
@@ -27,7 +26,7 @@ public class PostCreditUseCase : IPostCreditUseCase
         var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
 
-        var credit = new Credit(input.GetFields()) { Account = account };
+        var credit = input.GetCredit(account);
         await _transactionsRepository.SaveCredit(credit);
         
         await _bankCache.Delete(CacheKeys.Balance(account));

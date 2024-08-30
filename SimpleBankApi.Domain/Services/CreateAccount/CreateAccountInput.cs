@@ -32,8 +32,8 @@ public class CreateAccountInput
             Cpf = Cpf,
         };
 
-    internal Account GetAccount()
-        => new()
+    internal IAccount GetAccount()
+        => new Account()
         {
             Role = Role,
             Owner = GetCustomer(),

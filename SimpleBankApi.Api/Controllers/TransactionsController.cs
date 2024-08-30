@@ -36,12 +36,12 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("credit/{accountNumber}")]
-    public async Task<ActionResult> PostCredit(int accountNumber, [FromBody] CreditInput creditDto)
+    public async Task<ActionResult> PostCredit(int accountNumber, [FromBody] CreditInput input)
     {
         try
         {
             AccountNumberAccessValidator.UserCanAccess(User, accountNumber);
-            await _postCreditUseCase.Execute(accountNumber, creditDto);
+            await _postCreditUseCase.Execute(accountNumber, input);
             return Ok();
         }
         catch (UnauthorizedAccessException error)
@@ -63,12 +63,12 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("debit/{accountNumber}")]
-    public async Task<ActionResult> PostDebit(int accountNumber, [FromBody] DebitInput debitDto)
+    public async Task<ActionResult> PostDebit(int accountNumber, [FromBody] DebitInput input)
     {
         try
         {
             AccountNumberAccessValidator.UserCanAccess(User, accountNumber);
-            await _postDebitUseCase.Execute(accountNumber, debitDto);
+            await _postDebitUseCase.Execute(accountNumber, input);
             return Ok();
         }
         catch (UnauthorizedAccessException error)
@@ -94,12 +94,12 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("transfer/{accountNumber}")]
-    public async Task<ActionResult> PostTransfer(int accountNumber, [FromBody] TransferInput transferDto)
+    public async Task<ActionResult> PostTransfer(int accountNumber, [FromBody] TransferInput input)
     {
         try
         {
             AccountNumberAccessValidator.UserCanAccess(User, accountNumber);
-            await _postTransferUseCase.Execute(accountNumber, transferDto);
+            await _postTransferUseCase.Execute(accountNumber, input);
             return Ok();
         }
         catch (UnauthorizedAccessException error)

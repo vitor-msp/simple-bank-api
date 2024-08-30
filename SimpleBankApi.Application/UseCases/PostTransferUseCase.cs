@@ -1,7 +1,6 @@
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.Input;
 using SimpleBankApi.Domain.Contract;
-using SimpleBankApi.Domain.Entities;
 using SimpleBankApi.Domain.Services;
 using SimpleBankApi.Domain.Utils;
 
@@ -40,7 +39,7 @@ public class PostTransferUseCase : IPostTransferUseCase
         double balance = await _calculateBalance.FromAccount(sender);
         if (balance < input.Value) throw new InvalidInputException("Insufficient balance.");
 
-        var transfer = new Transfer(input.GetFields()) { Sender = sender, Recipient = recipient };
+        var transfer = input.GetTransfer(sender, recipient);
         await _transactionsRepository.SaveTransfer(transfer);
 
         await _bankCache.Delete(CacheKeys.Balance(sender));

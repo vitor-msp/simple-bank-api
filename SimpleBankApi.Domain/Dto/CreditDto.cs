@@ -12,8 +12,8 @@ public class CreditDto
     {
         return new CreditDto()
         {
-            Value = credit.GetFields().Value.GetBrazilianCurrency(),
-            CreatedAt = credit.GetFields().CreatedAt,
+            Value = credit.Value.GetBrazilianCurrency(),
+            CreatedAt = credit.CreatedAt,
         };
     }
 }

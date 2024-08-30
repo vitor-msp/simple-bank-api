@@ -2,5 +2,7 @@ namespace SimpleBankApi.Domain.Entities;
 
 public interface ITransaction
 {
-    public TransactionFields GetFields();
+    int Id { get; }
+    DateTime CreatedAt { get; }
+    double Value { get; init; }
 }

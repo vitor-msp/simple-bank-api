@@ -4,19 +4,29 @@ namespace SimpleBankApi.Domain.Entities;
 
 public abstract class Transaction : ITransaction
 {
-    protected readonly TransactionFields _fields;
+    public int Id { get; }
+    public DateTime CreatedAt { get; }
 
-    protected Transaction(TransactionFields fields)
+    private readonly double _value;
+    public required double Value
     {
-        ValidateFields(fields);
-        _fields = fields;
+        get => _value;
+        init
+        {
+            if (value <= 0)
+                throw new DomainException("The transaction value must be greater than zero.");
+            _value = value;
+        }
     }
 
-    public TransactionFields GetFields() => _fields;
-
-    private static void ValidateFields(TransactionFields fields)
+    protected Transaction()
     {
-        if (fields.Value <= 0)
-            throw new DomainException("The transaction value must be greater than zero.");
+        CreatedAt = DateTime.Now;
+    }
+
+    protected Transaction(int id, DateTime createdAt)
+    {
+        Id = id;
+        CreatedAt = createdAt;
     }
 }

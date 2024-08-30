@@ -65,11 +65,10 @@ public class TransactionsRepository : ITransactionsRepository
         {
             if (creditDB.Account == null || creditDB.Account.Owner == null) throw new Exception();
 
-            var credit = creditDB.GetEntity();
             var owner = creditDB.Account.Owner.GetEntity();
             var account = creditDB.Account.GetEntity(owner);
+            var credit = creditDB.GetEntity(account);
 
-            credit.Account = account;
             return credit;
         }).ToList();
     }
@@ -84,11 +83,10 @@ public class TransactionsRepository : ITransactionsRepository
         {
             if (debitDB.Account == null || debitDB.Account.Owner == null) throw new Exception();
 
-            var debit = debitDB.GetEntity();
             var owner = debitDB.Account.Owner.GetEntity();
             var account = debitDB.Account.GetEntity(owner);
+            var debit = debitDB.GetEntity(account);
 
-            debit.Account = account;
             return debit;
         }).ToList();
     }
@@ -105,14 +103,12 @@ public class TransactionsRepository : ITransactionsRepository
             if (transferDB.Sender == null || transferDB.Sender.Owner == null) throw new Exception();
             if (transferDB.Recipient == null || transferDB.Recipient.Owner == null) throw new Exception();
 
-            var transfer = transferDB.GetEntity();
             var senderOwner = transferDB.Sender.Owner.GetEntity();
             var sender = transferDB.Sender.GetEntity(senderOwner);
             var recipientOwner = transferDB.Recipient.Owner.GetEntity();
             var recipient = transferDB.Recipient.GetEntity(recipientOwner);
+            var transfer = transferDB.GetEntity(sender, recipient);
 
-            transfer.Sender = sender;
-            transfer.Recipient = recipient;
             return transfer;
         }).ToList();
     }

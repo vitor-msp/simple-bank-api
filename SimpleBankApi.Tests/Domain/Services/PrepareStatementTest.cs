@@ -27,10 +27,7 @@ public class PrepareStatementTest
     private List<ICredit> GetCreditsExample()
     {
         var credits = new List<ICredit>();
-        var credit = new Credit(CreditFields.Rebuild(1, _creditCreatedAt, _creditValue))
-        {
-            Account = _account
-        };
+        var credit = Credit.Rebuild(1, _creditCreatedAt, _creditValue, _account);
         credits.Add(credit);
         return credits;
     }
@@ -38,10 +35,7 @@ public class PrepareStatementTest
     private List<IDebit> GetDebitsExample()
     {
         var debits = new List<IDebit>();
-        var debit = new Debit(DebitFields.Rebuild(1, _debitCreatedAt, _debitValue))
-        {
-            Account = _account
-        };
+        var debit = Debit.Rebuild(1, _debitCreatedAt, _debitValue, _account);
         debits.Add(debit);
         return debits;
     }
@@ -49,16 +43,12 @@ public class PrepareStatementTest
     private List<ITransfer> GetTransfersExample()
     {
         var transfers = new List<ITransfer>();
-        var transferAsSender = new Transfer(TransferFields.Rebuild(1, _transferAsSenderCreatedAt, _transferAsSenderValue))
-        {
-            Sender = _account,
-            Recipient = GetAccountExample()
-        };
-        var transferAsRecipient = new Transfer(TransferFields.Rebuild(1, _transferAsRecipientCreatedAt, _transferAsRecipientValue))
-        {
-            Sender = GetAccountExample(),
-            Recipient = _account
-        };
+        var transferAsSender = Transfer.Rebuild(1, _transferAsSenderCreatedAt, _transferAsSenderValue,
+            sender: _account, recipient: GetAccountExample());
+
+        var transferAsRecipient = Transfer.Rebuild(1, _transferAsRecipientCreatedAt, _transferAsRecipientValue,
+            sender: GetAccountExample(), recipient: _account);
+
         transfers.Add(transferAsSender);
         transfers.Add(transferAsRecipient);
         return transfers;

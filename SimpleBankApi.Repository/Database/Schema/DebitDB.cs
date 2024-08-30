@@ -18,16 +18,13 @@ public class DebitDB
         Hydrate(debit);
     }
 
-    public IDebit GetEntity()
-    {
-        return new Debit(DebitFields.Rebuild(Id, CreatedAt, Value));
-    }
+    public IDebit GetEntity(IAccount account)
+        => Debit.Rebuild(Id, CreatedAt, Value, account);
 
     public void Hydrate(IDebit debit)
     {
-        var fields = debit.GetFields();
-        Id = fields.Id;
-        Value = fields.Value;
-        CreatedAt = fields.CreatedAt;
+        Id = debit.Id;
+        Value = debit.Value;
+        CreatedAt = debit.CreatedAt;
     }
 }
