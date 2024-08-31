@@ -9,11 +9,9 @@ public class CreditDto
     public DateTime CreatedAt { get; set; }
 
     public static CreditDto Build(ICredit credit)
-    {
-        return new CreditDto()
+        => new()
         {
             Value = credit.Value.GetBrazilianCurrency(),
             CreatedAt = credit.CreatedAt,
         };
-    }
 }

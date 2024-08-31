@@ -9,11 +9,9 @@ public class DebitDto
     public DateTime CreatedAt { get; set; }
 
     public static DebitDto Build(IDebit debit)
-    {
-        return new DebitDto()
+        => new()
         {
             Value = (-1 * debit.Value).GetBrazilianCurrency(),
             CreatedAt = debit.CreatedAt,
         };
-    }
 }

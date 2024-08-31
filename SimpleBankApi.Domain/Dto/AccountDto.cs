@@ -8,11 +8,9 @@ public class AccountDto
     public string Name { get; set; } = "";
 
     public static AccountDto Build(IAccount account)
-    {
-        return new AccountDto()
+        => new()
         {
             AccountNumber = account.AccountNumber,
-            Name = account.Owner?.Name ?? ""
+            Name = account.Owner.Name,
         };
-    }
 }

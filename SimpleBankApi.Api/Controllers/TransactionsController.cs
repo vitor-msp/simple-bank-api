@@ -140,7 +140,6 @@ public class TransactionsController : ControllerBase
         catch (EntityNotFoundException error)
         {
             return NotFound(new ErrorPresenter(error.Message));
-
         }
         catch (Exception)
         {
@@ -164,7 +163,6 @@ public class TransactionsController : ControllerBase
         catch (EntityNotFoundException error)
         {
             return NotFound(new ErrorPresenter(error.Message));
-
         }
         catch (Exception)
         {

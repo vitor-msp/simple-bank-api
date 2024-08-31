@@ -277,6 +277,7 @@ public class AccountsControllerTest : IDisposable
         {
             "put" => await sut.Put(account.AccountNumber, input),
             "delete" => await sut.Delete(account.AccountNumber),
+            _ => throw new Exception()
         };
 
         Assert.IsType<UnauthorizedObjectResult>(output);

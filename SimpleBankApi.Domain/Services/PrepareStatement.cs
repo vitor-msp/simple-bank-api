@@ -44,19 +44,13 @@ public class PrepareStatement
     }
 
     private List<long> GetCreditTimestamps()
-    {
-        return _credits.Select(credit => new DateTimeOffset(credit.CreatedAt).ToUnixTimeMilliseconds()).ToList();
-    }
+        => _credits.Select(credit => new DateTimeOffset(credit.CreatedAt).ToUnixTimeMilliseconds()).ToList();
 
     private List<long> GetDebitTimestamps()
-    {
-        return _debits.Select(debit => new DateTimeOffset(debit.CreatedAt).ToUnixTimeMilliseconds()).ToList();
-    }
+        => _debits.Select(debit => new DateTimeOffset(debit.CreatedAt).ToUnixTimeMilliseconds()).ToList();
 
     private List<long> GetTransferTimestamps()
-    {
-        return _transfers.Select(transfer => new DateTimeOffset(transfer.CreatedAt).ToUnixTimeMilliseconds()).ToList();
-    }
+        => _transfers.Select(transfer => new DateTimeOffset(transfer.CreatedAt).ToUnixTimeMilliseconds()).ToList();
 
     private void ProcessStep()
     {

@@ -10,29 +10,23 @@ public class TransactionDto
     public TransferDto? TransferDto { get; set; }
 
     public static TransactionDto BuildFromCredit(ICredit credit)
-    {
-        return new TransactionDto()
+        => new()
         {
             Type = TransactionType.Credit,
             CreditDto = CreditDto.Build(credit)
         };
-    }
 
     public static TransactionDto BuildFromDebit(IDebit debit)
-    {
-        return new TransactionDto()
+        => new()
         {
             Type = TransactionType.Debit,
             DebitDto = DebitDto.Build(debit)
         };
-    }
 
     public static TransactionDto BuildFromTransfer(ITransfer transfer, IAccount account)
-    {
-        return new TransactionDto()
+        => new()
         {
             Type = TransactionType.Transfer,
             TransferDto = TransferDto.Build(transfer, account)
         };
-    }
 }

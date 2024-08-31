@@ -6,7 +6,7 @@ namespace SimpleBankApi.Domain.Services;
 
 public class CalculateBalance : ICalculateBalance
 {
-    private readonly int _cacheTtl = 60 * 60 * 24;
+    private readonly int _oneDay = 60 * 60 * 24;
     private readonly ITransactionsRepository _transactionsRepository;
     private readonly IBankCache _bankCache;
 
@@ -24,7 +24,7 @@ public class CalculateBalance : ICalculateBalance
         if (balanceCacheValue != null && double.TryParse(balanceCacheValue, out double balance))
             return balance;
         balance = await ProcessBalance(account);
-        await _bankCache.Set(cacheKey, balance.ToString(), _cacheTtl);
+        await _bankCache.Set(cacheKey, balance.ToString(), ttlInSeconds: _oneDay);
         return balance;
     }
 

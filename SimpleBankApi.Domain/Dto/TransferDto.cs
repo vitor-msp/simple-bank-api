@@ -12,24 +12,22 @@ public class TransferDto
     public AccountDto? Recipient { get; set; }
 
     public static TransferDto Build(ITransfer transfer, IAccount account)
-    {
-        return new TransferDto()
+        => new()
         {
             Value = GetTransferValue(transfer, account),
             CreatedAt = transfer.CreatedAt,
-            Sender = transfer.Sender == null ? null : AccountDto.Build(transfer.Sender),
-            Recipient = transfer.Recipient == null ? null : AccountDto.Build(transfer.Recipient)
+            Sender = AccountDto.Build(transfer.Sender),
+            Recipient = AccountDto.Build(transfer.Recipient)
         };
-    }
 
     private static string GetTransferValue(ITransfer transfer, IAccount account)
     {
         double value;
-        if (transfer.Sender != null && transfer.Sender.AccountNumber == account.AccountNumber)
+        if (transfer.Sender.AccountNumber == account.AccountNumber)
         {
             value = -1 * transfer.Value;
         }
-        else if (transfer.Recipient != null && transfer.Recipient.AccountNumber == account.AccountNumber)
+        else if (transfer.Recipient.AccountNumber == account.AccountNumber)
         {
             value = transfer.Value;
         }

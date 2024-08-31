@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -108,7 +109,7 @@ public class SessionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async void Login_ReturnAccessAndRefreshToken()
+    public async Task Login_ReturnAccessAndRefreshToken()
     {
         var (sut, context) = MakeSut();
         context.Accounts.Add(AccountExample());
@@ -139,7 +140,7 @@ public class SessionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async void Login_ReturnUnauthorized_AccountNotFound()
+    public async Task Login_ReturnUnauthorized_AccountNotFound()
     {
         var (sut, _) = MakeSut();
         var input = new LoginInput()
@@ -154,7 +155,7 @@ public class SessionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async void Login_ReturnUnauthorized_IncorrectPassword()
+    public async Task Login_ReturnUnauthorized_IncorrectPassword()
     {
         {
             var (sut, context) = MakeSut();
@@ -173,7 +174,7 @@ public class SessionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async void RefreshToken_ReturnAccessToken()
+    public async Task RefreshToken_ReturnAccessToken()
     {
         var (sut, context) = MakeSut();
         context.Accounts.Add(AccountExample(_refreshToken, DateTime.Now.AddMinutes(15)));
@@ -198,7 +199,7 @@ public class SessionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async void RefreshToken_ReturnUnauthorized_AccountNotFound()
+    public async Task RefreshToken_ReturnUnauthorized_AccountNotFound()
     {
         var (sut, _) = MakeSut();
         var input = new RefreshTokenInput()
@@ -213,7 +214,7 @@ public class SessionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async void RefreshToken_ReturnUnauthorized_TokenNotMatch()
+    public async Task RefreshToken_ReturnUnauthorized_TokenNotMatch()
     {
         var (sut, context) = MakeSut();
         context.Accounts.Add(AccountExample(_refreshToken, DateTime.Now.AddMinutes(15)));
@@ -230,7 +231,7 @@ public class SessionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async void RefreshToken_ReturnUnauthorized_TokenExpired()
+    public async Task RefreshToken_ReturnUnauthorized_TokenExpired()
     {
         var (sut, context) = MakeSut();
         context.Accounts.Add(AccountExample(_refreshToken, DateTime.Now.AddMinutes(-1)));
@@ -247,7 +248,7 @@ public class SessionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async void Logout_ReturnNoContent()
+    public async Task Logout_ReturnNoContent()
     {
         var (sut, context) = MakeSut();
         context.Accounts.Add(AccountExample(_refreshToken, DateTime.Now.AddMinutes(15)));
@@ -266,7 +267,7 @@ public class SessionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async void Logout_ReturnUnauthorized_AccountNotFound()
+    public async Task Logout_ReturnUnauthorized_AccountNotFound()
     {
         var (sut, _) = MakeSut();
         var input = new LogoutInput()
@@ -281,7 +282,7 @@ public class SessionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async void Logout_ReturnUnauthorized_TokenNotMatch()
+    public async Task Logout_ReturnUnauthorized_TokenNotMatch()
     {
         var (sut, context) = MakeSut();
         context.Accounts.Add(AccountExample(_refreshToken, DateTime.Now.AddMinutes(15)));
@@ -298,7 +299,7 @@ public class SessionsControllerTest : IDisposable
     }
 
     [Fact]
-    public async void Logout_ReturnUnauthorized_TokenExpired()
+    public async Task Logout_ReturnUnauthorized_TokenExpired()
     {
         var (sut, context) = MakeSut();
         context.Accounts.Add(AccountExample(_refreshToken, DateTime.Now.AddMinutes(-1)));

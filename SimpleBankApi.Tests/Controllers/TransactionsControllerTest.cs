@@ -144,7 +144,7 @@ public class TransactionsControllerTest : IDisposable
         var actionResult = await sut.PostTransfer(_account.AccountNumber, input);
 
         Assert.IsType<OkResult>(actionResult);
-        var savedTransfers = context.Transfers.Where(transfer => transfer.Sender.AccountNumber == _account.AccountNumber).ToList();
+        var savedTransfers = context.Transfers.Where(transfer => transfer.Sender!.AccountNumber == _account.AccountNumber).ToList();
         Assert.Single(savedTransfers);
         Assert.Equal(input.Value, savedTransfers[0].Value);
         Assert.Equal(_account, savedTransfers[0].Sender);
@@ -170,6 +170,7 @@ public class TransactionsControllerTest : IDisposable
             "debit" => await sut.PostDebit(_accountNumberNotUsed, debitInput),
             "get-balance" => (await sut.GetBalance(_accountNumberNotUsed)).Result,
             "get-transactions" => (await sut.GetTransactions(_accountNumberNotUsed)).Result,
+            _ => throw new Exception()
         };
 
         Assert.IsType<NotFoundObjectResult>(actionResult);
@@ -195,6 +196,7 @@ public class TransactionsControllerTest : IDisposable
             "credit" => await sut.PostCredit(_account.AccountNumber, creditInput),
             "debit" => await sut.PostDebit(_account.AccountNumber, debitInput),
             "transfer" => await sut.PostTransfer(_account.AccountNumber, transferInput),
+            _ => throw new Exception()
         };
 
         Assert.IsType<BadRequestObjectResult>(actionResult);
@@ -397,6 +399,7 @@ public class TransactionsControllerTest : IDisposable
             "credit" => new CreditInput() { Value = 100.56 },
             "debit" => new DebitInput() { Value = 50.56 },
             "transfer" => new TransferInput() { Value = 50.56, RecipientAccountNumber = 2 },
+            _ => throw new Exception()
         };
 
         var output = type switch
@@ -404,6 +407,7 @@ public class TransactionsControllerTest : IDisposable
             "credit" => await sut.PostCredit(_account.AccountNumber, (CreditInput)input),
             "debit" => await sut.PostDebit(_account.AccountNumber, (DebitInput)input),
             "transfer" => await sut.PostTransfer(_account.AccountNumber, (TransferInput)input),
+            _ => throw new Exception()
         };
 
         Assert.IsType<UnauthorizedObjectResult>(output);
