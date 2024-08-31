@@ -143,7 +143,7 @@ public class TransactionsControllerTest : IDisposable
         var (sut, context) = await MakeSut();
         context.Transactions.Add(CreditExample());
         await context.SaveChangesAsync();
-        var input = new DebitInput() { Value = -50.56 };
+        var input = new DebitInput() { Value = 50.56 };
 
         var actionResult = await sut.PostDebit(_account.AccountNumber, input);
 
@@ -155,7 +155,7 @@ public class TransactionsControllerTest : IDisposable
             .ToListAsync();
 
         Assert.Single(savedTransactions);
-        Assert.Equal(input.Value, savedTransactions[0].Value);
+        Assert.Equal(-1 * input.Value, savedTransactions[0].Value);
         Assert.Equal(_account, savedTransactions[0].OperatingAccount);
         Assert.IsType<int>(savedTransactions[0].Id);
         Assert.IsType<DateTime>(savedTransactions[0].CreatedAt);
@@ -220,7 +220,7 @@ public class TransactionsControllerTest : IDisposable
     [InlineData("credit")]
     [InlineData("debit")]
     [InlineData("transfer")]
-    public async Task PostCredit_And_PostDebit_And_PostTransfer_InvalidValue(string type)
+    public async Task PostCredit_And_PostDebit_And_PostTransfer_NegativeValue(string type)
     {
         var (sut, context) = await MakeSut();
         context.Transactions.Add(CreditExample());
@@ -228,7 +228,7 @@ public class TransactionsControllerTest : IDisposable
         context.Accounts.Add(recipientAccount);
         await context.SaveChangesAsync();
         var creditInput = new CreditInput() { Value = -50 };
-        var debitInput = new DebitInput() { Value = 50 };
+        var debitInput = new DebitInput() { Value = -50 };
         var transferInput = new TransferInput() { Value = -50.56, RecipientAccountNumber = recipientAccount.AccountNumber };
 
         var actionResult = type switch
