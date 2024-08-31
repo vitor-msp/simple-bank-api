@@ -28,12 +28,17 @@ dotnet restore
 dotnet ef database update --project SimpleBankApi.Repository --connection "DataSource=../bank.db"
 ```
 
-5. Run API
+5. Populate database
+```
+cat populate.sql | sqlite3 bank.db
+```
+
+6. Run API
 ```
 dotnet run --project SimpleBankApi.Api
 ```
 
-6. Access [Swager URL](http://localhost:5000/swagger)
+7. Access [Swager URL](http://localhost:5000/swagger)
 
 ## Notes
 
