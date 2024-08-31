@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using SimpleBankApi.Domain.Entities;
 using SimpleBankApi.Domain.ValueObjects;
 
 namespace SimpleBankApi.Repository.Database.Schema;
 
+[Index(nameof(AccountNumber), IsUnique = true)]
 public class AccountDB
 {
     [Key]

@@ -61,10 +61,10 @@ public class AccountsControllerTest : IDisposable
 
     public void Dispose() => _connection.Dispose();
 
-    private AccountDB AccountExample(string cpf = "0123")
+    private AccountDB AccountExample(string cpf = "1234")
         => new()
         {
-            AccountNumber = 1,
+            AccountNumber = int.Parse(cpf),
             CreatedAt = DateTime.Now,
             Active = true,
             Role = Role.Customer.ToString(),
@@ -237,9 +237,12 @@ public class AccountsControllerTest : IDisposable
     public async Task Put_And_Delete_ReturnNotFound(string type)
     {
         var (sut, _) = MakeSut();
+        var accountNumberNotUsed = AccountExample().AccountNumber;
         var input = new UpdateAccountInput() { Name = "ciclano" };
 
-        var actionResult = type == "put" ? await sut.Put(1, input) : await sut.Delete(1);
+        var actionResult = type == "put"
+            ? await sut.Put(accountNumberNotUsed, input)
+            : await sut.Delete(accountNumberNotUsed);
 
         Assert.IsType<NotFoundObjectResult>(actionResult);
     }
