@@ -76,6 +76,7 @@ public class TransactionsControllerTest : IDisposable
             CreatedAt = DateTime.Now,
             Active = true,
             Role = Role.Customer.ToString(),
+            PasswordHash = "PasswordHash",
             Owner = new CustomerDB() { Cpf = cpf, Name = "fulano" }
         };
 

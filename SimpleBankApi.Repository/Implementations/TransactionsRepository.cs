@@ -18,8 +18,8 @@ public class TransactionsRepository : ITransactionsRepository
 
     public async Task SaveCredit(ICredit credit)
     {
-        var accountDB = await _context.Accounts.FindAsync(credit.Account.Id);
-        if (accountDB == null) throw new Exception("Account not found.");
+        var accountDB = await _context.Accounts.FindAsync(credit.Account.Id)
+            ?? throw new Exception("Account not found.");
 
         var creditDB = new TransactionDB(credit) { OperatingAccount = accountDB };
 
@@ -29,8 +29,8 @@ public class TransactionsRepository : ITransactionsRepository
 
     public async Task SaveDebit(IDebit debit)
     {
-        var accountDB = await _context.Accounts.FindAsync(debit.Account.Id);
-        if (accountDB == null) throw new Exception("Account not found.");
+        var accountDB = await _context.Accounts.FindAsync(debit.Account.Id)
+            ?? throw new Exception("Account not found.");
 
         var debitDB = new TransactionDB(debit) { OperatingAccount = accountDB };
 
@@ -40,11 +40,11 @@ public class TransactionsRepository : ITransactionsRepository
 
     public async Task SaveTransfer(ITransfer transfer)
     {
-        var senderDB = await _context.Accounts.FindAsync(transfer.Sender.Id);
-        if (senderDB == null) throw new Exception("Sender not found.");
+        var senderDB = await _context.Accounts.FindAsync(transfer.Sender.Id)
+            ?? throw new Exception("Sender not found.");
 
-        var recipientDB = await _context.Accounts.FindAsync(transfer.Recipient.Id);
-        if (recipientDB == null) throw new Exception("Recipient not found.");
+        var recipientDB = await _context.Accounts.FindAsync(transfer.Recipient.Id)
+            ?? throw new Exception("Recipient not found.");
 
         var (debitDB, creditDB) = TransactionDB.BuildTransfer(transfer, senderDB, recipientDB);
 
@@ -58,45 +58,30 @@ public class TransactionsRepository : ITransactionsRepository
         var transactionsDB = await _context.Transactions.AsNoTracking()
             .Include("OperatingAccount.Owner")
             .Include("RelatedAccount.Owner")
-            .Where(transactionDB
-                 => transactionDB.OperatingAccount != null && transactionDB.OperatingAccount.AccountNumber == accountNumber)
+            .Where(transactionDB => transactionDB.OperatingAccount.AccountNumber.Equals(accountNumber))
             .OrderByDescending(transactionsDB => transactionsDB.CreatedAt)
             .ToListAsync();
 
         return transactionsDB.Select(transactionDB =>
         {
-            if (transactionDB.OperatingAccount == null || transactionDB.OperatingAccount.Owner == null)
-                throw new Exception();
-
             if (transactionDB.TransactionType == TransactionType.Credit)
-            {
-                var owner = transactionDB.OperatingAccount.Owner.GetEntity();
-                var account = transactionDB.OperatingAccount.GetEntity(owner);
-                var credit = transactionDB.GetCredit(account);
                 return new TransactionWrapper()
                 {
                     TransactionType = TransactionType.Credit,
-                    Credit = credit
+                    Credit = transactionDB.GetCredit()
                 };
-            }
 
             if (transactionDB.TransactionType == TransactionType.Debit)
-            {
-                var owner = transactionDB.OperatingAccount.Owner.GetEntity();
-                var account = transactionDB.OperatingAccount.GetEntity(owner);
-                var debit = transactionDB.GetDebit(account);
                 return new TransactionWrapper()
                 {
                     TransactionType = TransactionType.Debit,
-                    Debit = debit
+                    Debit = transactionDB.GetDebit()
                 };
-            }
 
-            var transfer = transactionDB.GetTransfer();
             return new TransactionWrapper()
             {
                 TransactionType = TransactionType.Transfer,
-                Transfer = transfer
+                Transfer = transactionDB.GetTransfer()
             };
 
         }).ToList();

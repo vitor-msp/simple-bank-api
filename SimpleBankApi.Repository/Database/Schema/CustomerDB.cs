@@ -9,17 +9,17 @@ public class CustomerDB
 {
     [Key]
     public int Id { get; set; }
-    public string Cpf { get; set; } = "";
-    public string Name { get; set; } = "";
+    public string Cpf { get; set; }
+    public string Name { get; set; }
 
+#pragma warning disable CS8618
     public CustomerDB() { }
 
     public CustomerDB(ICustomer customer)
     {
         Hydrate(customer);
     }
-
-    public ICustomer GetEntity() => Customer.Rebuild(Id, Cpf, Name);
+#pragma warning restore CS8618
 
     public void Hydrate(ICustomer customer)
     {
@@ -27,4 +27,6 @@ public class CustomerDB
         Cpf = customer.Cpf;
         Name = customer.Name;
     }
+
+    public ICustomer GetCustomer() => Customer.Rebuild(Id, Cpf, Name);
 }
