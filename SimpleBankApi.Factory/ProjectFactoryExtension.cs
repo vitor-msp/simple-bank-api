@@ -55,7 +55,9 @@ public static class ProjectFactoryExtension
         services.AddScoped<IRefreshTokenUseCase, RefreshTokenUseCase>();
         services.AddScoped<ILogoutUseCase, LogoutUseCase>();
 
-        services.AddAllElasticApm();
+        var enableElasticApm = configuration.GetValue<bool>("ElasticApm.Enable");
+        if (enableElasticApm)
+            services.AddAllElasticApm();
     }
 
     private static void ConfigureToken(IServiceCollection services, IConfiguration configuration)
