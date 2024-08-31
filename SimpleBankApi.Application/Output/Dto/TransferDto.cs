@@ -1,7 +1,7 @@
 using SimpleBankApi.Domain.Entities;
 using SimpleBankApi.Domain.Extensions;
 
-namespace SimpleBankApi.Domain.Dto;
+namespace SimpleBankApi.Application.Output;
 
 public class TransferDto
 {

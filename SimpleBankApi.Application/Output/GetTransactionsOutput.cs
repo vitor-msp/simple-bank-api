@@ -1,5 +1,3 @@
-using SimpleBankApi.Domain.Dto;
-
 namespace SimpleBankApi.Application.Output;
 
 public class GetTransactionsOutput

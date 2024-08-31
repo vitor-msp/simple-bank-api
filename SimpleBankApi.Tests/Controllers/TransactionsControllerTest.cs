@@ -12,7 +12,6 @@ using SimpleBankApi.Application.Input;
 using SimpleBankApi.Application.Output;
 using SimpleBankApi.Application.UseCases;
 using SimpleBankApi.Domain.Contract;
-using SimpleBankApi.Domain.Dto;
 using SimpleBankApi.Domain.Extensions;
 using SimpleBankApi.Domain.Services;
 using SimpleBankApi.Domain.ValueObjects;

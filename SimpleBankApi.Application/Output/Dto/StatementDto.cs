@@ -1,4 +1,4 @@
-namespace SimpleBankApi.Domain.Dto;
+namespace SimpleBankApi.Application.Output;
 
 public class StatementDto
 {
