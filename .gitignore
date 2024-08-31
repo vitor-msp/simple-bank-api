@@ -426,3 +426,4 @@ obj/
 coverage
 .sonarqube
 .vscode
+appsettings.json
