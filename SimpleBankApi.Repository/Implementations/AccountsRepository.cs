@@ -20,7 +20,7 @@ public class AccountsRepository(BankContext context) : IAccountsRepository
 
     public async Task<IAccount?> GetByAccountNumber(int accountNumber)
     {
-        var accountDB = await _context.Accounts.AsNoTracking().Include("Owner")
+        var accountDB = await _context.Accounts.Include("Owner")
             .FirstOrDefaultAsync(accountDB => accountDB.Active && accountDB.AccountNumber.Equals(accountNumber));
 
         if (accountDB == null) return null;

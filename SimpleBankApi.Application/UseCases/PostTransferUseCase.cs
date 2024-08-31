@@ -28,7 +28,7 @@ public class PostTransferUseCase(
         if (sender.Equals(recipient))
             throw new InvalidInputException("Transfer to the same account is not allowed.");
 
-        double balance = await _calculateBalance.FromAccount(sender);
+        var balance = await _calculateBalance.FromAccount(sender);
         if (balance < input.Value) throw new InvalidInputException("Insufficient balance.");
 
         var transfer = input.GetTransfer(sender, recipient);
