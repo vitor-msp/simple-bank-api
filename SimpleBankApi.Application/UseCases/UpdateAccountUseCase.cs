@@ -4,19 +4,14 @@ using SimpleBankApi.Domain.Contract;
 
 namespace SimpleBankApi.Application.UseCases;
 
-public class UpdateAccountUseCase : IUpdateAccountUseCase
+public class UpdateAccountUseCase(IAccountsRepository accountsRepository) : IUpdateAccountUseCase
 {
-    private readonly IAccountsRepository _accountsRepository;
-
-    public UpdateAccountUseCase(IAccountsRepository accountsRepository)
-    {
-        _accountsRepository = accountsRepository;
-    }
+    private readonly IAccountsRepository _accountsRepository = accountsRepository;
 
     public async Task Execute(int accountNumber, UpdateAccountInput input)
     {
-        var account = await _accountsRepository.GetByAccountNumber(accountNumber);
-        if (account == null) throw new EntityNotFoundException("Account not found.");
+        var account = await _accountsRepository.GetByAccountNumber(accountNumber)
+            ?? throw new EntityNotFoundException("Account not found.");
 
         input.Update(account);
         await _accountsRepository.Save(account);

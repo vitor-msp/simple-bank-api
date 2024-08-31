@@ -6,14 +6,9 @@ using SimpleBankApi.Repository.Database.Schema;
 
 namespace SimpleBankApi.Repository.Implementations;
 
-public class AccountsRepository : IAccountsRepository
+public class AccountsRepository(BankContext context) : IAccountsRepository
 {
-    private readonly BankContext _context;
-
-    public AccountsRepository(BankContext context)
-    {
-        _context = context;
-    }
+    private readonly BankContext _context = context;
 
     public async Task<List<IAccount>> GetAll()
     {

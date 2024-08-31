@@ -3,16 +3,11 @@ using SimpleBankApi.Domain.Exceptions;
 
 namespace SimpleBankApi.Domain.Services;
 
-public class CreateAccount : ICreateAccount
+public class CreateAccount(IAccountsRepository accountsRepository, IPasswordHasher passwordHasher)
+    : ICreateAccount
 {
-    private readonly IAccountsRepository _accountsRepository;
-    private readonly IPasswordHasher _passwordHasher;
-
-    public CreateAccount(IAccountsRepository accountsRepository, IPasswordHasher passwordHasher)
-    {
-        _accountsRepository = accountsRepository;
-        _passwordHasher = passwordHasher;
-    }
+    private readonly IAccountsRepository _accountsRepository = accountsRepository;
+    private readonly IPasswordHasher _passwordHasher = passwordHasher;
 
     public async Task<CreateAccountOutput> Execute(CreateAccountInput input)
     {

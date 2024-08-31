@@ -60,8 +60,8 @@ public static class ProjectFactoryExtension
 
     private static void ConfigureToken(IServiceCollection services, IConfiguration configuration)
     {
-        var key = configuration.GetSection("Token")["Key"];
-        if (key == null) throw new Exception("Missing configure token key.");
+        var key = configuration.GetSection("Token")["Key"]
+            ?? throw new Exception("Missing configure token key.");
 
         services.AddAuthentication(options =>
         {

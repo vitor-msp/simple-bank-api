@@ -7,19 +7,12 @@ using SimpleBankApi.Application.Output;
 namespace SimpleBankApi.Api.Controllers;
 
 [ApiController]
-public class SessionsController : ControllerBase
+public class SessionsController(ILoginUseCase loginUseCase,
+    IRefreshTokenUseCase refreshTokenUseCase, ILogoutUseCase logoutUseCase) : ControllerBase
 {
-    private readonly ILoginUseCase _loginUseCase;
-    private readonly IRefreshTokenUseCase _refreshTokenUseCase;
-    private readonly ILogoutUseCase _logoutUseCase;
-
-    public SessionsController(ILoginUseCase loginUseCase,
-        IRefreshTokenUseCase refreshTokenUseCase, ILogoutUseCase logoutUseCase)
-    {
-        _loginUseCase = loginUseCase;
-        _refreshTokenUseCase = refreshTokenUseCase;
-        _logoutUseCase = logoutUseCase;
-    }
+    private readonly ILoginUseCase _loginUseCase = loginUseCase;
+    private readonly IRefreshTokenUseCase _refreshTokenUseCase = refreshTokenUseCase;
+    private readonly ILogoutUseCase _logoutUseCase = logoutUseCase;
 
     [HttpPost("login")]
     public async Task<ActionResult<LoginOutput>> Login([FromBody] LoginInput input)

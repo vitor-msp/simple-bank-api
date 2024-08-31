@@ -4,14 +4,9 @@ using SimpleBankApi.Domain.ValueObjects;
 
 namespace SimpleBankApi.Domain.Services;
 
-public class CalculateBalance : ICalculateBalance
+public class CalculateBalance(ITransactionsRepository transactionsRepository) : ICalculateBalance
 {
-    private readonly ITransactionsRepository _transactionsRepository;
-
-    public CalculateBalance(ITransactionsRepository transactionsRepository)
-    {
-        _transactionsRepository = transactionsRepository;
-    }
+    private readonly ITransactionsRepository _transactionsRepository = transactionsRepository;
 
     public async Task<double> FromAccount(IAccount account)
     {

@@ -1,6 +1,3 @@
 namespace SimpleBankApi.Application.Exceptions;
 
-public class EntityNotFoundException : Exception
-{
-    public EntityNotFoundException(string message) : base(message) { }
-}
+public class EntityNotFoundException(string message) : Exception(message) { }

@@ -7,27 +7,20 @@ using SimpleBankApi.Domain.Services;
 
 namespace SimpleBankApi.Application.UseCases;
 
-public class GetBalanceUseCase : IGetBalanceUseCase
+public class GetBalanceUseCase(
+    IAccountsRepository accountsRepository,
+    ICalculateBalance calculateBalance,
+    IBankCache bankCache) : IGetBalanceUseCase
 {
-    private readonly IAccountsRepository _accountsRepository;
-    private readonly ICalculateBalance _calculateBalance;
-    private readonly IBankCache _bankCache;
+    private readonly IAccountsRepository _accountsRepository = accountsRepository;
+    private readonly ICalculateBalance _calculateBalance = calculateBalance;
+    private readonly IBankCache _bankCache = bankCache;
     private readonly int _oneDay = 60 * 60 * 24;
-
-    public GetBalanceUseCase(
-        IAccountsRepository accountsRepository,
-        ICalculateBalance calculateBalance,
-        IBankCache bankCache)
-    {
-        _accountsRepository = accountsRepository;
-        _calculateBalance = calculateBalance;
-        _bankCache = bankCache;
-    }
 
     public async Task<GetBalanceOutput> Execute(int accountNumber)
     {
-        var account = await _accountsRepository.GetByAccountNumber(accountNumber);
-        if (account == null) throw new EntityNotFoundException("Account not found.");
+        var account = await _accountsRepository.GetByAccountNumber(accountNumber)
+            ?? throw new EntityNotFoundException("Account not found.");
 
         var cacheKey = CacheKeys.Balance(account);
         var balanceCacheValue = await _bankCache.Get(cacheKey);

@@ -4,14 +4,9 @@ using SimpleBankApi.Domain.ValueObjects;
 
 namespace SimpleBankApi.Application.UseCases;
 
-public class CreateAccountUseCase : ICreateAccountUseCase
+public class CreateAccountUseCase(ICreateAccount createAccount) : ICreateAccountUseCase
 {
-    private readonly ICreateAccount _createAccount;
-
-    public CreateAccountUseCase(ICreateAccount createAccount)
-    {
-        _createAccount = createAccount;
-    }
+    private readonly ICreateAccount _createAccount = createAccount;
 
     public async Task<CreateAccountOutput> Execute(CreateAccountInput input)
     {

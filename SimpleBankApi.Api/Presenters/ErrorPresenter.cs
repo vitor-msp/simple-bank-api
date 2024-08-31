@@ -1,11 +1,6 @@
 namespace SimpleBankApi.Api.Presenters;
 
-public class ErrorPresenter
+public class ErrorPresenter(string message)
 {
-    public string ApiErrorMessage { get; set; } = "";
-
-    public ErrorPresenter(string message)
-    {
-        ApiErrorMessage = message;
-    }
+    public string ApiErrorMessage { get; set; } = message;
 }

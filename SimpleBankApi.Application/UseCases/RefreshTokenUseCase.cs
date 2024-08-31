@@ -5,21 +5,16 @@ using SimpleBankApi.Domain.Contract;
 
 namespace SimpleBankApi.Application.UseCases;
 
-public class RefreshTokenUseCase : IRefreshTokenUseCase
+public class RefreshTokenUseCase(IAccountsRepository accountsRepository,
+    ITokenProvider tokenProvider) : IRefreshTokenUseCase
 {
-    private readonly IAccountsRepository _accountsRepository;
-    private readonly ITokenProvider _tokenProvider;
-
-    public RefreshTokenUseCase(IAccountsRepository accountsRepository, ITokenProvider tokenProvider)
-    {
-        _accountsRepository = accountsRepository;
-        _tokenProvider = tokenProvider;
-    }
+    private readonly IAccountsRepository _accountsRepository = accountsRepository;
+    private readonly ITokenProvider _tokenProvider = tokenProvider;
 
     public async Task<RefreshTokenOutput> Execute(RefreshTokenInput input)
     {
-        var account = await _accountsRepository.GetByAccountNumber(input.AccountNumber);
-        if (account == null) throw new EntityNotFoundException("Account number and/or refresh token invalid.");
+        var account = await _accountsRepository.GetByAccountNumber(input.AccountNumber)
+            ?? throw new EntityNotFoundException("Account number and/or refresh token invalid.");
 
         var refreshToken = account.RefreshToken;
         if (refreshToken == null || !refreshToken.Equals(input.RefreshToken))

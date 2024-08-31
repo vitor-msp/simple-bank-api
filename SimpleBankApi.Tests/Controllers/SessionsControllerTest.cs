@@ -70,7 +70,7 @@ public class SessionsControllerTest : IDisposable
         var controller = new SessionsController(
             new LoginUseCase(accountsRepository, passwordHasher, tokenProvider, options),
             new RefreshTokenUseCase(accountsRepository, tokenProvider),
-            new LogoutUseCase(accountsRepository, passwordHasher));
+            new LogoutUseCase(accountsRepository));
         return (controller, context);
     }
 

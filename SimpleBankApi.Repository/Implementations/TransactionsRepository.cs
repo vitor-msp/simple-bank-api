@@ -7,14 +7,9 @@ using SimpleBankApi.Repository.Database.Schema;
 
 namespace SimpleBankApi.Repository.Implementations;
 
-public class TransactionsRepository : ITransactionsRepository
+public class TransactionsRepository(BankContext context) : ITransactionsRepository
 {
-    private readonly BankContext _context;
-
-    public TransactionsRepository(BankContext context)
-    {
-        _context = context;
-    }
+    private readonly BankContext _context = context;
 
     public async Task SaveCredit(ICredit credit)
     {

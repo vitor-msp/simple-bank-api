@@ -6,29 +6,21 @@ using SimpleBankApi.Domain.Services;
 
 namespace SimpleBankApi.Application.UseCases;
 
-public class PostDebitUseCase : IPostDebitUseCase
+public class PostDebitUseCase(
+    ITransactionsRepository transactionsRepository,
+    IAccountsRepository accountsRepository,
+    ICalculateBalance calculateBalance,
+    IBankCache bankCache) : IPostDebitUseCase
 {
-    private readonly ITransactionsRepository _transactionsRepository;
-    private readonly IAccountsRepository _accountsRepository;
-    private readonly ICalculateBalance _calculateBalance;
-    private readonly IBankCache _bankCache;
-
-    public PostDebitUseCase(
-        ITransactionsRepository transactionsRepository,
-        IAccountsRepository accountsRepository,
-        ICalculateBalance calculateBalance,
-        IBankCache bankCache)
-    {
-        _transactionsRepository = transactionsRepository;
-        _accountsRepository = accountsRepository;
-        _calculateBalance = calculateBalance;
-        _bankCache = bankCache;
-    }
+    private readonly ITransactionsRepository _transactionsRepository = transactionsRepository;
+    private readonly IAccountsRepository _accountsRepository = accountsRepository;
+    private readonly ICalculateBalance _calculateBalance = calculateBalance;
+    private readonly IBankCache _bankCache = bankCache;
 
     public async Task Execute(int accountNumber, DebitInput input)
     {
-        var account = await _accountsRepository.GetByAccountNumber(accountNumber);
-        if (account == null) throw new EntityNotFoundException("Account not found.");
+        var account = await _accountsRepository.GetByAccountNumber(accountNumber)
+            ?? throw new EntityNotFoundException("Account not found.");
 
         double balance = await _calculateBalance.FromAccount(account);
         if (balance < input.Value) throw new InvalidInputException("Insufficient balance.");

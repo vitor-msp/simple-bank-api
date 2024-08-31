@@ -1,6 +1,3 @@
 namespace SimpleBankApi.Application.Exceptions;
 
-public class InvalidInputException : Exception
-{
-    public InvalidInputException(string message) : base(message) { }
-}
+public class InvalidInputException(string message) : Exception(message) {}

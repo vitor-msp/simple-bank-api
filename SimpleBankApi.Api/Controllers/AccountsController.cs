@@ -12,27 +12,17 @@ namespace SimpleBankApi.Api.Controllers;
 
 [ApiController]
 [Route("accounts")]
-public class AccountsController : ControllerBase
+public class AccountsController(
+    ICreateAccountUseCase createAccountUseCase, IUpdateAccountUseCase updateAccountUseCase,
+    IDeleteAccountUseCase deleteAccountUseCase, IGetAllAccountsUseCase getAllAccountsUseCase,
+    IGetAccountUseCase getAccountUseCase, ICreateAdminAccountUseCase createAdminAccountUseCase) : ControllerBase
 {
-    private readonly ICreateAccountUseCase _createAccountUseCase;
-    private readonly IUpdateAccountUseCase _updateAccountUseCase;
-    private readonly IDeleteAccountUseCase _deleteAccountUseCase;
-    private readonly IGetAllAccountsUseCase _getAllAccountsUseCase;
-    private readonly IGetAccountUseCase _getAccountUseCase;
-    private readonly ICreateAdminAccountUseCase _createAdminAccountUseCase;
-
-    public AccountsController(
-        ICreateAccountUseCase createAccountUseCase, IUpdateAccountUseCase updateAccountUseCase,
-        IDeleteAccountUseCase deleteAccountUseCase, IGetAllAccountsUseCase getAllAccountsUseCase,
-        IGetAccountUseCase getAccountUseCase, ICreateAdminAccountUseCase createAdminAccountUseCase)
-    {
-        _createAccountUseCase = createAccountUseCase;
-        _updateAccountUseCase = updateAccountUseCase;
-        _deleteAccountUseCase = deleteAccountUseCase;
-        _getAllAccountsUseCase = getAllAccountsUseCase;
-        _getAccountUseCase = getAccountUseCase;
-        _createAdminAccountUseCase = createAdminAccountUseCase;
-    }
+    private readonly ICreateAccountUseCase _createAccountUseCase = createAccountUseCase;
+    private readonly IUpdateAccountUseCase _updateAccountUseCase = updateAccountUseCase;
+    private readonly IDeleteAccountUseCase _deleteAccountUseCase = deleteAccountUseCase;
+    private readonly IGetAllAccountsUseCase _getAllAccountsUseCase = getAllAccountsUseCase;
+    private readonly IGetAccountUseCase _getAccountUseCase = getAccountUseCase;
+    private readonly ICreateAdminAccountUseCase _createAdminAccountUseCase = createAdminAccountUseCase;
 
     [HttpGet]
     [Authorize(Roles = "Customer,Admin")]

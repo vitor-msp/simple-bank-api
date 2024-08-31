@@ -4,14 +4,9 @@ using SimpleBankApi.Domain.Contract;
 
 namespace SimpleBankApi.Application.UseCases;
 
-public class GetAllAccountsUseCase : IGetAllAccountsUseCase
+public class GetAllAccountsUseCase(IAccountsRepository accountsRepository) : IGetAllAccountsUseCase
 {
-    private readonly IAccountsRepository _accountsRepository;
-
-    public GetAllAccountsUseCase(IAccountsRepository accountsRepository)
-    {
-        _accountsRepository = accountsRepository;
-    }
+    private readonly IAccountsRepository _accountsRepository = accountsRepository;
 
     public async Task<GetAllAccountsOutput> Execute()
     {

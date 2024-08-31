@@ -12,28 +12,19 @@ namespace SimpleBankApi.Api.Controllers;
 [ApiController]
 [Route("transactions")]
 [Authorize(Roles = "Customer")]
-public class TransactionsController : ControllerBase
+public class TransactionsController(
+    IPostCreditUseCase postCreditUseCase,
+    IPostDebitUseCase postDebitUseCase,
+    IPostTransferUseCase postTransferUseCase,
+    IGetBalanceUseCase getBalanceUseCase,
+    IGetTransactionsUseCase getTransactionsUseCase
+        ) : ControllerBase
 {
-    private readonly IPostCreditUseCase _postCreditUseCase;
-    private readonly IPostDebitUseCase _postDebitUseCase;
-    private readonly IPostTransferUseCase _postTransferUseCase;
-    private readonly IGetBalanceUseCase _getBalanceUseCase;
-    private readonly IGetTransactionsUseCase _getTransactionsUseCase;
-
-    public TransactionsController(
-        IPostCreditUseCase postCreditUseCase,
-        IPostDebitUseCase postDebitUseCase,
-        IPostTransferUseCase postTransferUseCase,
-        IGetBalanceUseCase getBalanceUseCase,
-        IGetTransactionsUseCase getTransactionsUseCase
-        )
-    {
-        _postCreditUseCase = postCreditUseCase;
-        _postDebitUseCase = postDebitUseCase;
-        _postTransferUseCase = postTransferUseCase;
-        _getBalanceUseCase = getBalanceUseCase;
-        _getTransactionsUseCase = getTransactionsUseCase;
-    }
+    private readonly IPostCreditUseCase _postCreditUseCase = postCreditUseCase;
+    private readonly IPostDebitUseCase _postDebitUseCase = postDebitUseCase;
+    private readonly IPostTransferUseCase _postTransferUseCase = postTransferUseCase;
+    private readonly IGetBalanceUseCase _getBalanceUseCase = getBalanceUseCase;
+    private readonly IGetTransactionsUseCase _getTransactionsUseCase = getTransactionsUseCase;
 
     [HttpPost("credit/{accountNumber}")]
     public async Task<ActionResult> PostCredit(int accountNumber, [FromBody] CreditInput input)

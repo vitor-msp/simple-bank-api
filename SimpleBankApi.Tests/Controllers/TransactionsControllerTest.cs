@@ -320,8 +320,7 @@ public class TransactionsControllerTest : IDisposable
     }
 
     private static TransactionDto GenerateTransactionCreditDto(TransactionDB credit)
-    {
-        return new TransactionDto()
+        => new()
         {
             Type = TransactionType.Credit.ToString(),
             CreditDto = new CreditDto()
@@ -330,11 +329,9 @@ public class TransactionsControllerTest : IDisposable
                 CreatedAt = DateTime.SpecifyKind(credit.CreatedAt, DateTimeKind.Unspecified)
             }
         };
-    }
 
     private static TransactionDto GenerateTransactionDebitDto(TransactionDB debit)
-    {
-        return new TransactionDto()
+        => new()
         {
             Type = TransactionType.Debit.ToString(),
             DebitDto = new DebitDto()
@@ -343,7 +340,6 @@ public class TransactionsControllerTest : IDisposable
                 CreatedAt = DateTime.SpecifyKind(debit.CreatedAt, DateTimeKind.Unspecified)
             }
         };
-    }
 
     private static TransactionDto GenerateTransactionTransferDto(TransactionDB transfer)
     {

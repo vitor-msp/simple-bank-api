@@ -11,9 +11,9 @@ public class BankCacheRedis : IBankCache
 
     public BankCacheRedis(IOptions<RedisConfiguration> options)
     {
-        var redisConnectionString = options.Value.ConnectionString;
-        if (redisConnectionString == null)
-            throw new Exception("Redis connection string is invalid.");
+        var redisConnectionString = options.Value.ConnectionString
+            ?? throw new Exception("Redis connection string is invalid.");
+
         try
         {
             _redis = ConnectionMultiplexer.Connect(redisConnectionString).GetDatabase();

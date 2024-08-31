@@ -6,32 +6,24 @@ using SimpleBankApi.Domain.Services;
 
 namespace SimpleBankApi.Application.UseCases;
 
-public class PostTransferUseCase : IPostTransferUseCase
+public class PostTransferUseCase(
+    ITransactionsRepository transactionsRepository,
+    IAccountsRepository accountsRepository,
+    ICalculateBalance calculateBalance,
+    IBankCache bankCache) : IPostTransferUseCase
 {
-    private readonly ITransactionsRepository _transactionsRepository;
-    private readonly IAccountsRepository _accountsRepository;
-    private readonly ICalculateBalance _calculateBalance;
-    private readonly IBankCache _bankCache;
-
-    public PostTransferUseCase(
-        ITransactionsRepository transactionsRepository,
-        IAccountsRepository accountsRepository,
-        ICalculateBalance calculateBalance,
-        IBankCache bankCache)
-    {
-        _accountsRepository = accountsRepository;
-        _transactionsRepository = transactionsRepository;
-        _calculateBalance = calculateBalance;
-        _bankCache = bankCache;
-    }
+    private readonly ITransactionsRepository _transactionsRepository = transactionsRepository;
+    private readonly IAccountsRepository _accountsRepository = accountsRepository;
+    private readonly ICalculateBalance _calculateBalance = calculateBalance;
+    private readonly IBankCache _bankCache = bankCache;
 
     public async Task Execute(int accountNumber, TransferInput input)
     {
-        var sender = await _accountsRepository.GetByAccountNumber(accountNumber);
-        if (sender == null) throw new EntityNotFoundException("Sender account not found.");
+        var sender = await _accountsRepository.GetByAccountNumber(accountNumber)
+            ?? throw new EntityNotFoundException("Sender account not found.");
 
-        var recipient = await _accountsRepository.GetByAccountNumber(input.RecipientAccountNumber);
-        if (recipient == null) throw new EntityNotFoundException("Recipient account not found.");
+        var recipient = await _accountsRepository.GetByAccountNumber(input.RecipientAccountNumber)
+            ?? throw new EntityNotFoundException("Recipient account not found.");
 
         if (sender.Equals(recipient))
             throw new InvalidInputException("Transfer to the same account is not allowed.");

@@ -4,21 +4,14 @@ using SimpleBankApi.Domain.Contract;
 
 namespace SimpleBankApi.Application.UseCases;
 
-public class LogoutUseCase : ILogoutUseCase
+public class LogoutUseCase(IAccountsRepository accountsRepository) : ILogoutUseCase
 {
-    private readonly IAccountsRepository _accountsRepository;
-    private readonly IPasswordHasher _passwordHasher;
-
-    public LogoutUseCase(IAccountsRepository accountsRepository, IPasswordHasher passwordHasher)
-    {
-        _accountsRepository = accountsRepository;
-        _passwordHasher = passwordHasher;
-    }
+    private readonly IAccountsRepository _accountsRepository = accountsRepository;
 
     public async Task Execute(LogoutInput input)
     {
-        var account = await _accountsRepository.GetByAccountNumber(input.AccountNumber);
-        if (account == null) throw new EntityNotFoundException("Account number and/or refresh token invalid.");
+        var account = await _accountsRepository.GetByAccountNumber(input.AccountNumber)
+            ?? throw new EntityNotFoundException("Account number and/or refresh token invalid.");
 
         var refreshToken = account.RefreshToken;
         if (refreshToken == null || !refreshToken.Equals(input.RefreshToken))
