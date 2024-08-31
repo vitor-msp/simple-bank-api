@@ -1,6 +1,6 @@
 using SimpleBankApi.Domain.Entities;
 
-namespace SimpleBankApi.Domain.Utils;
+namespace SimpleBankApi.Application.Utils;
 
 public static class CacheKeys
 {

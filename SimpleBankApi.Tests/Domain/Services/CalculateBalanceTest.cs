@@ -15,7 +15,6 @@ public class CalculateBalanceTest
 {
     private readonly int _accountNumber = 1;
     private readonly IAccount _account;
-    private readonly IBankCache _bankCacheMock = new Mock<IBankCache>().Object;
 
     public CalculateBalanceTest()
     {
@@ -94,8 +93,7 @@ public class CalculateBalanceTest
         transactionsRepositoryMock.Setup(mock => mock.GetTransactionsFromAccount(It.IsAny<int>()))
             .Returns(Task.FromResult(new List<TransactionWrapper>()));
 
-        var calculateBalance =
-            new CalculateBalance(transactionsRepositoryMock.Object, _bankCacheMock);
+        var calculateBalance = new CalculateBalance(transactionsRepositoryMock.Object);
         double balance = await calculateBalance.FromAccount(_account);
 
         Assert.Equal(0, balance);
@@ -109,8 +107,7 @@ public class CalculateBalanceTest
         transactionsRepositoryMock.Setup(mock => mock.GetTransactionsFromAccount(It.IsAny<int>()))
             .Returns(Task.FromResult(GetTransactionsExample()));
 
-        var calculateBalance =
-            new CalculateBalance(transactionsRepositoryMock.Object, _bankCacheMock);
+        var calculateBalance = new CalculateBalance(transactionsRepositoryMock.Object);
         double balance = await calculateBalance.FromAccount(_account);
 
         Assert.Equal(34.75, balance);

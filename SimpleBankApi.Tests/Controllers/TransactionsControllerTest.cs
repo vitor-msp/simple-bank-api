@@ -51,13 +51,13 @@ public class TransactionsControllerTest : IDisposable
         var context = CreateContext();
         var transactionsRepository = new TransactionsRepository(context);
         var accountsRepository = new AccountsRepository(context);
-        var calculateBalance = new CalculateBalance(transactionsRepository, _bankCacheMock);
+        var calculateBalance = new CalculateBalance(transactionsRepository);
 
         var controller = new TransactionsController(
             new PostCreditUseCase(transactionsRepository, accountsRepository, _bankCacheMock),
             new PostDebitUseCase(transactionsRepository, accountsRepository, calculateBalance, _bankCacheMock),
             new PostTransferUseCase(transactionsRepository, accountsRepository, calculateBalance, _bankCacheMock),
-            new GetBalanceUseCase(accountsRepository, calculateBalance),
+            new GetBalanceUseCase(accountsRepository, calculateBalance, _bankCacheMock),
             new GetTransactionsUseCase(transactionsRepository, accountsRepository));
 
         AuthenticationMock.AuthenticateUser(accountNumberToAuthenticate ?? _account.AccountNumber, controller);
