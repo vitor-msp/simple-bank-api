@@ -28,13 +28,18 @@ public class PostTransferUseCase(
         if (sender.Equals(recipient))
             throw new InvalidInputException("Transfer to the same account is not allowed.");
 
-        var balance = await _calculateBalance.FromAccount(sender);
+        var senderCacheKey = CacheKeys.Balance(sender);
+        var balanceCacheValue = await _bankCache.Get(senderCacheKey);
+
+        if (balanceCacheValue == null || !double.TryParse(balanceCacheValue, out double balance))
+            balance = await _calculateBalance.FromAccount(sender);
+
         if (balance < input.Value) throw new InvalidInputException("Insufficient balance.");
 
         var transfer = input.GetTransfer(sender, recipient);
         await _transactionsRepository.SaveTransfer(transfer);
 
-        await _bankCache.Delete(CacheKeys.Balance(sender));
+        await _bankCache.Delete(senderCacheKey);
         await _bankCache.Delete(CacheKeys.Balance(recipient));
     }
 }

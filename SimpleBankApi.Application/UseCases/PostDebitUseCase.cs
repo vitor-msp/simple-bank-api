@@ -22,12 +22,17 @@ public class PostDebitUseCase(
         var account = await _accountsRepository.GetByAccountNumber(accountNumber)
             ?? throw new EntityNotFoundException("Account not found.");
 
-        double balance = await _calculateBalance.FromAccount(account);
+        var cacheKey = CacheKeys.Balance(account);
+        var balanceCacheValue = await _bankCache.Get(cacheKey);
+
+        if (balanceCacheValue == null || !double.TryParse(balanceCacheValue, out double balance))
+            balance = await _calculateBalance.FromAccount(account);
+
         if (balance < input.Value) throw new InvalidInputException("Insufficient balance.");
 
         var debit = input.GetDebit(account);
         await _transactionsRepository.SaveDebit(debit);
 
-        await _bankCache.Delete(CacheKeys.Balance(account));
+        await _bankCache.Delete(cacheKey);
     }
 }
