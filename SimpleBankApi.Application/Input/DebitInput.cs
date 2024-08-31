@@ -10,5 +10,5 @@ public class DebitInput : Input
     public double Value { get; set; }
 
     internal IDebit GetDebit(IAccount account)
-        => new Debit() { Value = Value, Account = account };
+        => new Debit() { Value = -1 * Value, Account = account };
 }
