@@ -26,31 +26,19 @@ public class GetTransactionsUseCase(
             {
                 var credit = transaction.Credit
                     ?? throw new Exception("Missing credit in the transaction wrapper.");
-                return new TransactionDto()
-                {
-                    Type = transaction.TransactionType.ToString(),
-                    CreditDto = CreditDto.Build(credit)
-                };
+                return TransactionDto.BuildFromCredit(credit);
             }
 
             if (transaction.TransactionType == TransactionType.Debit)
             {
                 var debit = transaction.Debit
                     ?? throw new Exception("Missing debit in the transaction wrapper.");
-                return new TransactionDto()
-                {
-                    Type = transaction.TransactionType.ToString(),
-                    DebitDto = DebitDto.Build(debit)
-                };
+                return TransactionDto.BuildFromDebit(debit);
             }
 
             var transfer = transaction.Transfer
                 ?? throw new Exception("Missing transfer in the transaction wrapper.");
-            return new TransactionDto()
-            {
-                Type = transaction.TransactionType.ToString(),
-                TransferDto = TransferDto.Build(transfer, account)
-            };
+            return TransactionDto.BuildFromTransfer(transfer, account);
         });
 
         return new GetTransactionsOutput()

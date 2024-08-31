@@ -42,10 +42,7 @@ public class Account : IAccount
         return accountToCompare.AccountNumber == this.AccountNumber;
     }
 
-    public override int GetHashCode()
-    {
-        return AccountNumber;
-    }
+    public override int GetHashCode() => AccountNumber;
 
     public void UpdateRefreshToken(string? token, DateTime? expiration)
     {
