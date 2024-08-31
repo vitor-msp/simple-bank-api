@@ -12,6 +12,7 @@ public class TransactionDB
     public double Value { get; set; }
     public AccountDB OperatingAccount { get; set; }
     public AccountDB? RelatedAccount { get; set; }
+    public TransactionDB? RelatedTransaction { get; set; }
     public TransactionType TransactionType { get; set; }
 
 #pragma warning disable CS8618

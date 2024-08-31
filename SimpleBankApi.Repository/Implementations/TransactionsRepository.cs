@@ -46,6 +46,10 @@ public class TransactionsRepository(BankContext context) : ITransactionsReposito
         _context.Transactions.Add(debitDB);
         _context.Transactions.Add(creditDB);
         await _context.SaveChangesAsync();
+
+        debitDB.RelatedTransaction = creditDB;
+        creditDB.RelatedTransaction = debitDB;
+        await _context.SaveChangesAsync();
     }
 
     public async Task<List<TransactionWrapper>> GetTransactionsFromAccount(int accountNumber)
