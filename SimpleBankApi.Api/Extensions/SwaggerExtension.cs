@@ -1,6 +1,6 @@
 using Microsoft.OpenApi.Models;
 
-namespace SimpleBankApi.Api;
+namespace SimpleBankApi.Api.Extensions;
 
 public static class SwaggerExtension
 {

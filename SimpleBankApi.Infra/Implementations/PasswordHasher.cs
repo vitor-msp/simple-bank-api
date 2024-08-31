@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using SimpleBankApi.Domain.Contract;
 
-namespace SimpleBankApi.Infra;
+namespace SimpleBankApi.Infra.Implementations;
 
 public class PasswordHasher : IPasswordHasher
 {

@@ -7,7 +7,7 @@ using SimpleBankApi.Domain.Configuration;
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Entities;
 
-namespace SimpleBankApi.Infra;
+namespace SimpleBankApi.Infra.Implementations;
 
 public class TokenProvider : ITokenProvider
 {

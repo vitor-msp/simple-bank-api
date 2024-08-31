@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Options;
 using SimpleBankApi.Domain.Contract;
+using SimpleBankApi.Infra.Configuration;
 using StackExchange.Redis;
 
-namespace SimpleBankApi.Repository.Cache;
+namespace SimpleBankApi.Infra.Implementations;
 
 public class BankCacheRedis : IBankCache
 {

@@ -9,8 +9,8 @@ using SimpleBankApi.Application.UseCases;
 using SimpleBankApi.Domain.Configuration;
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Services;
-using SimpleBankApi.Infra;
-using SimpleBankApi.Repository.Cache;
+using SimpleBankApi.Infra.Configuration;
+using SimpleBankApi.Infra.Implementations;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Implementations;
 

@@ -1,4 +1,4 @@
-using SimpleBankApi.Api;
+using SimpleBankApi.Api.Extensions;
 using SimpleBankApi.Factory;
 
 var builder = WebApplication.CreateBuilder(args);

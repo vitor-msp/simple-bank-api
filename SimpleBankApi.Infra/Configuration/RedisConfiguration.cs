@@ -1,4 +1,4 @@
-namespace SimpleBankApi.Repository.Cache;
+namespace SimpleBankApi.Infra.Configuration;
 
 public class RedisConfiguration
 {

@@ -12,7 +12,7 @@ using SimpleBankApi.Application.UseCases;
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Services;
 using SimpleBankApi.Domain.ValueObjects;
-using SimpleBankApi.Infra;
+using SimpleBankApi.Infra.Implementations;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Database.Schema;
 using SimpleBankApi.Repository.Implementations;
