@@ -8,7 +8,7 @@ public abstract class Transaction : ITransaction
     public DateTime CreatedAt { get; }
 
     private readonly double _value;
-    public required double Value
+    public virtual required double Value
     {
         get => _value;
         init

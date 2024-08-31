@@ -1,5 +1,4 @@
 using SimpleBankApi.Domain.Entities;
-using SimpleBankApi.Domain.Exceptions;
 using SimpleBankApi.Domain.Extensions;
 
 namespace SimpleBankApi.Domain.Dto;
@@ -12,29 +11,16 @@ public class TransferDto
     public AccountDto? Recipient { get; set; }
 
     public static TransferDto Build(ITransfer transfer, IAccount account)
-        => new()
+    {
+        var value = transfer.Value;
+        if (transfer.Sender.Equals(account))
+            value = -1 * value;
+        return new()
         {
-            Value = GetTransferValue(transfer, account),
+            Value = value.GetBrazilianCurrency(),
             CreatedAt = transfer.CreatedAt,
             Sender = AccountDto.Build(transfer.Sender),
             Recipient = AccountDto.Build(transfer.Recipient)
         };
-
-    private static string GetTransferValue(ITransfer transfer, IAccount account)
-    {
-        double value;
-        if (transfer.Sender.AccountNumber == account.AccountNumber)
-        {
-            value = -1 * transfer.Value;
-        }
-        else if (transfer.Recipient.AccountNumber == account.AccountNumber)
-        {
-            value = transfer.Value;
-        }
-        else
-        {
-            throw new DomainException("Transfer does not belong to the account.");
-        }
-        return value.GetBrazilianCurrency();
     }
 }

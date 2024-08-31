@@ -11,9 +11,7 @@ public class BankContext : DbContext
 
     public DbSet<CustomerDB> Customers { get; set; }
     public DbSet<AccountDB> Accounts { get; set; }
-    public DbSet<CreditDB> Credits { get; set; }
-    public DbSet<DebitDB> Debits { get; set; }
-    public DbSet<TransferDB> Transfers { get; set; }
+    public DbSet<TransactionDB> Transactions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

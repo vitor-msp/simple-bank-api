@@ -1,4 +1,5 @@
 using SimpleBankApi.Domain.Entities;
+using SimpleBankApi.Domain.ValueObjects;
 
 namespace SimpleBankApi.Domain.Dto;
 
@@ -12,21 +13,21 @@ public class TransactionDto
     public static TransactionDto BuildFromCredit(ICredit credit)
         => new()
         {
-            Type = TransactionType.Credit,
+            Type = TransactionType.Credit.ToString(),
             CreditDto = CreditDto.Build(credit)
         };
 
     public static TransactionDto BuildFromDebit(IDebit debit)
         => new()
         {
-            Type = TransactionType.Debit,
+            Type = TransactionType.Debit.ToString(),
             DebitDto = DebitDto.Build(debit)
         };
 
     public static TransactionDto BuildFromTransfer(ITransfer transfer, IAccount account)
         => new()
         {
-            Type = TransactionType.Transfer,
+            Type = TransactionType.Transfer.ToString(),
             TransferDto = TransferDto.Build(transfer, account)
         };
 }

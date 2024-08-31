@@ -20,17 +20,15 @@ public class TransactionTest
     [InlineData("transfer")]
     public void NotBuildTransaction(string type)
     {
-        var value = -10;
-
         var error = type switch
         {
-            "credit" => Assert.Throws<DomainException>(() => new Credit() { Value = value, Account = _account }),
-            "debit" => Assert.Throws<DomainException>(() => new Debit() { Value = value, Account = _account }),
-            "transfer" => Assert.Throws<DomainException>(() => new Transfer() { Value = value, Sender = _account, Recipient = _otherAccount }),
+            "credit" => Assert.Throws<DomainException>(() => new Credit() { Value = -1 * _value, Account = _account }),
+            "debit" => Assert.Throws<DomainException>(() => new Debit() { Value = _value, Account = _account }),
+            "transfer" => Assert.Throws<DomainException>(() => new Transfer() { Value = -1 * _value, Sender = _account, Recipient = _otherAccount }),
             _ => new Exception(""),
         };
 
-        Assert.Equal("The transaction value must be greater than zero.", error.Message);
+        Assert.Contains("The transaction value must be", error.Message);
     }
 
     [Fact]
@@ -48,12 +46,12 @@ public class TransactionTest
     [Fact]
     public void RebuildDebit()
     {
-        var debit = Debit.Rebuild(_id, _createdAt, _value, _account);
+        var debit = Debit.Rebuild(_id, _createdAt, -1 * _value, _account);
 
         Assert.NotNull(debit);
         Assert.Equal(_id, debit.Id);
         Assert.Equal(_createdAt, debit.CreatedAt);
-        Assert.Equal(_value, debit.Value);
+        Assert.Equal(-1 * _value, debit.Value);
         Assert.Equal(_account, debit.Account);
     }
 

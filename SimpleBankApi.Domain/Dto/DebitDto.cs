@@ -11,7 +11,7 @@ public class DebitDto
     public static DebitDto Build(IDebit debit)
         => new()
         {
-            Value = (-1 * debit.Value).GetBrazilianCurrency(),
+            Value = debit.Value.GetBrazilianCurrency(),
             CreatedAt = debit.CreatedAt,
         };
 }

@@ -1,6 +1,7 @@
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Entities;
 using SimpleBankApi.Domain.Utils;
+using SimpleBankApi.Domain.ValueObjects;
 
 namespace SimpleBankApi.Domain.Services;
 
@@ -30,36 +31,23 @@ public class CalculateBalance : ICalculateBalance
 
     private async Task<double> ProcessBalance(IAccount account)
     {
-        double creditSum = await GetCreditSum(account);
-        double debitSum = await GetDebitSum(account);
-        var transferSum = await GetTransferSum(account);
-
-        double balance = creditSum + debitSum + transferSum;
-        return balance;
-    }
-
-    private async Task<double> GetCreditSum(IAccount account)
-    {
-        var credits = await _transactionsRepository.GetCreditsFromAccount(account.AccountNumber);
-        double creditSum = credits.Sum(credit => credit.Value);
-        return creditSum;
-    }
-
-    private async Task<double> GetDebitSum(IAccount account)
-    {
-        var debits = await _transactionsRepository.GetDebitsFromAccount(account.AccountNumber);
-        double debitSum = -1 * debits.Sum(debit => debit.Value);
-        return debitSum;
-    }
-
-    private async Task<double> GetTransferSum(IAccount account)
-    {
-        var transfers = await _transactionsRepository.GetTransfersFromAccount(account.AccountNumber);
-        double transferSum = transfers.Sum(transfer =>
+        var transactions = await _transactionsRepository.GetTransactionsFromAccount(account.AccountNumber);
+        var balance = transactions.Sum(transaction =>
         {
+            if (transaction.TransactionType == TransactionType.Credit)
+            {
+                var credit = transaction.Credit ?? throw new Exception();
+                return credit.Value;
+            }
+            if (transaction.TransactionType == TransactionType.Debit)
+            {
+                var debit = transaction.Debit ?? throw new Exception();
+                return debit.Value;
+            }
+            var transfer = transaction.Transfer ?? throw new Exception();
             var value = transfer.Value;
-            return transfer.Sender != null && transfer.Sender.Equals(account) ? (-1 * value) : value;
+            return transfer.Recipient.Equals(account) ? value : -1 * value;
         });
-        return transferSum;
+        return balance;
     }
 }

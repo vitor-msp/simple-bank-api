@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SimpleBankApi.Domain.Contract;
 using SimpleBankApi.Domain.Entities;
+using SimpleBankApi.Domain.ValueObjects;
 using SimpleBankApi.Repository.Database.Context;
 using SimpleBankApi.Repository.Database.Schema;
 
@@ -17,99 +18,87 @@ public class TransactionsRepository : ITransactionsRepository
 
     public async Task SaveCredit(ICredit credit)
     {
-        if (credit.Account == null) throw new Exception();
-
         var accountDB = await _context.Accounts.FindAsync(credit.Account.Id);
-        if (accountDB == null) throw new Exception();
+        if (accountDB == null) throw new Exception("Account not found.");
 
-        var creditDB = new CreditDB(credit) { Account = accountDB };
+        var creditDB = new TransactionDB(credit) { OperatingAccount = accountDB };
 
-        _context.Credits.Add(creditDB);
+        _context.Transactions.Add(creditDB);
         await _context.SaveChangesAsync();
     }
 
     public async Task SaveDebit(IDebit debit)
     {
-        if (debit.Account == null) throw new Exception();
-
         var accountDB = await _context.Accounts.FindAsync(debit.Account.Id);
-        if (accountDB == null) throw new Exception();
+        if (accountDB == null) throw new Exception("Account not found.");
 
-        var debitDB = new DebitDB(debit) { Account = accountDB };
+        var debitDB = new TransactionDB(debit) { OperatingAccount = accountDB };
 
-        _context.Debits.Add(debitDB);
+        _context.Transactions.Add(debitDB);
         await _context.SaveChangesAsync();
     }
 
     public async Task SaveTransfer(ITransfer transfer)
     {
-        if (transfer.Sender == null || transfer.Recipient == null) throw new Exception();
-
         var senderDB = await _context.Accounts.FindAsync(transfer.Sender.Id);
+        if (senderDB == null) throw new Exception("Sender not found.");
+
         var recipientDB = await _context.Accounts.FindAsync(transfer.Recipient.Id);
-        if (senderDB == null || recipientDB == null) throw new Exception();
+        if (recipientDB == null) throw new Exception("Recipient not found.");
 
-        var transferDB = new TransferDB(transfer) { Sender = senderDB, Recipient = recipientDB };
+        var (debitDB, creditDB) = TransactionDB.BuildTransfer(transfer, senderDB, recipientDB);
 
-        _context.Transfers.Add(transferDB);
+        _context.Transactions.Add(debitDB);
+        _context.Transactions.Add(creditDB);
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<ICredit>> GetCreditsFromAccount(int accountNumber)
+    public async Task<List<TransactionWrapper>> GetTransactionsFromAccount(int accountNumber)
     {
-        var creditsDB = await _context.Credits.AsNoTracking().Include("Account.Owner")
-            .Where(creditDB => creditDB.Account != null && creditDB.Account.AccountNumber == accountNumber)
+        var transactionsDB = await _context.Transactions.AsNoTracking()
+            .Include("OperatingAccount.Owner")
+            .Include("RelatedAccount.Owner")
+            .Where(transactionDB
+                 => transactionDB.OperatingAccount != null && transactionDB.OperatingAccount.AccountNumber == accountNumber)
+            .OrderByDescending(transactionsDB => transactionsDB.CreatedAt)
             .ToListAsync();
 
-        return creditsDB.Select(creditDB =>
+        return transactionsDB.Select(transactionDB =>
         {
-            if (creditDB.Account == null || creditDB.Account.Owner == null) throw new Exception();
+            if (transactionDB.OperatingAccount == null || transactionDB.OperatingAccount.Owner == null)
+                throw new Exception();
 
-            var owner = creditDB.Account.Owner.GetEntity();
-            var account = creditDB.Account.GetEntity(owner);
-            var credit = creditDB.GetEntity(account);
+            if (transactionDB.TransactionType == TransactionType.Credit)
+            {
+                var owner = transactionDB.OperatingAccount.Owner.GetEntity();
+                var account = transactionDB.OperatingAccount.GetEntity(owner);
+                var credit = transactionDB.GetCredit(account);
+                return new TransactionWrapper()
+                {
+                    TransactionType = TransactionType.Credit,
+                    Credit = credit
+                };
+            }
 
-            return credit;
-        }).ToList();
-    }
+            if (transactionDB.TransactionType == TransactionType.Debit)
+            {
+                var owner = transactionDB.OperatingAccount.Owner.GetEntity();
+                var account = transactionDB.OperatingAccount.GetEntity(owner);
+                var debit = transactionDB.GetDebit(account);
+                return new TransactionWrapper()
+                {
+                    TransactionType = TransactionType.Debit,
+                    Debit = debit
+                };
+            }
 
-    public async Task<List<IDebit>> GetDebitsFromAccount(int accountNumber)
-    {
-        var debitsDB = await _context.Debits.AsNoTracking().Include("Account.Owner")
-            .Where(debitDB => debitDB.Account != null && debitDB.Account.AccountNumber == accountNumber)
-            .ToListAsync();
+            var transfer = transactionDB.GetTransfer();
+            return new TransactionWrapper()
+            {
+                TransactionType = TransactionType.Transfer,
+                Transfer = transfer
+            };
 
-        return debitsDB.Select(debitDB =>
-        {
-            if (debitDB.Account == null || debitDB.Account.Owner == null) throw new Exception();
-
-            var owner = debitDB.Account.Owner.GetEntity();
-            var account = debitDB.Account.GetEntity(owner);
-            var debit = debitDB.GetEntity(account);
-
-            return debit;
-        }).ToList();
-    }
-
-    public async Task<List<ITransfer>> GetTransfersFromAccount(int accountNumber)
-    {
-        var transfersDB = await _context.Transfers.AsNoTracking().Include("Sender.Owner").Include("Recipient.Owner")
-            .Where(transferDB => (transferDB.Sender != null && transferDB.Sender.AccountNumber == accountNumber)
-                || (transferDB.Recipient != null && transferDB.Recipient.AccountNumber == accountNumber))
-            .ToListAsync();
-
-        return transfersDB.Select(transferDB =>
-        {
-            if (transferDB.Sender == null || transferDB.Sender.Owner == null) throw new Exception();
-            if (transferDB.Recipient == null || transferDB.Recipient.Owner == null) throw new Exception();
-
-            var senderOwner = transferDB.Sender.Owner.GetEntity();
-            var sender = transferDB.Sender.GetEntity(senderOwner);
-            var recipientOwner = transferDB.Recipient.Owner.GetEntity();
-            var recipient = transferDB.Recipient.GetEntity(recipientOwner);
-            var transfer = transferDB.GetEntity(sender, recipient);
-
-            return transfer;
         }).ToList();
     }
 }

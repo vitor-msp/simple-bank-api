@@ -1,8 +1,8 @@
 using SimpleBankApi.Application.Exceptions;
 using SimpleBankApi.Application.Output;
 using SimpleBankApi.Domain.Contract;
-using SimpleBankApi.Domain.Entities;
-using SimpleBankApi.Domain.Services;
+using SimpleBankApi.Domain.Dto;
+using SimpleBankApi.Domain.ValueObjects;
 
 namespace SimpleBankApi.Application.UseCases;
 
@@ -22,21 +22,42 @@ public class GetTransactionsUseCase : IGetTransactionsUseCase
         var account = await _accountsRepository.GetByAccountNumber(accountNumber);
         if (account == null) throw new EntityNotFoundException("Account not found.");
 
-        var credits = await GetCreditsFromAccount(account);
-        var debits = await GetDebitsFromAccount(account);
-        var transfers = await GetTransfersFromAccount(account);
+        var transactions = await _transactionsRepository.GetTransactionsFromAccount(account.AccountNumber);
 
-        var prepareStatement = new PrepareStatement(credits, debits, transfers, account);
-        var statement = prepareStatement.SortTransactionsByDateTime();
-        return new GetTransactionsOutput() { Statement = statement };
+        var preparedTransactions = transactions.Select(transaction =>
+        {
+            if (transaction.TransactionType == TransactionType.Credit)
+            {
+                var credit = transaction.Credit ?? throw new Exception();
+                return new TransactionDto()
+                {
+                    Type = transaction.TransactionType.ToString(),
+                    CreditDto = CreditDto.Build(credit)
+                };
+            }
+            if (transaction.TransactionType == TransactionType.Debit)
+            {
+                var debit = transaction.Debit ?? throw new Exception();
+                return new TransactionDto()
+                {
+                    Type = transaction.TransactionType.ToString(),
+                    DebitDto = DebitDto.Build(debit)
+                };
+            }
+            var transfer = transaction.Transfer ?? throw new Exception();
+            return new TransactionDto()
+            {
+                Type = transaction.TransactionType.ToString(),
+                TransferDto = TransferDto.Build(transfer, account)
+            };
+        });
+
+        return new GetTransactionsOutput()
+        {
+            Statement = new StatementDto()
+            {
+                Transactions = preparedTransactions.ToList()
+            }
+        };
     }
-
-    private async Task<List<ICredit>> GetCreditsFromAccount(IAccount account)
-        => await _transactionsRepository.GetCreditsFromAccount(account.AccountNumber);
-
-    private async Task<List<IDebit>> GetDebitsFromAccount(IAccount account)
-        => await _transactionsRepository.GetDebitsFromAccount(account.AccountNumber);
-
-    private async Task<List<ITransfer>> GetTransfersFromAccount(IAccount account)
-        => await _transactionsRepository.GetTransfersFromAccount(account.AccountNumber);
 }

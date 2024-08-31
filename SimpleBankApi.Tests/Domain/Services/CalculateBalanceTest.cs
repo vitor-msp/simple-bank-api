@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 using SimpleBankApi.Domain.ValueObjects;
+using System.Linq;
 
 namespace SimpleBankApi.Tests.Domain;
 
@@ -22,49 +23,63 @@ public class CalculateBalanceTest
         _account = Account.Rebuild(1, _accountNumber, DateTime.Now, true, Role.Customer, owner, "hash", "", DateTime.Now);
     }
 
-    private List<ICredit> GetCreditsExample()
+    private List<TransactionWrapper> GetTransactionsExample()
     {
-        var credits = new List<ICredit>();
-        var credit = new Credit()
+        var credits = GetCreditsExample().Select(credit => new TransactionWrapper()
         {
-            Value = 50,
-            Account = _account,
-        };
-        credits.Add(credit);
-        return credits;
+            Credit = credit,
+            TransactionType = TransactionType.Credit
+        });
+        var debits = GetDebitsExample().Select(debit => new TransactionWrapper()
+        {
+            Debit = debit,
+            TransactionType = TransactionType.Debit
+        });
+        var transfers = GetTransfersExample().Select(transfer => new TransactionWrapper()
+        {
+            Transfer = transfer,
+            TransactionType = TransactionType.Transfer
+        });
+        var transactions = new List<TransactionWrapper>();
+        transactions.AddRange(credits);
+        transactions.AddRange(debits);
+        transactions.AddRange(transfers);
+        return transactions;
     }
+
+    private List<ICredit> GetCreditsExample()
+        => [
+            new Credit()
+            {
+                Value = 50,
+                Account = _account,
+            }
+        ];
 
     private List<IDebit> GetDebitsExample()
-    {
-        var debits = new List<IDebit>();
-        var debit = new Debit()
-        {
-            Value = 15,
-            Account = _account,
-        };
-        debits.Add(debit);
-        return debits;
-    }
+        => [
+            new Debit()
+            {
+                Value = -15,
+                Account = _account,
+            }
+        ];
 
     private List<ITransfer> GetTransfersExample()
-    {
-        var transfers = new List<ITransfer>();
-        var transferAsSender = new Transfer()
-        {
-            Value = 12.5,
-            Sender = _account,
-            Recipient = GetAccountExample(),
-        };
-        var transferAsRecipient = new Transfer()
-        {
-            Value = 12.25,
-            Sender = GetAccountExample(),
-            Recipient = _account,
-        };
-        transfers.Add(transferAsSender);
-        transfers.Add(transferAsRecipient);
-        return transfers;
-    }
+       => [
+            new Transfer()
+            {
+                Value = 12.5,
+                Sender = _account,
+                Recipient = GetAccountExample(),
+            },
+            new Transfer()
+            {
+                Value = 12.25,
+                Sender = GetAccountExample(),
+                Recipient = _account,
+            },
+       ];
 
     private static Account GetAccountExample()
     {
@@ -76,41 +91,29 @@ public class CalculateBalanceTest
     public async Task NoBalance()
     {
         var transactionsRepositoryMock = new Mock<ITransactionsRepository>();
-        transactionsRepositoryMock.Setup(mock => mock.GetCreditsFromAccount(It.IsAny<int>()))
-            .Returns(Task.FromResult(new List<ICredit>()));
-        transactionsRepositoryMock.Setup(mock => mock.GetDebitsFromAccount(It.IsAny<int>()))
-            .Returns(Task.FromResult(new List<IDebit>()));
-        transactionsRepositoryMock.Setup(mock => mock.GetTransfersFromAccount(It.IsAny<int>()))
-            .Returns(Task.FromResult(new List<ITransfer>()));
+        transactionsRepositoryMock.Setup(mock => mock.GetTransactionsFromAccount(It.IsAny<int>()))
+            .Returns(Task.FromResult(new List<TransactionWrapper>()));
 
         var calculateBalance =
             new CalculateBalance(transactionsRepositoryMock.Object, _bankCacheMock);
         double balance = await calculateBalance.FromAccount(_account);
 
         Assert.Equal(0, balance);
-        transactionsRepositoryMock.Verify(mock => mock.GetCreditsFromAccount(_accountNumber), Times.Once);
-        transactionsRepositoryMock.Verify(mock => mock.GetDebitsFromAccount(_accountNumber), Times.Once);
-        transactionsRepositoryMock.Verify(mock => mock.GetTransfersFromAccount(_accountNumber), Times.Once);
+        transactionsRepositoryMock.Verify(mock => mock.GetTransactionsFromAccount(_accountNumber), Times.Once);
     }
 
     [Fact]
     public async Task WithBalance()
     {
         var transactionsRepositoryMock = new Mock<ITransactionsRepository>();
-        transactionsRepositoryMock.Setup(mock => mock.GetCreditsFromAccount(It.IsAny<int>()))
-            .Returns(Task.FromResult(GetCreditsExample()));
-        transactionsRepositoryMock.Setup(mock => mock.GetDebitsFromAccount(It.IsAny<int>()))
-            .Returns(Task.FromResult(GetDebitsExample()));
-        transactionsRepositoryMock.Setup(mock => mock.GetTransfersFromAccount(It.IsAny<int>()))
-            .Returns(Task.FromResult(GetTransfersExample()));
+        transactionsRepositoryMock.Setup(mock => mock.GetTransactionsFromAccount(It.IsAny<int>()))
+            .Returns(Task.FromResult(GetTransactionsExample()));
 
         var calculateBalance =
             new CalculateBalance(transactionsRepositoryMock.Object, _bankCacheMock);
         double balance = await calculateBalance.FromAccount(_account);
 
         Assert.Equal(34.75, balance);
-        transactionsRepositoryMock.Verify(mock => mock.GetCreditsFromAccount(_accountNumber), Times.Once);
-        transactionsRepositoryMock.Verify(mock => mock.GetDebitsFromAccount(_accountNumber), Times.Once);
-        transactionsRepositoryMock.Verify(mock => mock.GetTransfersFromAccount(_accountNumber), Times.Once);
+        transactionsRepositoryMock.Verify(mock => mock.GetTransactionsFromAccount(_accountNumber), Times.Once);
     }
 }
