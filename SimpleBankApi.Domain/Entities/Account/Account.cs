@@ -17,7 +17,7 @@ public class Account : IAccount
     public Account()
     {
         AccountNumber = Convert.ToInt32(DateTimeOffset.Now.ToUnixTimeSeconds());
-        CreatedAt = DateTime.Now;
+        CreatedAt = DateTime.Now.ToUniversalTime();
         Active = true;
         Role = Role.Customer;
     }
@@ -47,7 +47,7 @@ public class Account : IAccount
     public void UpdateRefreshToken(string? token, DateTime? expiration)
     {
         RefreshToken = token;
-        RefreshTokenExpiration = expiration;
+        RefreshTokenExpiration = expiration.HasValue ? expiration.Value.ToUniversalTime() : expiration;
     }
 
     public static Account Rebuild(int id, int accountNumber, DateTime createdAt, bool active,

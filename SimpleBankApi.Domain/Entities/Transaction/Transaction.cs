@@ -21,7 +21,7 @@ public abstract class Transaction : ITransaction
 
     protected Transaction()
     {
-        CreatedAt = DateTime.Now;
+        CreatedAt = DateTime.Now.ToUniversalTime();
     }
 
     protected Transaction(int id, DateTime createdAt)

@@ -33,6 +33,7 @@ public class AccountDB
         Id = account.Id;
         AccountNumber = account.AccountNumber;
         Active = account.Active;
+        CreatedAt = account.CreatedAt;
         PasswordHash = account.PasswordHash;
         RefreshToken = account.RefreshToken;
         RefreshTokenExpiration = account.RefreshTokenExpiration;
