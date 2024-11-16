@@ -21,7 +21,7 @@ public static class ProjectFactoryExtension
     public static void BuildProject(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<BankContext>(options =>
-            options.UseSqlite(configuration.GetConnectionString("SqliteConnection")));
+            options.UseNpgsql(configuration.GetConnectionString("PostgresConnection")));
 
         services.Configure<RedisConfiguration>(configuration.GetSection("Redis"));
         services.Configure<TokenConfiguration>(configuration.GetSection("Token"));

@@ -15,6 +15,6 @@ public class BankContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite();
+        optionsBuilder.UseNpgsql();
     }
 }
