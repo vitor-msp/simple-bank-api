@@ -50,7 +50,7 @@ public class SessionsControllerTest : IDisposable
 
     private BankContext CreateContext()
     {
-        var context = new BankContext(_contextOptions);
+        var context = new BankContext(_contextOptions, useNpgsql: false);
         context.Database.EnsureCreated();
         return context;
     }
