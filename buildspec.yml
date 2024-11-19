@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo process started at `date`
+      - REPOSITORY_URI=590184040325.dkr.ecr.us-east-1.amazonaws.com/vitormsp/simple-bank
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $REPOSITORY_URI
+  build:
+    commands:
+      - echo building docker image $REPOSITORY_URI:$IMAGE_TAG
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
+  
+  post_build:
+    commands:
+      - echo pushing $REPOSITORY_URI:$IMAGE_TAG to ECR
+      - docker push --all-tags $REPOSITORY_URI
+      - printf '[{"name":"simple-bank-api","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json 
+
+artifacts:
+  files: imagedefinitions.json
