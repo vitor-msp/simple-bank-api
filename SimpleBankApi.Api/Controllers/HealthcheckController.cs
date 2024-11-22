@@ -6,5 +6,6 @@ namespace SimpleBankApi.Api.Controllers;
 [Route("healthcheck")]
 public class HealthcheckController
 {
+    [HttpGet]
     public ActionResult<string> Healthcheck() => "health";
 }
