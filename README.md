@@ -4,7 +4,8 @@
 
 ![API Swagger screenshot](assets/api-print.png)
 
-The frontend be available [in this repository](https://github.com/vitor-msp/simple-bank-front)
+- The **frontend** be available [in this repository](https://github.com/vitor-msp/simple-bank-front)
+- The **cloud infra** be available [in this repository](https://github.com/vitor-msp/simple-bank-infra)
 
 ## Execution
 
